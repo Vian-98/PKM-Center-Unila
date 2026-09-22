@@ -11,7 +11,7 @@
 | Nama Proyek | **PKM-Center** |
 | Tujuan | Aplikasi web pusat informasi & manajemen Program Kreativitas Mahasiswa (PKM), frontend React + backend REST API Golang |
 | Referensi Fitur | Struktur & konten sejenis [PKM Center ITNY](https://pkmcenter.itny.ac.id/pkm-sttnas/) |
-| Referensi Identitas Visual | Statuta Universitas Lampung (Unila) — warna bendera universitas & fakultas |
+| Referensi Identitas Visual | Statuta Universitas Lampung (Unila), BAB II Identitas, Pasal 2–5 |
 | Target Deploy | Server Linux, menggunakan Docker & Docker Compose |
 | Estimasi Durasi | *(isi, misal 4–8 minggu)* |
 
@@ -33,18 +33,40 @@
 
 ## 3. Identitas Visual & Palet Warna
 
-Mengacu pada **Statuta Universitas Lampung (Unila)** soal warna bendera universitas & fakultas. Karena PKM-Center adalah unit di bawah universitas (bukan fakultas spesifik), warna dasar utama mengambil dari **bendera Unila** (kuning keemasan), dengan opsi warna aksen dari fakultas untuk kebutuhan filter/kategori per fakultas di aplikasi.
+Mengacu pada **Statuta Universitas Lampung (Unila), BAB II Identitas (Pasal 2–5)**.
 
-### Warna Utama (Primary) — dari Bendera Unila
-| Elemen | Kode RGB (Statuta) | Hex (perkiraan standar) |
-|---|---|---|
-| Warna dasar bendera Unila (kuning keemasan) | RGB tertulis "FF D7" (tidak lengkap di dokumen) | `#FFD700` (Gold) — *perlu dikonfirmasi ke dokumen statuta asli/lambang resmi Unila* |
-| Teks/elemen kontras | RGB 00 00 00 | `#000000` (Hitam) |
+### 3.1 Identitas Dasar Unila (Pasal 2)
+| Item | Keterangan |
+|---|---|
+| Nama | Universitas Lampung (Unila) |
+| Kedudukan | Kota Bandar Lampung, Provinsi Lampung |
+| Berdiri | 23 September 1965, berdasarkan Keputusan Menteri PTIP No. 195 Tahun 1965, dikukuhkan Keppres RI No. 73 Tahun 1966 |
 
-> ⚠️ Kode RGB warna bendera Unila di teks statuta yang kamu kirim terpotong ("FF D7"), kemungkinan `#FFD700`. Sebaiknya dikonfirmasi ke lambang/statuta resmi sebelum dipakai final di branding.
+### 3.2 Lambang Unila (Pasal 3)
+Lambang berbentuk **perisai persegi lima**, warna dasar **biru muda**, terdiri dari beberapa elemen dengan warna & makna masing-masing:
 
-### Warna Aksen per Fakultas (opsional, untuk badge/kategori/filter)
-| Fakultas | Warna | Kode RGB | Hex |
+| Elemen | Warna | Kode RGB (Statuta) | Hex | Makna (Pasal 3 ayat 2) |
+|---|---|---|---|---|
+| Perisai persegi lima (dasar) | Biru muda | 1E 90 FF | `#1E90FF` | Alam kehidupan perguruan tinggi |
+| Tulisan "Universitas Lampung" | Hitam | 00 00 00 | `#000000` | — |
+| Lidah api | Merah | FF 00 00 | `#FF0000` | Penerang dalam kegelapan |
+| Bejana penopang | Abu-abu | 2F 4F 4F | `#2F4F4F` | Penerang dalam kegelapan |
+| Obor & tangkai | Hitam | 00 00 00 | `#000000` | Penerang dalam kegelapan |
+| Mahkota siger | Kuning keemasan | FF D7 (00)* | `#FFD700` | Sifat harga diri |
+| Pintu gerbang | Kuning keemasan | FF D7 (00)* | `#FFD700` | Tempat lahir & berkembang manusia terdidik |
+| Buku terbuka | Kuning keemasan | FF D7 (00)* | `#FFD700` | Sumber ilmu pengetahuan, teknologi & seni |
+| Meja pepadun | Kuning keemasan | FF D7 (00)* | `#FFD700` | Tempat bermusyawarah |
+| Lima lembar daun lada | Hijau | 00 80 00 | `#008000` | Kemakmuran |
+
+> \* Kode RGB "kuning keemasan" di teks statuta konsisten tertulis terpotong ("FF D7") di **empat elemen berbeda** (mahkota siger, pintu gerbang, buku terbuka, meja pepadun) — pola ini kemungkinan besar karena proses ekstraksi/OCR dokumen yang membuang byte terakhir. Nilai penuh yang paling mendekati adalah **`#FFD700` (Gold)**. Tetap disarankan dikonfirmasi ke dokumen statuta resmi/lambang asli sebelum dipakai final di branding.
+
+### 3.3 Bendera Unila (Pasal 4)
+- Bentuk persegi panjang, rasio panjang : lebar = **3 : 2**
+- Warna dasar: **kuning keemasan** (`#FFD700`, dengan catatan yang sama seperti di atas)
+- Di tengah terdapat lambang Unila (lihat 3.2)
+
+### 3.4 Warna Aksen per Fakultas & Pascasarjana (Pasal 5) — opsional, untuk badge/kategori/filter
+| Fakultas / Unit | Warna | Kode RGB (Statuta) | Hex |
 |---|---|---|---|
 | Ekonomi dan Bisnis | Abu-abu | 2F 4F 4F | `#2F4F4F` |
 | Hukum | Merah | FF 00 00 | `#FF0000` |
@@ -57,14 +79,18 @@ Mengacu pada **Statuta Universitas Lampung (Unila)** soal warna bendera universi
 | Pascasarjana | Merah marun | 8B 00 00 | `#8B0000` |
 | Teks label (semua fakultas) | Hitam | 00 00 00 | `#000000` |
 
-### Rekomendasi Penerapan di UI
-- **Primary color (navbar, tombol utama, aksen brand):** `#FFD700` (emas Unila)
+> Catatan: kode abu-abu Fakultas Ekonomi & Bisnis di statuta tertulis "2F 4F 4F D7" — ekor "D7" ini kemungkinan artefak salah tempel dari baris kuning keemasan di dekatnya (bukan bagian warna abu-abu), sehingga tabel di atas memakai `#2F4F4F` (DarkSlateGray) sebagai nilai bersih.
+
+### 3.5 Rekomendasi Penerapan di UI
+- **Primary color (navbar, tombol utama, aksen brand):** `#FFD700` (kuning keemasan Unila)
+- **Secondary/aksen struktural (opsional, dari elemen lambang):** `#1E90FF` (biru muda perisai)
 - **Text/neutral:** `#000000` (hitam) untuk teks, `#FFFFFF` untuk background/kontras
-- **Warna fakultas** dipakai sebagai *tag/badge* saat menampilkan proposal/kegiatan PKM per fakultas — memudahkan mahasiswa/reviewer mengenali asal fakultas secara visual
+- **Warna fakultas** dipakai sebagai *tag/badge* saat menampilkan proposal/kegiatan PKM per fakultas
 - Simpan sebagai CSS variables / Tailwind config di frontend, misalnya:
   ```css
   :root {
-    --color-primary: #FFD700;
+    --color-primary: #FFD700;   /* kuning keemasan Unila */
+    --color-secondary: #1E90FF; /* biru muda lambang */
     --color-text: #000000;
     --faculty-ekonomi: #2F4F4F;
     --faculty-hukum: #FF0000;
@@ -94,11 +120,7 @@ Mengacu pada struktur menu **PKM Center ITNY** yang dijadikan referensi sebelumn
 | **Portfolio** | Arsip proposal/kegiatan PKM yang lolos pendanaan per tahun | Sedang |
 | **Contact** | Info kontak PKM Center | Rendah |
 
-### Kemungkinan Fitur Tambahan (fase lanjut, di luar sitemap referensi)
-- [ ] Login mahasiswa/admin (auth JWT)
-- [ ] Upload & manajemen proposal PKM (CRUD)
-- [ ] Dashboard admin untuk approve/reject/kategorikan proposal per fakultas
-- [ ] Notifikasi/pengumuman status proposal
+> Untuk pembagian halaman & PIC pengerjaan tahap awal, lihat `pembagian-awal-halaman.md`. Untuk fitur admin & lanjutan, lihat `daftar-fitur-pkm-center-unila.md`.
 
 ---
 
@@ -225,7 +247,7 @@ project/
 | Risiko | Mitigasi |
 |---|---|
 | Belum familiar Golang | Alokasikan waktu belajar di awal fase 2, mulai dari endpoint sederhana |
-| Kode warna bendera Unila di statuta tidak lengkap (`FF D7`) | Konfirmasi ke lambang/statuta resmi Unila atau bagian Humas sebelum branding final |
+| Kode warna kuning keemasan di statuta tidak lengkap (`FF D7`) di beberapa elemen lambang | Konfirmasi ke lambang/statuta resmi Unila atau bagian Humas sebelum branding final; sementara pakai `#FFD700` |
 | Struktur folder Go berantakan seiring project besar | Ikuti pola `internal/` (handlers, models, routes) sejak awal |
 | Docker image besar/lambat build | Gunakan multi-stage build & base image alpine/scratch |
 | Koneksi FE-BE gagal (CORS) | Setup CORS middleware di awal, uji sejak Fase 2 |
@@ -234,4 +256,5 @@ project/
 
 ## 10. Catatan Tambahan
 - Dokumen ini bisa diperbarui seiring progres — tandai checklist yang sudah selesai.
-- Warna aksen fakultas (bagian 3) bersifat opsional — dipakai hanya jika PKM-Center menampilkan data per fakultas (misal filter proposal berdasarkan fakultas pengusul).
+- Warna aksen fakultas (bagian 3.4) bersifat opsional — dipakai hanya jika PKM-Center menampilkan data per fakultas (misal filter proposal berdasarkan fakultas pengusul).
+- Dokumen terkait: `pembagian-awal-halaman.md` (PIC & checklist per halaman), `daftar-fitur-pkm-center-unila.md` (fitur admin & lanjutan).
