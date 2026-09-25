@@ -6,32 +6,32 @@
 
 ## 1. Fitur Sisi Guest (Publik) — Tambahan
 
-- [ ] Search bar untuk cari berita/pedoman
-- [ ] Breadcrumb navigasi
+- [x] Search bar untuk cari pedoman (filternya di halaman `/#pedoman`)
+- [x] Breadcrumb navigasi (halaman Pedoman, Portofolio, Kontak)
 
 ---
 
 ## 2. Fitur Sisi Admin (Pengelola Konten)
 
 ### 2.1 Autentikasi
-- [ ] Login admin (JWT) — *catatan: halaman login sudah masuk section 4 pembagian awal, ini bagian logic/dashboard setelah login*
+- [x] Login admin (JWT) — *modal di header + panel admin `/#admin`; sesi kedaluwarsa 24 jam*
 - [ ] Manajemen role (opsional: super admin, editor)
 
 ### 2.2 Manajemen Konten
 - [x] CRUD Berita (judul, isi, gambar sampul, kategori) — *via panel admin `/#admin`*
 - [x] CRUD Video (judul, link/embed, deskripsi, thumbnail)
 - [x] CRUD Galeri Foto (melalui URL; *upload berkas belum*)
-- [ ] CRUD Timeline PKM per tahun (tahapan & tanggal)
-- [ ] CRUD Pedoman PKM (upload file PDF per tahun)
-- [ ] CRUD Portfolio/Arsip Proposal (judul, tim, tahun, file/link)
+- [x] CRUD Timeline PKM per tahun (tahapan & tanggal) — *seksi Timeline di panel admin; seed non-destruktif (create-if-missing)*
+- [x] CRUD Pedoman PKM (tautan PDF/unduhan per tahun) — *seksi Pedoman di panel admin*
+- [x] CRUD Portfolio/Arsip Proposal (judul, tim, tahun, skema, fakultas, prodi, ringkasan) — *seksi Portofolio di panel admin*
 
 ### 2.3 Statistik & Dashboard
 - [x] Dashboard ringkasan konten (daftar + jumlah item yang terbit) — *di panel admin*
-- [ ] Input/update jumlah usulan proposal per skema PKM (yang tampil di Home)
+- [x] Input/update jumlah usulan proposal per skema PKM (yang tampil di Home) — *seksi Statistik di panel admin*
 
 ### 2.4 Kritik & Saran
-- [ ] Lihat daftar masukan yang masuk dari form guest (Home)
-- [ ] Tandai sudah dibaca/ditindaklanjuti (opsional)
+- [x] Lihat daftar masukan yang masuk dari form guest (Home) & form Kontak — *seksi Masukan di panel admin*
+- [x] Tandai sudah dibaca/ditindaklanjuti — *tombol "Tandai dibaca" per pesan*
 
 ---
 

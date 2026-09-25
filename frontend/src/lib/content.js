@@ -59,3 +59,117 @@ export function splitBody(body) {
 }
 
 export function hideBrokenImage(event) { event.currentTarget.style.display = 'none' }
+
+/* ------------------------------------------------------------------ */
+/* Data & hook baru: timeline, pedoman, portofolio, statistik, kontak  */
+/* ------------------------------------------------------------------ */
+
+const pedomanPortal = 'https://simbelmawa.kemdikbud.go.id/portals/buku-panduan/'
+
+export const fallbackTimeline = [
+  { id: 1, year: 2026, order: 1, stage: 'Sosialisasi & orientasi skema', label: 'Januari — Februari 2026', note: 'Pengenalan skema PKM dan sesi tanya jawab bagi calon pengusul.' },
+  { id: 2, year: 2026, order: 2, stage: 'Pendampingan penyusunan proposal', label: 'Februari — Maret 2026', note: 'Kelas intensif, klinik proposal, dan konsultasi per kelompok.' },
+  { id: 3, year: 2026, order: 3, stage: 'Pengusulan proposal (submit)', label: 'Akhir Maret 2026', note: 'Pengajuan proposal melalui sistem SIMBELMAWA.' },
+  { id: 4, year: 2026, order: 4, stage: 'Review & penilaian proposal', label: 'April 2026', note: 'Penilaian oleh reviewer internal dan tingkat nasional.' },
+  { id: 5, year: 2026, order: 5, stage: 'Penetapan proposal didanai', label: 'Mei 2026', note: 'Pengumuman proposal yang lolos pendanaan.' },
+  { id: 6, year: 2026, order: 6, stage: 'Pelaksanaan & monitoring', label: 'Juni — Oktober 2026', note: 'Pelaksanaan kegiatan, monitoring, dan pelaporan kemajuan.' },
+  { id: 7, year: 2026, order: 7, stage: 'PIMNAS', label: 'November 2026', note: 'Pekan Ilmiah Mahasiswa Nasional.' },
+  { id: 8, year: 2025, order: 1, stage: 'Sosialisasi & orientasi skema', label: 'Januari 2025', note: 'Pengenalan skema PKM dan sesi tanya jawab bagi calon pengusul.' },
+  { id: 9, year: 2025, order: 2, stage: 'Pendampingan penyusunan proposal', label: 'Januari — Februari 2025', note: 'Kelas intensif dan klinik proposal.' },
+  { id: 10, year: 2025, order: 3, stage: 'Pengusulan proposal (submit)', label: 'Maret 2025', note: 'Batas akhir pengajuan proposal.' },
+  { id: 11, year: 2025, order: 4, stage: 'Review & penilaian proposal', label: 'Maret — April 2025', note: 'Penilaian proposal tingkat nasional.' },
+  { id: 12, year: 2025, order: 5, stage: 'Penetapan proposal didanai', label: 'April 2025', note: 'Pengumuman proposal yang lolos pendanaan.' },
+  { id: 13, year: 2025, order: 6, stage: 'Pelaksanaan & monitoring', label: 'Mei — Oktober 2025', note: 'Pelaksanaan kegiatan dan monitoring pendanaan.' },
+  { id: 14, year: 2025, order: 7, stage: 'PIMNAS', label: 'November 2025', note: 'Pekan Ilmiah Mahasiswa Nasional — tim Unila meraih 12 medali.' },
+  { id: 15, year: 2024, order: 1, stage: 'Sosialisasi & orientasi skema', label: 'Januari 2024', note: 'Pengenalan skema PKM bagi mahasiswa baru.' },
+  { id: 16, year: 2024, order: 2, stage: 'Pendampingan penyusunan proposal', label: 'Januari — Februari 2024', note: 'Kelas intensif dan klinik proposal.' },
+  { id: 17, year: 2024, order: 3, stage: 'Pengusulan proposal (submit)', label: 'Maret 2024', note: 'Batas akhir pengajuan proposal.' },
+  { id: 18, year: 2024, order: 4, stage: 'Review & penilaian proposal', label: 'Maret — April 2024', note: 'Penilaian proposal tingkat nasional.' },
+  { id: 19, year: 2024, order: 5, stage: 'Penetapan proposal didanai', label: 'April 2024', note: 'Pengumuman proposal yang lolos pendanaan.' },
+  { id: 20, year: 2024, order: 6, stage: 'Pelaksanaan & monitoring', label: 'Mei — Oktober 2024', note: 'Pelaksanaan kegiatan dan monitoring pendanaan.' },
+  { id: 21, year: 2024, order: 7, stage: 'PIMNAS', label: 'November 2024', note: 'Pekan Ilmiah Mahasiswa Nasional.' },
+]
+
+export const fallbackPedoman = [
+  { id: 1, year: 2026, title: 'Buku Panduan PKM 2026', source: 'SIMBELMAWA', fileUrl: pedomanPortal, note: 'Pedoman resmi pengusulan Program Kreativitas Mahasiswa tahun 2026.' },
+  { id: 2, year: 2025, title: 'Buku Panduan PKM 2025', source: 'SIMBELMAWA', fileUrl: pedomanPortal, note: 'Pedoman resmi pengusulan Program Kreativitas Mahasiswa tahun 2025.' },
+  { id: 3, year: 2024, title: 'Buku Panduan PKM 2024', source: 'SIMBELMAWA', fileUrl: pedomanPortal, note: 'Pedoman resmi pengusulan Program Kreativitas Mahasiswa tahun 2024.' },
+  { id: 4, year: 2023, title: 'Buku Panduan PKM 2023', source: 'SIMBELMAWA', fileUrl: pedomanPortal, note: 'Arsip pedoman pengusulan PKM tahun 2023.' },
+]
+
+export const fallbackPortfolio = [
+  { id: 1, year: 2025, title: 'Optimalisasi Potensi Wisata Embung melalui Pengembangan Ekonomi Kreatif Berbasis Komunitas', team: 'Alya Rahma, Bagas Prasetyo, Citra Ayu, Dimas Aditya', scheme: 'PKM-PM', faculty: 'FISIP', prodi: 'Ilmu Komunikasi', description: 'Program pengabdian kepada masyarakat untuk mengembangkan ekonomi kreatif berbasis komunitas di kawasan wisata Embung, mencakup pelatihan tata kelola, pemasaran digital, dan pendampingan berkelanjutan.' },
+  { id: 2, year: 2025, title: 'Sistem Monitoring Kualitas Air Budidaya Ikan Berbasis IoT', team: 'Raka Maulana, Sinta Dewi, Fajar Ramadhan, Nadia Putri', scheme: 'PKM-KC', faculty: 'FMIPA', prodi: 'Fisika', description: 'Purwarupa alat pemantau suhu, pH, dan oksigen terlarut kolam ikan secara real-time dengan notifikasi ke ponsel pembudidaya.' },
+  { id: 3, year: 2025, title: 'Budpupuk: Pupuk Organik dari Limbah Rumah Tangga', team: 'Dewi Lestari, Eko Saputra, Fina Amelia, Galih Pratama', scheme: 'PKM-K', faculty: 'FEB', prodi: 'Manajemen', description: 'Usaha pupuk organik dari limbah rumah tangga dengan model kemitraan bersama bank sampah setempat.' },
+  { id: 4, year: 2025, title: 'Aplikasi Belajar Membaca bagi Anak Usia Dini dengan Metode Fonik', team: 'Intan Permata, Joko Susilo, Kania Rahma', scheme: 'PKM-PI', faculty: 'FKIP', prodi: 'PG PAUD', description: 'Aplikasi pembelajaran membaca berbasis metode fonik yang dikembangkan bersama komunitas guru PAUD.' },
+  { id: 5, year: 2025, title: 'Terapi Relaksasi Digital untuk Menurunkan Stres Akademik Mahasiswa', team: 'Laila Nur, Miftahul Huda, Nabila Salsabila, Oktavian Saputra', scheme: 'PKM-RE', faculty: 'Fakultas Kedokteran', prodi: 'Pendidikan Dokter', description: 'Studi eksperimental pengaruh terapi relaksasi digital terhadap tingkat stres akademik mahasiswa.' },
+  { id: 6, year: 2024, title: 'Sekotong Pintar: Edukasi Pencegahan Stunting Berbasis Media Digital', team: 'Putri Maharani, Qori Aini, Reza Akbar, Salsabila Fitri', scheme: 'PKM-PM', faculty: 'Kedokteran', prodi: 'Ilmu Kesehatan Masyarakat', description: 'Edukasi pencegahan stunting melalui media digital bagi ibu balita di daerah pesisir Lampung.' },
+  { id: 7, year: 2024, title: 'Klinik Tanaman: Deteksi Penyakit Daun Berbasis Citra', team: 'Taufik Hidayat, Umi Kalsum, Vina Agustina, Wildan Fauzi', scheme: 'PKM-KC', faculty: 'FMIPA', prodi: 'Ilmu Komputer', description: 'Sistem deteksi dini penyakit daun tanaman pangan menggunakan pengolahan citra dan pembelajaran mesin.' },
+  { id: 8, year: 2024, title: 'Keripik Bayam Kaya Zat Besi sebagai Camilan Sehat Remaja', team: 'Yoga Pratama, Zainab Zahra, Andi Firmansyah, Bella Safitri', scheme: 'PKM-K', faculty: 'Fakultas Pertanian', prodi: 'Teknologi Hasil Pertanian', description: 'Inovasi olahan bayam menjadi keripik dengan kandungan zat besi tinggi yang disukai remaja.' },
+  { id: 9, year: 2024, title: 'Robocar: Kendaraan Listrik Mini untuk Pembelajaran STEM', team: 'Candra Wijaya, Dimas Pangestu, Elsa Melati, Farhan Maulana', scheme: 'PKM-KI', faculty: 'Fakultas Teknik', prodi: 'Teknik Elektro', description: 'Prototipe kendaraan listrik mini sebagai media pembelajaran STEM di sekolah menengah.' },
+  { id: 10, year: 2024, title: 'Gagasan Kota Hijau untuk Bandar Lampung Menuju Netralitas Karbon 2050', team: 'Gita Salsabilla, Haris Munandar, Ines Anggraini', scheme: 'PKM-GFT', faculty: 'Fakultas Teknik', prodi: 'Perencanaan Wilayah dan Kota', description: 'Gagasan futuristik tertulis tentang infrastruktur hijau dan regulasi menuju netralitas karbon kota.' },
+]
+
+export const fallbackStats = [
+  { id: 1, scheme: 'PKM-K', count: 87 },
+  { id: 2, scheme: 'PKM-PI', count: 92 },
+  { id: 3, scheme: 'PKM-PM', count: 64 },
+  { id: 4, scheme: 'PKM-KC', count: 41 },
+  { id: 5, scheme: 'PKM-GFT', count: 12 },
+  { id: 6, scheme: 'PKM-KI', count: 38 },
+  { id: 7, scheme: 'PKM-AI', count: 9 },
+  { id: 8, scheme: 'PKM-RE', count: 56 },
+  { id: 9, scheme: 'PKM-RSH', count: 27 },
+]
+
+export const fallbackContact = {
+  address: 'Gedung Rektorat Unila, Jl. Prof. Dr. Soemantri Brojonegoro No. 1, Gedong Meneng, Bandar Lampung 35145',
+  email: 'pkmcenter@unila.ac.id',
+  phone: '(0721) 704 947',
+  whatsApp: '+62 812 7019 8888',
+  instagram: '@pkmcenter.unila',
+  facebook: 'PKM Center Universitas Lampung',
+  mapEmbed: 'https://maps.google.com/maps?q=Universitas%20Lampung&t=&z=15&ie=UTF8&iwloc=&output=embed',
+}
+
+export function useApi(path, fallback) {
+  const [items, setItems] = useState(fallback)
+  useEffect(() => {
+    let alive = true
+    fetch(`${api}${path}`)
+      .then((response) => (response.ok ? response.json() : null))
+      .then((result) => { if (alive && result?.data) setItems(result.data) })
+      .catch(() => {})
+    return () => { alive = false }
+  }, [path])
+  return items
+}
+
+export const useTimeline = () => useApi('/timeline', fallbackTimeline)
+export const usePedoman = () => useApi('/pedoman', fallbackPedoman)
+export const usePortfolio = () => useApi('/portfolio', fallbackPortfolio)
+export const useStats = () => useApi('/stats', fallbackStats)
+export const useContact = () => useApi('/contact', fallbackContact)
+
+export async function submitFeedback(payload) {
+  const response = await fetch(`${api}/feedback`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  const result = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(result.message || 'Gagal mengirim pesan.')
+  return result.data
+}
+
+export const schemeNames = {
+  'PKM-K': 'Kewirausahaan',
+  'PKM-PI': 'Penerapan Iptek',
+  'PKM-PM': 'Pengabdian kepada Masyarakat',
+  'PKM-KC': 'Karsa Cipta',
+  'PKM-GFT': 'Gagasan Futuristik Tertulis',
+  'PKM-KI': 'Karya Inovatif',
+  'PKM-AI': 'Artikel Ilmiah',
+  'PKM-RE': 'Riset Eksakta',
+  'PKM-RSH': 'Riset Sosial Humaniora',
+}

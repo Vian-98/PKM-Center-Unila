@@ -4,31 +4,35 @@
 
 ---
 
-## 1. Home — **PIC: Radhit**
+## 1. Home — **PIC: Radhit** ✅
 
-- [ ] Hero/banner utama
-- [ ] Ringkasan "Tentang Kami" (deskripsi singkat PKM Center)
-- [ ] Statistik jumlah usulan proposal per skema PKM (PKM-K, PKM-PI, PKM-PM, PKM-KC, PKM-GFT, PKM-KI, PKM-AI, PKM-RE, PKM-RSH, dst)
-- [ ] Preview berita/update terbaru (beberapa item + tombol "lihat semua")
-- [ ] Section "Apa yang Kami Lakukan" (poin-poin layanan/peran PKM Center)
-- [ ] Preview galeri foto kegiatan
-- [ ] Form Kritik & Saran (feedback pengunjung)
-- [ ] About PKM (latar belakang, tujuan, sejarah jenis-jenis PKM)
-- [ ] Timeline PKM (daftar timeline per tahun, tahapan submit–review–pengumuman–PIMNAS)
+> **Status: selesai** (dikerjakan bersamaan dengan bagian lain; lihat catatan di bawah).
+
+- [x] Hero/banner utama
+- [x] Ringkasan "Tentang Kami" (deskripsi singkat PKM Center)
+- [x] Statistik jumlah usulan proposal per skema PKM (PKM-K, PKM-PI, PKM-PM, PKM-KC, PKM-GFT, PKM-KI, PKM-AI, PKM-RE, PKM-RSH) — *diatur lewat panel admin (seksi Statistik)*
+- [x] Preview berita/update terbaru (beberapa item + tombol "lihat semua")
+- [x] Section "Apa yang Kami Lakukan" (poin-poin layanan/peran PKM Center)
+- [x] Preview galeri foto kegiatan
+- [x] Form Kritik & Saran (feedback pengunjung) — *masuk ke panel admin (seksi Masukan)*
+- [x] About PKM (latar belakang, tujuan, sejarah + daftar jenis skema PKM)
+- [x] Timeline PKM (per tahun, tahapan submit–review–pengumuman–PIMNAS) — *diatur lewat panel admin (seksi Timeline)*
 
 ---
 
-## 2. Pedoman + Portofolio — **PIC: Dimas**
+## 2. Pedoman + Portofolio — **PIC: Dimas** ✅
+
+> **Status: selesai.** Halaman publik `/#pedoman` (dengan pencarian) dan `/#portofolio` (filter tahun + skema, ringkasan dapat dibuka) sudah berjalan; data dikelola lewat panel admin seksi Pedoman & Portofolio.
 
 ### Pedoman PKM
-- [ ] Daftar dokumen pedoman PKM per tahun
-- [ ] Link/tombol download PDF
-- [ ] Info versi/tahun terbit pedoman
+- [x] Daftar dokumen pedoman PKM per tahun
+- [x] Link/tombol download PDF (tautan ke katalog resmi SIMBELMAWA; URL dapat diganti lewat admin)
+- [x] Info versi/tahun terbit pedoman
 
 ### Portofolio
-- [ ] Arsip proposal yang lolos pendanaan per tahun
-- [ ] Filter/kategori berdasarkan tahun pendanaan
-- [ ] Detail per proposal (judul, tim, skema PKM, fakultas/prodi — opsional)
+- [x] Arsip proposal yang lolos pendanaan per tahun
+- [x] Filter/kategori berdasarkan tahun pendanaan (chip) + skema PKM
+- [x] Detail per proposal (judul, tim, skema PKM, fakultas/prodi + ringkasan)
 
 ---
 
@@ -59,21 +63,23 @@
 
 ---
 
-## 4. Kontak + Halaman Login — **PIC: Aidil**
+## 4. Kontak + Halaman Login — **PIC: Aidil** ✅
+
+> **Status: selesai.** Halaman publik `/#kontak` lengkap; login tetap berupa modal di header (bukan halaman terpisah) dan masuk ke panel admin `/#admin`.
 
 ### Kontak
-- [ ] Info kontak (alamat, email, telepon/WhatsApp, media sosial)
-- [ ] Peta lokasi (opsional, embed Google Maps)
-- [ ] Form kontak (opsional, terpisah dari Kritik & Saran)
+- [x] Info kontak (alamat, email, telepon/WhatsApp, media sosial) — *diatur lewat panel admin (seksi Kontak)*
+- [x] Peta lokasi (embed Google Maps tanpa API key, URL embed editable di admin)
+- [x] Form kontak (pesan masuk ke panel admin seksi Masukan, terpisah dari Kritik & Saran via `kind`)
 
 ### Halaman Login
-- [ ] Form login admin/pengelola
-- [ ] Validasi & auth (JWT)
-- [ ] Redirect ke dashboard admin setelah login berhasil
-- [ ] Halaman lupa password (opsional)
+- [x] Form login admin/pengelola (modal di header; validasi email & kata sandi)
+- [x] Validasi & auth (JWT 24 jam; sesi kadaluarsa → otomatis ke halaman akses terbatas + prompt login)
+- [x] Redirect ke dashboard admin setelah login berhasil (link "Kelola konten" muncul di header; halaman `/#admin`)
+- [ ] Halaman lupa password (opsional — belum dikerjakan)
 
 ---
 
 ## Catatan
 - Dokumen ini pelengkap dari `rencana-awal-proyek-pkm-center-unila.md` — detail teknis (tech stack, folder, fase pengerjaan) tetap merujuk ke dokumen tersebut.
-- Fitur admin CRUD (kelola berita, pedoman, portofolio, dsb.) belum dimasukkan di sini karena fokus tahap awal ini ke halaman guest/publik — bisa ditambahkan sebagai section 5 kalau sudah waktunya.
+- Fitur admin CRUD (kelola berita, timeline, pedoman, portofolio, statistik, masukan, kontak) sudah diimplementasikan sebagai seksi-seksi pada panel admin `/#admin` — daftar per fitur ada di `daftar-fitur-pkm-center-unila.md`.
