@@ -11,18 +11,20 @@ Stack berjalan sepenuhnya melalui Docker Compose:
 
 ## Yang sudah tersedia
 
-- Landing page PKM Center dengan identitas visual Unila.
-- Logo PKM Center di header dan favicon (ikon pada tab browser).
-- Halaman berita dengan pagination dan **gambar sampul nyata**: `/#berita`.
-- Halaman detail artikel berisi judul, tanggal (format Indonesia), kategori, gambar, dan isi paragraf; ada halaman *"berita tidak ditemukan"* untuk URL yang tidak valid: `/#berita/1`.
-- Halaman video dan galeri foto dengan lightbox (navigasi tombol Sebelumnya/Berikutnya + keyboard `Esc`/panah): `/#galeri`.
-- Login JWT dan role `admin`, `mahasiswa`, serta `dosen`.
-- Panel admin untuk menambah, mengubah, dan menghapus konten berita, video, dan galeri: `/#admin`.
-- Endpoint khusus admin sebagai contoh otorisasi role.
-- Migrasi tabel dan seed otomatis: **9 berita, 8 foto galeri, 3 video, dan 3 akun demo** — *upsert non-destruktif*, jadi konten yang pernah diubah/ditambah lewat panel admin tidak tertimpa saat backend dinyalakan ulang.
+- **Beranda lengkap** (`/#beranda`): hero, statistik usulan per skema PKM, layanan "Apa yang Kami Lakukan", daftar jenis skema PKM, preview berita & galeri, timeline PKM per tahun (tahapan submit → review → pengumuman → PIMNAS), dan form Kritik & Saran.
+- **Pedoman PKM** (`/#pedoman`): daftar dokumen per tahun + pencarian + tombol unduh (tautan resmi).
+- **Portofolio** (`/#portofolio`): arsip proposal lolos pendanaan, filter tahun (chip) & skema, ringkasan per proposal.
+- **Kontak** (`/#kontak`): info kontak, peta lokasi (embed), dan form pesan.
+- **Berita** dengan pagination dan gambar sampul nyata: `/#berita`.
+- Halaman detail artikel (`/#berita/1`) + halaman "berita tidak ditemukan" untuk URL tidak valid.
+- **Video & galeri foto** dengan lightbox (tombol Sebelumnya/Berikutnya + keyboard `Esc`/panah): `/#galeri`.
+- Navigasi **"⋯ Lainnya"** di navbar (Pedoman, Portofolio, Kontak) + breadcrumb di halaman tersebut.
+- Login JWT dengan role `admin`, `mahasiswa`, dan `dosen`.
+- **Panel admin** (`/#admin`) dengan **7 seksi**: Konten (berita/video/galeri), Timeline, Pedoman, Portofolio, Masukan (Kritik & Saran + pesan kontak), Statistik, dan Kontak.
+- Migrasi tabel dan seed otomatis: **21 tahapan timeline, 4 pedoman, 10 proposal portofolio, 9 skema statistik, info kontak, 2 contoh masukan, 9 berita, 8 foto galeri, 3 video, dan 3 akun demo** — *upsert non-destruktif*, jadi konten yang pernah diubah/ditambah lewat panel admin tidak tertimpa saat backend dinyalakan ulang.
 - PostgreSQL dengan volume Docker persisten.
 
-> Konten berita, video, dan galeri saat ini merupakan **data contoh** — termasuk gambar placeholder dari Unsplash — bukan pengumuman resmi Unila. Seluruh konten dapat diubah, ditambah, atau dihapus lewat panel admin di `/#admin` (login sebagai `admin`, lihat akun demo di bawah).
+> Konten berita, video, galeri, dan portofolio saat ini merupakan **data contoh** — termasuk gambar placeholder dari Unsplash — bukan pengumuman resmi Unila. Seluruh konten dapat diubah, ditambah, atau dihapus lewat panel admin di `/#admin` (login sebagai `admin`, lihat akun demo di bawah).
 
 ## Menjalankan secara lokal
 
@@ -78,11 +80,24 @@ Gunakan hanya untuk development. Ganti semua kredensial dan `JWT_SECRET` sebelum
 | `GET` | `/api/auth/me` | Profil token aktif; butuh header `Authorization: Bearer <token>` |
 | `GET` | `/api/content?type=news\|video\|gallery` | Daftar konten publik per jenis (berita, video, galeri) |
 | `GET` | `/api/content/:id` | Detail satu konten publik |
+| `GET` | `/api/timeline` | Timeline PKM per tahun (publik) |
+| `GET` | `/api/pedoman` | Daftar pedoman PKM (publik) |
+| `GET` | `/api/portfolio?year=&scheme=` | Arsip proposal lolos pendanaan, filter opsional (publik) |
+| `GET` | `/api/stats` | Jumlah usulan per skema PKM (publik) |
+| `GET` | `/api/contact` | Informasi kontak PKM Center (publik) |
+| `POST` | `/api/feedback` | Kirim Kritik & Saran (`kind: "saran"`) atau pesan kontak (`kind: "kontak"`) |
 | `GET` | `/api/admin/content` | Daftar semua konten (khusus `admin`) |
 | `POST` | `/api/admin/content` | Tambah konten (khusus `admin`) |
 | `PUT` | `/api/admin/content/:id` | Ubah konten (khusus `admin`) |
 | `DELETE` | `/api/admin/content/:id` | Hapus konten (khusus `admin`) |
-| `GET` | `/api/admin/overview` | Contoh endpoint khusus `admin` |
+| `GET/POST/PUT/DELETE` | `/api/admin/timeline[/:id]` | CRUD timeline (khusus `admin`) |
+| `GET/POST/PUT/DELETE` | `/api/admin/pedoman[/:id]` | CRUD pedoman (khusus `admin`) |
+| `GET/POST/PUT/DELETE` | `/api/admin/portfolio[/:id]` | CRUD portofolio (khusus `admin`) |
+| `GET` | `/api/admin/feedback` | Daftar masukan (khusus `admin`) |
+| `PUT` | `/api/admin/feedback/:id/read` | Tandai masukan sudah dibaca (khusus `admin`) |
+| `DELETE` | `/api/admin/feedback/:id` | Hapus masukan (khusus `admin`) |
+| `GET/PUT` | `/api/admin/stats` | Lihat & perbarui statistik per skema (khusus `admin`) |
+| `GET/PUT` | `/api/admin/contact` | Lihat & perbarui info kontak (khusus `admin`) |
 
 Contoh login melalui terminal:
 
@@ -98,18 +113,24 @@ curl -X POST http://localhost:8081/api/auth/login \
 .
 ├── backend/                 # REST API Go/Gin
 │   ├── cmd/api/             # titik masuk aplikasi (routing + seed data)
-│   └── internal/            # config, handler, middleware, model
+│   │   └── main.go
+│   └── internal/
+│       ├── config/          # koneksi DB, env config
+│       ├── handlers/        # auth, content, info (timeline/pedoman/portfolio), feedback (masukan/stats/kontak)
+│       ├── middleware/      # auth guard (JWT)
+│       └── models/          # user, content, info (grup model baru)
 ├── frontend/                # React + Vite
 │   ├── public/              # favicon dan aset logo
 │   └── src/
-│       ├── components/      # GlassNavbar, GlowCard, PageIntro
-│       ├── lib/             # data fallback, hook useContent, helper format
-│       ├── pages/           # News (berita), Gallery (video + galeri foto)
-│       └── main.jsx         # shell aplikasi: routing hash, Home, Admin, Login
+│       ├── components/      # GlassNavbar, GlowCard, PageIntro, Breadcrumb
+│       ├── lib/             # content.js: fallback data + hook API (useContent, useTimeline, usePedoman, …)
+│       ├── pages/           # Home, News, Gallery, Pedoman, Portofolio, Kontak, AdminPanel
+│       └── main.jsx         # shell aplikasi: hash routing + login
 ├── docker-compose.yml       # frontend, backend, dan PostgreSQL
 ├── pembagian-awal-halaman.md
 ├── daftar-fitur-pkm-center-unila.md
-└── rencana-awal-proyek-pkm-center-unila.md
+├── rencana-awal-proyek-pkm-center-unila.md
+└── acuan-design-pkm-center.md
 ```
 
 ## Identitas visual
@@ -131,17 +152,16 @@ Warna fakultas dan pascasarjana—abu-abu FEB, merah FH, ungu FKIP, hijau Pertan
 ## Dokumen kerja
 
 - [Rencana awal proyek](rencana-awal-proyek-pkm-center-unila.md): scope, stack, fase, dan pedoman visual.
-- [Pembagian awal halaman](pembagian-awal-halaman.md): pembagian PIC dan checklist pengerjaan; bagian Berita & Galeri sudah ditandai selesai untuk UI awal.
-- [Daftar fitur](daftar-fitur-pkm-center-unila.md): backlog fitur proyek.
+- [Pembagian awal halaman](pembagian-awal-halaman.md): pembagian PIC dan checklist pengerjaan — seluruh bagian (Home, Pedoman + Portofolio, Berita & Galeri, Kontak + Login) sudah selesai dan ditandai centang.
+- [Daftar fitur](daftar-fitur-pkm-center-unila.md): backlog fitur proyek (admin CRUD & fitur lanjutan).
+- [Acuan desain](acuan-design-pkm-center.md): bahasa visual & komponen UI yang dipakai di seluruh halaman.
 
 ## Tahap berikutnya
 
 1. Ganti konten contoh (termasuk gambar placeholder Unsplash) dengan data dan dokumentasi PKM Center yang telah diverifikasi.
-2. Perluas panel admin: CRUD timeline PKM, pedoman (upload PDF), portofolio, dan kelola masukan kritik & saran.
-3. Lengkapi halaman publik yang belum ada: Home penuh (statistik per skema PKM, form kritik & saran), Pedoman, Portofolio, dan Kontak.
-4. Pindahkan kata sandi, database URL, dan JWT secret ke `.env` yang tidak dilacak Git.
-5. Tambahkan rate limiting login, reset kata sandi, pengujian API, dan konfigurasi production (Nginx/HTTPS).
-6. Fitur lanjutan (opsional): login mahasiswa, submit & tracking status proposal, dashboard reviewer/dosen, serta notifikasi.
+2. Pindahkan kata sandi, database URL, dan JWT secret ke `.env` yang tidak dilacak Git.
+3. Tambahkan rate limiting login, reset kata sandi, pengujian API (unit test), dan konfigurasi production (Nginx/HTTPS).
+4. Fitur lanjutan (opsional): login mahasiswa, submit & tracking status proposal, dashboard reviewer/dosen, serta notifikasi.
 
 ## Catatan keamanan
 

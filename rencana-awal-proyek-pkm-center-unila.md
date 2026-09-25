@@ -2,6 +2,8 @@
 
 > Catatan: dokumen ini disusun sebagai rencana kerja awal. Sesuaikan bagian **Fitur** dan **Timeline** seiring progres.
 
+> **Status per 25 September 2026 — MVP hampir selesai.** Seluruh halaman publik (Home, Pedoman, Portofolio, Kontak, Berita, Galeri) dan panel admin 7 seksi (Konten, Timeline, Pedoman, Portofolio, Masukan, Statistik, Kontak) sudah berjalan dan diverifikasi di browser. Checklist fase 3–5 di bawah sudah sebagian besar tercentang; yang tersisa: unit test, deployment production (Nginx/HTTPS), dan fitur lanjutan (login mahasiswa, tracking proposal).
+
 ---
 
 ## 1. Ringkasan Proyek
@@ -110,15 +112,15 @@ Lambang berbentuk **perisai persegi lima**, warna dasar **biru muda**, terdiri d
 
 Mengacu pada struktur menu **PKM Center ITNY** yang dijadikan referensi sebelumnya:
 
-| Fitur | Deskripsi | Prioritas |
-|---|---|---|
-| **Home** | Landing page, ringkasan info PKM terbaru | Tinggi |
-| **About PKM** | Halaman statis: penjelasan PKM, sejarah, jenis-jenis PKM | Tinggi |
-| **Timeline PKM** | Jadwal/tahapan PKM per tahun (submit, review, pengumuman, PIMNAS) | Tinggi |
-| **Pedoman PKM** | Halaman unduh dokumen panduan PKM (PDF) | Tinggi |
-| **Berita & Gallery** | Daftar berita/kegiatan + galeri foto/video | Sedang |
-| **Portfolio** | Arsip proposal/kegiatan PKM yang lolos pendanaan per tahun | Sedang |
-| **Contact** | Info kontak PKM Center | Rendah |
+| Fitur | Deskripsi | Prioritas | Status |
+|---|---|---|---|
+| **Home** | Landing page, ringkasan info PKM terbaru | Tinggi | ✅ Selesai (statistik, layanan, preview, timeline, form kritik & saran) |
+| **About PKM** | Halaman statis: penjelasan PKM, sejarah, jenis-jenis PKM | Tinggi | ✅ Selesai (di Beranda, seksi "Tentang" + daftar skema) |
+| **Timeline PKM** | Jadwal/tahapan PKM per tahun (submit, review, pengumuman, PIMNAS) | Tinggi | ✅ Selesai (Beranda + kelola via admin) |
+| **Pedoman PKM** | Halaman unduh dokumen panduan PKM (PDF) | Tinggi | ✅ Selesai (`/#pedoman`, pencarian + tautan resmi) |
+| **Berita & Gallery** | Daftar berita/kegiatan + galeri foto/video | Sedang | ✅ Selesai |
+| **Portfolio** | Arsip proposal/kegiatan PKM yang lolos pendanaan per tahun | Sedang | ✅ Selesai (`/#portofolio`, filter tahun & skema) |
+| **Contact** | Info kontak PKM Center | Rendah | ✅ Selesai (`/#kontak`, peta + form pesan) |
 
 > Untuk pembagian halaman & PIC pengerjaan tahap awal, lihat `pembagian-awal-halaman.md`. Untuk fitur admin & lanjutan, lihat `daftar-fitur-pkm-center-unila.md`.
 
@@ -126,33 +128,36 @@ Mengacu pada struktur menu **PKM Center ITNY** yang dijadikan referensi sebelumn
 
 ## 5. Struktur Folder Proyek
 
+> Struktur aktual repo (per September 2026) — sedikit berbeda dari rencana awal: routing didefinisikan langsung di `cmd/api/main.go` (tanpa folder `routes/`), dan file CSS tema memakai satu `styles.css`.
+
 ```
 project/
 ├── backend/
-│   ├── main.go
+│   ├── cmd/api/main.go      # titik masuk: routing, AutoMigrate, seed data
 │   ├── go.mod / go.sum
-│   ├── internal/
-│   │   ├── handlers/      # HTTP handler per fitur
-│   │   ├── models/        # Struct data & GORM model
-│   │   ├── routes/        # Definisi routing
-│   │   ├── middleware/    # Auth, CORS, logging
-│   │   └── config/        # Koneksi DB, env config
+│   └── internal/
+│       ├── handlers/        # auth.go, content.go, info.go (timeline/pedoman/portfolio), feedback.go (masukan/stats/kontak)
+│       ├── models/          # user.go, content.go, info.go (grup model baru)
+│       ├── middleware/      # auth guard (JWT)
+│       └── config/          # koneksi DB, env config
 │   ├── Dockerfile
 │   └── .env
 ├── frontend/
 │   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── services/       # axios/fetch API calls
-│   │   ├── styles/          # palet warna / theme (lihat bagian 3)
-│   │   └── App.jsx
+│   │   ├── components/      # GlassNavbar, GlowCard, PageIntro, Breadcrumb
+│   │   ├── pages/           # Home, News, Gallery, Pedoman, Portofolio, Kontak, AdminPanel
+│   │   ├── lib/             # content.js: service layer (fetch + hook + fallback data)
+│   │   ├── styles.css       # palet warna / tema (lihat bagian 3) + seluruh komponen
+│   │   └── main.jsx         # shell aplikasi: hash routing, header, login
+│   ├── public/              # favicon & logo
 │   ├── package.json
 │   ├── Dockerfile
 │   └── .env
 ├── nginx/
 │   └── nginx.conf
 ├── docker-compose.yml
-└── README.md
+├── README.md
+└── *.md (dokumen kerja: rencana, pembagian, daftar fitur, acuan desain)
 ```
 
 ---
@@ -173,23 +178,23 @@ project/
 - [x] Setup CORS & koneksi dasar frontend ↔ backend (uji endpoint `/health`)
 
 ### Fase 3 — Backend Development (Minggu 2–4)
-- [x] Desain skema database & model (GORM) — *selesai untuk `user` dan `content` (berita/video/galeri); timeline, pedoman, portfolio, kontak menyusul*
+- [x] Desain skema database & model (GORM) — *selesai untuk `user`, `content` (berita/video/galeri), `timeline`, `pedoman`, `portfolio`, `feedback` (kritik&saran/kontak), `scheme_stat`, `contact_info`*
 - [x] Implementasi autentikasi admin (JWT) untuk kelola konten — *tiga role: admin, mahasiswa, dosen*
-- [x] Implementasi endpoint CRUD — *selesai untuk konten (berita/video/galeri); timeline, pedoman, portfolio belum*
+- [x] Implementasi endpoint CRUD — *selesai untuk konten, timeline, pedoman, portfolio; plus masukan (list/tandai dibaca/hapus), statistik & kontak (PUT)*
 - [x] Middleware: auth guard, validasi input, error handling
 - [ ] Unit testing untuk handler/service penting
 
 ### Fase 4 — Frontend Development (Minggu 3–5, paralel dengan backend)
-- [x] Setup routing (hash routing manual): beranda, berita, galeri, tentang, admin — *React Router belum dipakai*
+- [x] Setup routing (hash routing manual): beranda, berita, galeri, tentang, pedoman, portofolio, kontak, admin — *React Router belum dipakai*
 - [ ] Setup state management (Context API / Zustand, sesuai kebutuhan) — *belum diperlukan; cukup state lokal + localStorage*
-- [x] Buat service layer untuk konsumsi API — *`src/lib/content.js` (fetch + hook `useContent` + data fallback)*
-- [x] Implementasi halaman publik sesuai fitur MVP — *Berita & Galeri lengkap; Home, Timeline, Pedoman, Portfolio, Kontak belum*
-- [x] Implementasi dashboard admin sederhana (kelola berita/video/galeri) — *panel `/#admin`*
+- [x] Buat service layer untuk konsumsi API — *`src/lib/content.js`: fetch + hook (`useContent`, `useTimeline`, `usePedoman`, `usePortfolio`, `useStats`, `useContact`) + data fallback offline*
+- [x] Implementasi halaman publik sesuai fitur MVP — *Home (statistik, layanan, preview, timeline, kritik&saran), Pedoman, Portofolio, Kontak, Berita, Galeri — semua selesai*
+- [x] Implementasi dashboard admin — *panel `/#admin` dengan 7 seksi: Konten, Timeline, Pedoman, Portofolio, Masukan, Statistik, Kontak*
 
 ### Fase 5 — Integrasi & Testing (Minggu 5–6)
-- [ ] Integrasi penuh frontend ↔ backend
-- [ ] Testing manual seluruh alur (happy path & edge case)
-- [ ] Perbaikan bug hasil testing
+- [x] Integrasi penuh frontend ↔ backend — *seluruh halaman publik & seksi admin memakai endpoint live (dengan fallback offline)*
+- [x] Testing manual seluruh alur (happy path & edge case) — *diverifikasi di browser: tampilan tiap halaman, CRUD admin, alur feedback guest → admin Masukan, sesi kadaluarsa (401)*
+- [x] Perbaikan bug hasil testing — *mis. panel admin menampilkan "0 item" saat token kadaluarsa, kartu portofolio tanpa ringkasan, dropdown navbar*
 - [ ] Load testing dasar (opsional)
 
 ### Fase 6 — Dockerisasi & Deployment (Minggu 6–7)
