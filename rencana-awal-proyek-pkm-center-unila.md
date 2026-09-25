@@ -166,25 +166,25 @@ project/
 - [ ] Setup repository Git (backend, frontend, atau monorepo)
 
 ### Fase 2 — Setup Environment (Minggu 1–2)
-- [ ] Inisialisasi project Golang (`go mod init`) + Gin
-- [ ] Inisialisasi project React (Vite) + setup theme warna (CSS variables)
-- [ ] Setup Docker & Docker Compose untuk development
-- [ ] Setup database (migration awal)
-- [ ] Setup CORS & koneksi dasar frontend ↔ backend (uji endpoint `/health`)
+- [x] Inisialisasi project Golang (`go mod init`) + Gin
+- [x] Inisialisasi project React (Vite) + setup theme warna (CSS variables)
+- [x] Setup Docker & Docker Compose untuk development
+- [x] Setup database (migration awal — GORM AutoMigrate: tabel user & content)
+- [x] Setup CORS & koneksi dasar frontend ↔ backend (uji endpoint `/health`)
 
 ### Fase 3 — Backend Development (Minggu 2–4)
-- [ ] Desain skema database & model (GORM): berita, timeline, pedoman, portfolio, kontak
-- [ ] Implementasi autentikasi admin (JWT) untuk kelola konten
-- [ ] Implementasi endpoint CRUD tiap fitur (berita, timeline, pedoman, portfolio)
-- [ ] Middleware: auth guard, validasi input, error handling
+- [x] Desain skema database & model (GORM) — *selesai untuk `user` dan `content` (berita/video/galeri); timeline, pedoman, portfolio, kontak menyusul*
+- [x] Implementasi autentikasi admin (JWT) untuk kelola konten — *tiga role: admin, mahasiswa, dosen*
+- [x] Implementasi endpoint CRUD — *selesai untuk konten (berita/video/galeri); timeline, pedoman, portfolio belum*
+- [x] Middleware: auth guard, validasi input, error handling
 - [ ] Unit testing untuk handler/service penting
 
 ### Fase 4 — Frontend Development (Minggu 3–5, paralel dengan backend)
-- [ ] Setup routing (React Router): Home, About, Timeline, Pedoman, Berita & Gallery, Portfolio, Contact
-- [ ] Setup state management (Context API / Zustand, sesuai kebutuhan)
-- [ ] Buat service layer untuk konsumsi API (axios instance)
-- [ ] Implementasi halaman publik sesuai fitur MVP
-- [ ] Implementasi dashboard admin sederhana (kelola berita/timeline/pedoman)
+- [x] Setup routing (hash routing manual): beranda, berita, galeri, tentang, admin — *React Router belum dipakai*
+- [ ] Setup state management (Context API / Zustand, sesuai kebutuhan) — *belum diperlukan; cukup state lokal + localStorage*
+- [x] Buat service layer untuk konsumsi API — *`src/lib/content.js` (fetch + hook `useContent` + data fallback)*
+- [x] Implementasi halaman publik sesuai fitur MVP — *Berita & Galeri lengkap; Home, Timeline, Pedoman, Portfolio, Kontak belum*
+- [x] Implementasi dashboard admin sederhana (kelola berita/video/galeri) — *panel `/#admin`*
 
 ### Fase 5 — Integrasi & Testing (Minggu 5–6)
 - [ ] Integrasi penuh frontend ↔ backend

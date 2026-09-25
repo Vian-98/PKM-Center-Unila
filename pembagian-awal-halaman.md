@@ -32,17 +32,30 @@
 
 ---
 
-## 3. Berita & Galeri — **PIC: Favian**
+## 3. Berita & Galeri — **PIC: Favian** ✅
+
+> **Status: selesai.** Menampilkan gambar nyata dan isi artikel lengkap (data contoh), semua URL gambar terverifikasi termuat di browser. Sumber data: seed `backend/cmd/api/main.go` (server) dan `frontend/src/lib/content.js` (fallback offline).
 
 ### Berita (News)
-- [x] Daftar artikel berita dengan pagination
-- [x] Halaman detail 1 artikel (judul, tanggal, isi, gambar, kategori)
+- [x] Daftar artikel berita dengan pagination (3 per halaman)
+- [x] Gambar sampul nyata di kartu berita (fallback blok warna jika gambar gagal dimuat)
+- [x] Halaman detail 1 artikel: judul, tanggal (format `id-ID`), kategori, gambar, lead, dan isi paragraf
+- [x] Halaman "berita tidak ditemukan" untuk ID/URL yang tidak valid
+- [x] Urutan terbaru → terlama berdasarkan tanggal terbit
 
 ### Video
 - [x] Daftar video kegiatan (wadah UI siap diisi embed YouTube/player)
+- [x] Thumbnail otomatis dari YouTube (`i.ytimg.com`) atau URL thumbnail manual
+- [x] Preview embed YouTube (iframe `youtube-nocookie`) dengan fallback "video belum ditautkan"
 
 ### Galeri Foto
-- [x] Grid/lightbox galeri foto kegiatan
+- [x] Grid foto dengan gambar nyata (fallback blok warna)
+- [x] Lightbox: foto besar, penanda posisi (`02 / 09`), tombol Sebelumnya/Berikutnya
+- [x] Navigasi keyboard: `Esc` menutup, panah kiri/kanan berpindah foto
+
+### Catatan
+- Konten saat ini data contoh UI (termasuk gambar Unsplash) — dapat diubah melalui panel admin di `/#admin`.
+- Item galeri milik pengguna (misal "test") yang dibuat lewat panel admin tetap dipertahankan karena seed bersifat non-destruktif.
 
 ---
 

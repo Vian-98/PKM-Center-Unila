@@ -18,16 +18,16 @@
 - [ ] Manajemen role (opsional: super admin, editor)
 
 ### 2.2 Manajemen Konten
-- [ ] CRUD Berita (judul, isi, gambar, kategori, tanggal publish)
-- [ ] CRUD Video (judul, link/embed, deskripsi)
-- [ ] CRUD Galeri Foto (upload multiple images)
+- [x] CRUD Berita (judul, isi, gambar sampul, kategori) — *via panel admin `/#admin`*
+- [x] CRUD Video (judul, link/embed, deskripsi, thumbnail)
+- [x] CRUD Galeri Foto (melalui URL; *upload berkas belum*)
 - [ ] CRUD Timeline PKM per tahun (tahapan & tanggal)
 - [ ] CRUD Pedoman PKM (upload file PDF per tahun)
 - [ ] CRUD Portfolio/Arsip Proposal (judul, tim, tahun, file/link)
 
 ### 2.3 Statistik & Dashboard
+- [x] Dashboard ringkasan konten (daftar + jumlah item yang terbit) — *di panel admin*
 - [ ] Input/update jumlah usulan proposal per skema PKM (yang tampil di Home)
-- [ ] Dashboard ringkasan (jumlah berita, proposal, dsb.)
 
 ### 2.4 Kritik & Saran
 - [ ] Lihat daftar masukan yang masuk dari form guest (Home)
