@@ -16,7 +16,16 @@ function AdminPanel({ user }) {
   const [editing, setEditing] = useState(null)
   const [message, setMessage] = useState('')
   const token = localStorage.getItem('pkm_token')
-  const load = () => fetch(`${api}/admin/content`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()).then(r => setItems(r.data || []))
+  const load = () => fetch(`${api}/admin/content`, { headers: { Authorization: `Bearer ${token}` } })
+    .then(async (response) => {
+      const result = await response.json().catch(() => null)
+      if (!response.ok) {
+        if (response.status === 401) { localStorage.clear(); window.location.reload(); return }
+        setMessage(result?.message || 'Gagal memuat konten. Coba lagi.')
+        return
+      }
+      setItems(result?.data || [])
+    })
   useEffect(() => { if (user?.role === 'admin') load() }, [user])
   if (user?.role !== 'admin') return <main><PageIntro eyebrow="AKSES TERBATAS" title={<>Halaman ini<br /><em>untuk admin.</em></>} copy="Silakan masuk memakai akun admin untuk mengelola konten publik." /></main>
   const submit = async (event) => {
