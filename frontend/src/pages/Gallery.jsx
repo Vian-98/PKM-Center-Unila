@@ -112,7 +112,7 @@ export function Gallery() {
                 onClick={() => setSelected(index)}
                 aria-label={`Lihat foto: ${item.title}`}
               >
-                {item.mediaUrl && <img className="gallery-thumb" src={item.mediaUrl} alt={item.title} loading="lazy" onError={hideBrokenImage} />}
+                {item.mediaUrl && <img className="gallery-thumb" src={item.mediaUrl} alt={item.title} onError={hideBrokenImage} />}
                 <span>{String(index + 1).padStart(2, '0')}</span>
                 <strong>{item.title}</strong>
                 <b>↗</b>

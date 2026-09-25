@@ -9,7 +9,7 @@ function NewsVisual({ item }) {
   const image = item.thumbnailUrl || item.mediaUrl
   return (
     <div className={`news-visual ${image ? 'has-image' : ''} ${item.color}`}>
-      {image && <img src={image} alt="" aria-hidden="true" loading="lazy" onError={hideBrokenImage} />}
+      {image && <img src={image} alt="" aria-hidden="true" onError={hideBrokenImage} />}
       <span>{item.category}</span>
       <b>↗</b>
     </div>
@@ -86,7 +86,7 @@ export function NewsDetail({ id }) {
         <p className="eyebrow">{formatDate(item)} · {item.category}</p>
         <h1>{item.title}</h1>
         <div className={`article-image ${item.color}`}>
-          {image && <img src={image} alt={item.title} loading="lazy" onError={hideBrokenImage} />}
+          {image && <img src={image} alt={item.title} onError={hideBrokenImage} />}
           <span>PKM CENTER<br />UNIVERSITAS LAMPUNG</span>
         </div>
         <p className="lead">{item.description}</p>
