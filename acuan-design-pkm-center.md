@@ -384,3 +384,13 @@ Karena project kamu plain React + Vite (bukan Next.js + shadcn + TypeScript), ka
 - Install TypeScript
 - Install Tailwind CSS (opsional, bukan keharusan)
 - `@/lib/utils` (`cn()` helper) — cukup template string biasa buat conditional className
+
+---
+
+## 7. Update 07-10-2026 — Referensi Digitalisasi Manajemen PKM
+
+Berdasarkan 4 gambar referensi di `docs/reference/`:
+- Navbar tunggal atas (Beranda, Tentang PKM, Timeline, Berita, Panduan + Masuk), mobile pakai drawer. GlassNavbar lama disembunyikan.
+- Beranda baru: hero `Ide hebat dimulai dari langkah pertama.` + stats navy 4 kolom + ekosistem 3 kartu + timeline navy vertikal + berita 3 kartu + banner panduan + footer navy.
+- Token: `--navy #123B66`, `--navy-2 #0C3154`, `--sky #175B91`, emas `#FFD700` tetap sebagai aksen.
+- Implementasi di `frontend/src/main.jsx`, `frontend/src/pages/Home.jsx`, `frontend/src/ref.css`.

@@ -1,57 +1,77 @@
-import { useState } from 'react'
-import { GlowCard } from '../components/GlowCard'
-import {
-  useContent, fallbackNews, fallbackGallery,
-  useStats, useTimeline, submitFeedback, schemeNames,
-  formatDate, hideBrokenImage,
-} from '../lib/content'
+import { useEffect } from 'react'
+import { useContent, fallbackNews, useTimeline, usePedoman, formatDate, hideBrokenImage } from '../lib/content'
 
 function HeroSection() {
   return (
-    <section className="hero">
-      <div className="hero-copy">
-        <p className="eyebrow">RUANG TUMBUH IDE MAHASISWA</p>
-        <h1>Gagasan kecil.<br /><em>Dampak besar.</em></h1>
-        <p className="intro">PKM Center Unila adalah titik temu bagi rasa ingin tahu, riset yang berani, dan karya yang memberi arti.</p>
-        <div className="actions">
-          <a className="button dark" href="#berita">Lihat kabar terbaru <b>↗</b></a>
-          <a className="text-link" href="#tentang">Kenali PKM <b>↓</b></a>
+    <section className="ref-hero" id="beranda">
+      <div className="ref-hero-copy">
+        <p className="ref-badge"><span aria-hidden="true">✦</span> PUSAT KREATIVITAS MAHASISWA UNIVERSITAS LAMPUNG</p>
+        <h1>Ide hebat dimulai dari <span className="hl-blue">langkah</span><br /><span className="hl-blue underline-gold">pertama.</span></h1>
+        <p className="ref-sub">Wujudkan gagasan, temukan kolaborator, dan raih prestasi melalui ekosistem PKM terintegrasi berbasis AI.</p>
+        <div className="ref-cta">
+          <a className="btn-primary" href="#kontak">Mulai ajukan proposal <b>→</b></a>
+          <a className="link-more" href="#tentang">Pelajari PKM <b>›</b></a>
+        </div>
+        <div className="ref-social">
+          <div className="avatars" aria-hidden="true"><span>AR</span><span>DN</span><span>RS</span><span className="more">•</span></div>
+          <p><b>1.248 mahasiswa</b><br />telah bergabung tahun ini</p>
         </div>
       </div>
-      <div className="hero-art">
-        <div className="sun" /><div className="arch arch-one" /><div className="arch arch-two" />
-        <div className="orb orb-one" /><div className="orb orb-two" />
-        <div className="note">IDE<br />TUMBUH</div>
-        <p className="art-caption">UNILA<br /><i>CREATIVE<br />ECOSYSTEM</i></p>
+      <div className="ref-hero-art" aria-hidden="true">
+        <div className="art-bg" />
+        <div className="art-person"><div className="head" /><div className="body" /><div className="arm" /><div className="laptop"><span>PKM</span></div></div>
+        <div className="card score">
+          <span className="bulb">◍</span>
+          <small>IDEA SCORE</small>
+          <strong>92<small>/100</small></strong>
+          <span className="bar"><i /></span>
+          <em>Sangat potensial untuk dikembangkan</em>
+        </div>
+        <div className="card team">
+          <span className="team-ico">⚇</span>
+          <div><b>Tim terbaik ditemukan</b><small>98% kecocokan bidang</small></div>
+          <span className="check">✓</span>
+        </div>
+        <span className="deco sigma">Σ</span><span className="deco ai">AI</span><span className="deco star">✦</span>
       </div>
     </section>
   )
 }
 
-function Ticker() {
+function StatsBar() {
+  const items = [
+    ['438', 'Proposal diajukan'],
+    ['127', 'Tim terbentuk'],
+    ['64', 'Dosen pembimbing'],
+    ['18', 'Proposal didanai'],
+  ]
   return (
-    <section className="ticker" aria-hidden="true">
-      <span>BERPIKIR</span><b>✦</b><span>BERKARYA</span><b>✦</b><span>BERDAMPAK</span><b>✦</b><span>BERSAMA UNILA</span>
+    <section className="ref-stats" aria-label="Statistik PKM">
+      {items.map(([num, label]) => (
+        <div className="ref-stat" key={label}><strong>{num}</strong><span>{label}</span></div>
+      ))}
     </section>
   )
 }
 
-function StatsSection() {
-  const stats = useStats()
-  const accent = ['gold', 'blue', 'red', 'green']
+function Ecosystem() {
+  const cards = [
+    { tag: 'DIDUKUNG AI', title: 'Uji kekuatan idemu', copy: 'Dapatkan analisis kebaruan, dampak, dan kelayakan ide sebelum menyusun proposal.', link: 'Coba Idea Lab', href: '#kontak', dark: true, icon: '◍' },
+    { title: 'Temukan tim multidisiplin', copy: 'Rekomendasi anggota dengan kompetensi yang saling melengkapi dari seluruh fakultas.', link: 'Cari anggota', href: '#portofolio', icon: '⚇' },
+    { title: 'Terhubung dengan mentor', copy: 'Pilih dosen pembimbing berdasarkan bidang riset dan pengalaman PKM.', link: 'Lihat pembimbing', href: '#kontak', icon: '○' },
+  ]
   return (
-    <section className="home-stats">
-      <div className="section-heading">
-        <p className="eyebrow">ANGKA PER SKEMA</p>
-        <h2>Usulan yang lahir<br />dari rasa ingin tahu.</h2>
-        <p className="section-copy">Jumlah usulan proposal PKM Universitas Lampung pada periode pengusulan terakhir.</p>
-      </div>
-      <div className="stats-grid">
-        {stats.map((stat, index) => (
-          <article className={`stat-card ${accent[index % accent.length]}`} key={stat.id ?? stat.scheme}>
-            <span className="stat-scheme">{stat.scheme}</span>
-            <strong>{stat.count}</strong>
-            <small>{schemeNames[stat.scheme] || 'Skema PKM'}</small>
+    <section className="ref-eco" id="tentang">
+      <p className="ref-eyebrow gold">EKOSISTEM TERINTEGRASI</p>
+      <h2>Satu ruang untuk setiap langkah perjalananmu</h2>
+      <p className="ref-desc">Teknologi membantu proses, kolaborasi menguatkan ide, dan mentor mengarahkanmu menuju dampak yang nyata.</p>
+      <div className="ref-eco-grid">
+        {cards.map((c) => (
+          <article className={`eco-card ${c.dark ? 'dark' : ''}`} key={c.title}>
+            <div className="eco-top">{c.tag && <span className="eco-tag">{c.tag}</span>}<span className="eco-icon" aria-hidden="true">{c.icon}</span></div>
+            <h3>{c.title}</h3>
+            <p>{c.copy}</p>
+            <a href={c.href}>{c.link} <b>→</b></a>
           </article>
         ))}
       </div>
@@ -59,192 +79,100 @@ function StatsSection() {
   )
 }
 
-const services = [
-  { icon: '✧', title: 'Pendampingan & Konsultasi', copy: 'Sesi konsultasi per kelompok bersama fasilitator berpengalaman dari penyusunan hingga pelaporan.' },
-  { icon: '✦', title: 'Klinik & Pelatihan', copy: 'Kelas intensif, klinik proposal, dan pelatihan penulisan bagi pengusul baru maupun lanjutan.' },
-  { icon: '◈', title: 'Review & Validasi', copy: 'Pemeriksaan kelengkapan dan kualitas proposal sebelum diteruskan ke tingkat nasional.' },
-  { icon: '❖', title: 'Diseminasi & Luaran', copy: 'Pendampingan publikasi, HAKI, dan penyebarluasan hasil karya mahasiswa ke masyarakat.' },
-]
-
-function ServicesSection() {
+function Timeline() {
+  const timeline = useTimeline()
+  const items2025 = timeline.filter((t) => t.year === 2025).sort((a, b) => a.order - b.order).slice(0, 4)
+  const shown = items2025.length ? items2025 : [
+    { stage: 'Pendaftaran & Pengajuan', label: '12 Mei – 14 Juni 2025', note: 'SEDANG BERLANGSUNG' },
+    { stage: 'Seleksi Administrasi', label: '16 – 20 Juni 2025', note: 'TAHAP 2' },
+    { stage: 'Review & Perbaikan', label: '23 Juni – 11 Juli 2025', note: 'TAHAP 3' },
+    { stage: 'Pengumuman Internal', label: '18 Juli 2025', note: 'TAHAP 4' },
+  ]
   return (
-    <section className="services-section">
-      <div className="section-heading">
-        <p className="eyebrow">PERAN PKM CENTER</p>
-        <h2>Apa yang kami lakukan.</h2>
-        <p className="section-copy">Layanan yang menemani mahasiswa sejak gagasan pertama hingga karya benar-benar berdampak.</p>
+    <section className="ref-timeline" id="timeline">
+      <div className="tl-left">
+        <p className="ref-eyebrow gold">TIMELINE PKM UNILA 2025</p>
+        <h2>Catat setiap tahap. Jangan lewatkan kesempatan.</h2>
+        <p>Pastikan timmu menyelesaikan setiap proses tepat waktu untuk mengikuti seleksi internal.</p>
+        <button className="btn-outline" type="button" onClick={() => window.alert('Fitur kalender segera hadir.')}>▢ Tambahkan ke kalender</button>
       </div>
-      <div className="services-grid">
-        {services.map((service) => (
-          <article className="service-card" key={service.title}>
-            <span className="service-icon" aria-hidden="true">{service.icon}</span>
-            <h3>{service.title}</h3>
-            <p>{service.copy}</p>
-          </article>
+      <ol className="tl-right">
+        {shown.map((s, i) => (
+          <li key={s.id ?? i} className={i === 0 ? 'active' : ''}>
+            <span className="tl-num">{i === 0 ? '✓' : `0${i + 1}`}</span>
+            <div>
+              <small>{i === 0 ? 'SEDANG BERLANGSUNG' : s.note?.toUpperCase().includes('TAHAP') ? s.note : `TAHAP ${i + 1}`}</small>
+              <h3>{s.stage}</h3>
+              <p>◷ {s.label}</p>
+            </div>
+          </li>
         ))}
-      </div>
+      </ol>
     </section>
   )
 }
 
-function AboutSection() {
-  const schemes = Object.entries(schemeNames)
-  return (
-    <section className="journey" id="tentang">
-      <div className="section-heading">
-        <p className="eyebrow">SATU IDE, BANYAK KEMUNGKINAN</p>
-        <h2>Temukan lintasanmu.</h2>
-        <p className="section-copy">Didirikan sebagai pusat pengembangan Program Kreativitas Mahasiswa, PKM Center Unila mendampingi seluruh fakultas — dari memahami latar belakang, tujuan, hingga memilih skema yang paling sesuai dengan gagasanmu.</p>
-      </div>
-      <div className="path-grid">
-        <article><span>01</span><h3>Jelajahi</h3><p>Temukan bentuk PKM yang paling dekat dengan kegelisahanmu.</p></article>
-        <article><span>02</span><h3>Racik</h3><p>Ubah pertanyaan menjadi proposal yang kuat dan terarah.</p></article>
-        <article><span>03</span><h3>Wujudkan</h3><p>Bawa gagasanmu keluar kelas untuk menciptakan perubahan.</p></article>
-      </div>
-      <div className="skema-grid">
-        {schemes.map(([code, name]) => (
-          <div className="skema-chip" key={code}><b>{code}</b><span>{name}</span></div>
-        ))}
-      </div>
-    </section>
-  )
-}
+const NEWS_COVER = ['PKM 2025', 'KLINIK IDE', 'PRESTASI']
 
 function NewsPreview() {
   const items = useContent('news', fallbackNews).slice(0, 3)
   return (
-    <section className="preview-section">
-      <div className="section-heading">
-        <p className="eyebrow">KABAR TERBARU</p>
-        <h2>Yang terjadi<br />di PKM Center.</h2>
-        <a className="text-link" href="#berita">Lihat semua berita <b>↗</b></a>
-      </div>
-      <div className="news-grid">
-        {items.map((item) => (
-          <GlowCard glowColor={item.color} className="news-glow" key={item.id}>
-            <a className={`news-card ${item.color}`} href={`#berita/${item.id}`}>
-              <div className={`news-visual ${item.thumbnailUrl ? 'has-image' : ''} ${item.color}`}>
-                {item.thumbnailUrl && <img src={item.thumbnailUrl} alt="" aria-hidden="true" onError={hideBrokenImage} />}
-                <span>{item.category}</span><b>↗</b>
-              </div>
-              <p className="card-meta">{formatDate(item)} · {item.category}</p>
-              <h2>{item.title}</h2>
-              <p>{item.description}</p>
-              <span className="read-more">Baca selengkapnya →</span>
-            </a>
-          </GlowCard>
+    <section className="ref-news">
+      <p className="ref-eyebrow gold left">KABAR TERKINI</p>
+      <div className="ref-news-head"><h2>Berita dari PKM Center</h2><a href="#berita">Lihat semua berita <b>→</b></a></div>
+      <div className="ref-news-grid">
+        {items.map((item, i) => (
+          <a className="news-card-new" href={`#berita/${item.id}`} key={item.id}>
+            <div className={`news-cover c${i % 3}`}>
+              {item.thumbnailUrl && <img src={item.thumbnailUrl} alt="" aria-hidden="true" onError={hideBrokenImage} />}
+              <span>{NEWS_COVER[i % 3]}</span>
+            </div>
+            <div className="news-body">
+              <p className="news-meta"><span className="pill">{item.category}</span> {formatDate(item)}</p>
+              <h3>{item.title}</h3>
+              <p className="excerpt">{item.description}</p>
+              <span className="read">Baca selengkapnya <b>→</b></span>
+            </div>
+          </a>
         ))}
       </div>
     </section>
   )
 }
 
-function TimelineSection() {
-  const timeline = useTimeline()
-  const years = [...new Set(timeline.map((item) => item.year))].sort((a, b) => b - a)
-  const accent = ['gold', 'blue', 'red', 'green']
+function PanduanBanner() {
+  const pedoman = usePedoman()
+  const latest = [...pedoman].sort((a, b) => b.year - a.year)[0]
   return (
-    <section className="timeline-section">
-      <div className="section-heading">
-        <p className="eyebrow">TIMELINE PKM</p>
-        <h2>Dari submit<br />hingga PIMNAS.</h2>
-        <p className="section-copy">Tahapan pengusulan, penilaian, dan pelaksanaan PKM setiap tahunnya.</p>
+    <section className="ref-panduan">
+      <div className="panduan-ico" aria-hidden="true">▢</div>
+      <div>
+        <p className="ref-eyebrow gold left small">PANDUAN RESMI</p>
+        <h2>Siap menyusun proposal terbaikmu?</h2>
+        <p>Unduh panduan PKM {latest?.year || 2025} dan pahami setiap ketentuan sebelum memulai.</p>
       </div>
-      <div className="timeline-wrap">
-        {years.map((year) => {
-          const stages = timeline.filter((item) => item.year === year).sort((a, b) => a.order - b.order)
-          return (
-            <details className={`timeline-card ${accent[years.indexOf(year) % accent.length]}`} key={year} open={year === years[0]}>
-              <summary><b>{year}</b><span>{stages.length} tahapan</span></summary>
-              <ol className="timeline-stages">
-                {stages.map((stage) => (
-                  <li key={stage.id ?? stage.stage}>
-                    <span className="timeline-dot" aria-hidden="true" />
-                    <div><h3>{stage.stage}</h3><p className="timeline-label">{stage.label}</p>{stage.note && <p className="timeline-note">{stage.note}</p>}</div>
-                  </li>
-                ))}
-              </ol>
-            </details>
-          )
-        })}
-      </div>
+      <a className="btn-primary" href={latest?.fileUrl || '#pedoman'} target={latest?.fileUrl ? '_blank' : undefined} rel="noreferrer">⤓ Unduh panduan PKM {latest?.year || 2025}</a>
     </section>
   )
 }
 
-function GalleryPreview() {
-  const items = useContent('gallery', fallbackGallery).slice(0, 4)
-  return (
-    <section className="preview-section">
-      <div className="section-heading">
-        <p className="eyebrow">GALERI KEGIATAN</p>
-        <h2>Melihat ide bekerja.</h2>
-        <a className="text-link" href="#galeri">Lihat semua galeri <b>↗</b></a>
-      </div>
-      <div className="gallery-grid">
-        {items.map((item, index) => (
-          <GlowCard glowColor={item.color} className="gallery-glow" key={item.id}>
-            <a className={`gallery-item ${item.color}${item.mediaUrl ? ' has-image' : ''}`} href="#galeri" aria-label={`Lihat foto: ${item.title}`}>
-              {item.mediaUrl && <img className="gallery-thumb" src={item.mediaUrl} alt={item.title} onError={hideBrokenImage} />}
-              <span>{String(index + 1).padStart(2, '0')}</span>
-              <strong>{item.title}</strong>
-              <b>↗</b>
-            </a>
-          </GlowCard>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-function FeedbackForm() {
-  const [form, setForm] = useState({ name: '', email: '', message: '' })
-  const [state, setState] = useState({ sending: false, done: false, error: '' })
-
-  const submit = async (event) => {
-    event.preventDefault()
-    setState({ sending: true, done: false, error: '' })
-    try {
-      await submitFeedback({ kind: 'saran', name: form.name, email: form.email, message: form.message })
-      setForm({ name: '', email: '', message: '' })
-      setState({ sending: false, done: true, error: '' })
-    } catch (error) {
-      setState({ sending: false, done: false, error: error.message })
+export function Home({ anchor = 'beranda' }) {
+  useEffect(() => {
+    if (anchor && anchor !== 'beranda') {
+      const el = document.getElementById(anchor)
+      if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 50)
+    } else {
+      window.scrollTo({ top: 0 })
     }
-  }
-
+  }, [anchor])
   return (
-    <section className="feedback-section">
-      <div className="section-heading">
-        <p className="eyebrow">KRITIK & SARAN</p>
-        <h2>Suaramu membantu<br />kami bertumbuh.</h2>
-        <p className="section-copy">Ceritakan pengalamanmu mengikuti program, pendampingan, atau sekadar ide untuk PKM Center.</p>
-      </div>
-      <form className="content-form feedback-form" onSubmit={submit}>
-        {state.done && <p className="feedback-success">✓ Terima kasih! Masukanmu sudah kami terima.</p>}
-        {state.error && <p className="error">{state.error}</p>}
-        <label>Nama (opsional)<input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Namamu" /></label>
-        <label>Email (opsional)<input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="nama@email.com" /></label>
-        <label>Masukan<textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} required minLength={3} placeholder="Tulis kritik, saran, atau idemu di sini…" /></label>
-        <button className="button dark" type="submit" disabled={state.sending}>{state.sending ? 'Mengirim…' : 'Kirim masukan'} <b>→</b></button>
-        <p className="hint">Masukan dikirim langsung ke tim PKM Center dan dibaca di panel admin.</p>
-      </form>
-    </section>
-  )
-}
-
-export function Home() {
-  return (
-    <main id="beranda">
+    <main className="ref-page">
       <HeroSection />
-      <Ticker />
-      <StatsSection />
-      <ServicesSection />
-      <AboutSection />
+      <StatsBar />
+      <Ecosystem />
+      <Timeline />
       <NewsPreview />
-      <TimelineSection />
-      <GalleryPreview />
-      <FeedbackForm />
+      <PanduanBanner />
     </main>
   )
 }

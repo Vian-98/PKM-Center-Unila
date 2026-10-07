@@ -155,6 +155,8 @@ Warna fakultas dan pascasarjana—abu-abu FEB, merah FH, ungu FKIP, hijau Pertan
 - [Pembagian awal halaman](pembagian-awal-halaman.md): pembagian PIC dan checklist pengerjaan — seluruh bagian (Home, Pedoman + Portofolio, Berita & Galeri, Kontak + Login) sudah selesai dan ditandai centang.
 - [Daftar fitur](daftar-fitur-pkm-center-unila.md): backlog fitur proyek (admin CRUD & fitur lanjutan).
 - [Acuan desain](acuan-design-pkm-center.md): bahasa visual & komponen UI yang dipakai di seluruh halaman.
+- [Acuan warna referensi](docs/acuan-warna-referensi.md): palet hasil ekstraksi dari desain referensi.
+- [Perubahan UI 07-10-2026](docs/perubahan-ui-sesuaikan-desain-2026-10-07.md): penyesuaian tema biru-putih + redesign sesuai 4 gambar referensi.
 
 ## Tahap berikutnya
 

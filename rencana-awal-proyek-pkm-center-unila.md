@@ -263,3 +263,4 @@ project/
 - Dokumen ini bisa diperbarui seiring progres — tandai checklist yang sudah selesai.
 - Warna aksen fakultas (bagian 3.4) bersifat opsional — dipakai hanya jika PKM-Center menampilkan data per fakultas (misal filter proposal berdasarkan fakultas pengusul).
 - Dokumen terkait: `pembagian-awal-halaman.md` (PIC & checklist per halaman), `daftar-fitur-pkm-center-unila.md` (fitur admin & lanjutan).
+- Update 07-10-2026: palet UI mengikuti referensi `docs/reference/` (navy `#123B66`, emas `#FFD700` tetap sebagai aksen Unila). Implementasi: `frontend/src/ref.css`.

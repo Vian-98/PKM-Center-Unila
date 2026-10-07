@@ -61,3 +61,4 @@ Fitur ini tidak ada di situs referensi, tapi relevan kalau PKM-Center Unila mau 
 ## Catatan
 - Untuk daftar halaman guest & checklist-nya, lihat `pembagian-awal-halaman.md`.
 - Untuk detail teknis (tech stack, folder, fase pengerjaan), lihat `rencana-awal-proyek-pkm-center-unila.md`.
+- Update 07-10-2026: redesign Beranda sesuai referensi (lihat `docs/perubahan-ui-sesuaikan-desain-2026-10-07.md`). Fungsionalitas lama (Berita, Galeri, Pedoman, Portofolio, Kontak, Admin) tetap dipertahankan.

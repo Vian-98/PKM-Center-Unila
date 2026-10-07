@@ -83,3 +83,4 @@
 ## Catatan
 - Dokumen ini pelengkap dari `rencana-awal-proyek-pkm-center-unila.md` — detail teknis (tech stack, folder, fase pengerjaan) tetap merujuk ke dokumen tersebut.
 - Fitur admin CRUD (kelola berita, timeline, pedoman, portofolio, statistik, masukan, kontak) sudah diimplementasikan sebagai seksi-seksi pada panel admin `/#admin` — daftar per fitur ada di `daftar-fitur-pkm-center-unila.md`.
+- Update 07-10-2026: Beranda di-redesign mengikuti 4 gambar `docs/reference/` (hero, stats navy, ekosistem, timeline navy, berita, panduan, footer navy). Detail di `docs/perubahan-ui-sesuaikan-desain-2026-10-07.md`.
