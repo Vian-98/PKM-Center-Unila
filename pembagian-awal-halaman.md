@@ -84,4 +84,5 @@
 - Dokumen ini pelengkap dari `rencana-awal-proyek-pkm-center-unila.md` — detail teknis (tech stack, folder, fase pengerjaan) tetap merujuk ke dokumen tersebut.
 - Fitur admin CRUD (kelola berita, timeline, pedoman, portofolio, masukan, kontak) sudah diimplementasikan sebagai seksi-seksi pada panel admin `/#admin` — daftar per fitur ada di `daftar-fitur-pkm-center-unila.md`. Statistik tidak lagi CRUD: kini turunan otomatis dari data proposal (read-only).
 - Update 09-10-2026: skema database v2 diterapkan (migrasi SQL otomatis + model GORM baru). Statistik per skema dihitung dari `proposals` (`v_scheme_stats`). Lihat `docs/revisi-struktur-db-pkm-center.md`.
+- Update 09-10-2026: perbaikan layout responsif (header, modal login, panel admin) agar tidak terpotong di mobile maupun desktop. Lihat `docs/perbaikan-layout-responsif-2026-10-09.md`.
 - Update 07-10-2026: Beranda di-redesign mengikuti 4 gambar `docs/reference/` (hero, stats navy, ekosistem, timeline navy, berita, panduan, footer navy). Detail di `docs/perubahan-ui-sesuaikan-desain-2026-10-07.md`.
