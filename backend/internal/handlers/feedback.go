@@ -35,7 +35,7 @@ func (h FeedbackHandler) Create(c *gin.Context) {
 }
 
 func (h FeedbackHandler) List(c *gin.Context) {
-	query := h.DB.Order("read asc, created_at desc")
+	query := h.DB.Order("is_read asc, created_at desc")
 	if kind := c.Query("kind"); kind != "" {
 		query = query.Where("kind = ?", kind)
 	}
@@ -84,41 +84,19 @@ func (h FeedbackHandler) Delete(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-// ---------- STATISTIK SKEMA PKM ----------
+// ---------- STATISTIK SKEMA PKM (turunan dari proposals) ----------
+// Tidak ada lagi input manual: angka dihitung dari tabel `proposals` melalui
+// view `v_scheme_stats` (lihat backend/migrations/0001_init_pkm_schema.sql).
 
 type StatsHandler struct{ DB *gorm.DB }
 
 func (h StatsHandler) List(c *gin.Context) {
-	var items []models.SchemeStat
-	if err := h.DB.Order("id asc").Find(&items).Error; err != nil {
+	var items []models.SchemeStatView
+	if err := h.DB.Raw(`SELECT scheme, scheme_name AS name, proposal_count::int AS count, funded_count::int AS funded FROM v_scheme_stats`).Scan(&items).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Gagal memuat statistik"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"data": items})
-}
-
-func (h StatsHandler) Update(c *gin.Context) {
-	var input []models.SchemeStat
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Data statistik belum valid"})
-		return
-	}
-	for _, s := range input {
-		if s.Scheme == "" {
-			continue
-		}
-		var existing models.SchemeStat
-		err := h.DB.Where("scheme = ?", s.Scheme).First(&existing).Error
-		if err == gorm.ErrRecordNotFound {
-			existing = models.SchemeStat{Scheme: s.Scheme, Count: s.Count}
-			h.DB.Create(&existing)
-			continue
-		}
-		if existing.Count != s.Count {
-			h.DB.Model(&existing).Update("count", s.Count)
-		}
-	}
-	h.List(c)
 }
 
 // ---------- KONTAK ----------

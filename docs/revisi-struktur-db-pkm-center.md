@@ -1,6 +1,6 @@
 # Revisi Struktur Database PKM Center Unila
 
-> Status: **draft rancangan v2** — tanggal 09-10-2026
+> Status: **diterapkan ke backend (model + migrasi)** — tanggal 09-10-2026
 > Sumber ERD: revisi "Digitalisasi Manajemen PKM" (diberikan sebagai mermaid erDiagram)
 > DDL implementasi: [`backend/migrations/0001_init_pkm_schema.sql`](../backend/migrations/0001_init_pkm_schema.sql)
 > Target DB: PostgreSQL 16 (`postgres:16-alpine`, lihat `docker-compose.yml`)
@@ -553,16 +553,19 @@ SELECT * FROM v_scheme_stats;
 
 ## 7. Dampak ke backend & roadmap
 
-Skema ini **belum** diimplementasikan ke kode Go. Agar sinkron, perlu:
-1. Model GORM baru untuk tiap tabel (paket `internal/models`, dipecah per domain:
-   `user.go`, `pkm.go`, `team.go`, `proposal.go`, `review.go`, `logbook.go`, `content.go`).
-2. Handler & endpoint baru: tim, proposal, dokumen, bimbingan, review, logbook, notifikasi,
-   analisis AI, konten (posts + media).
-3. Migrasi data lama (bagian 3) — script ETL sekali jalan.
-4. **Hapus fitur statistik manual**: buang model `SchemeStat`, handler `StatsHandler.Update`,
-   route `PUT /api/admin/stats`, dan editor angka di admin; ganti `GET /api/stats` agar membaca
-   `v_scheme_stats` (read-only).
-5. Penyesuaian frontend: panel admin bertambah modul, halaman mahasiswa/dosen/reviewer baru.
+Skema ini **sudah diimplementasikan bertahap** ke kode Go:
+1. **[SELESAI]** Model GORM v2 di `internal/models` (`user.go`, `pkm.go`, `team.go`,
+   `proposal.go`, `review.go`, `logbook.go`, `cms.go`).
+2. **[SELESAI]** Migrasi SQL dijalankan otomatis saat startup
+   (`backend/migrations/migrations.go` + `0001_init_pkm_schema.sql`).
+3. **[SELESAI]** Auth beralih ke `users` ber-UUID + `user_roles`/`roles` (peran diturunkan dari relasi).
+4. **[SELESAI]** Statistik manual dihapus: model `SchemeStat`, `StatsHandler.Update`,
+   `PUT /api/admin/stats`, dan editor angka di admin dibuang; `GET /api/stats` membaca
+   `v_scheme_stats` (read-only). Proposal contoh di-seed agar angka terisi & konsisten.
+5. **[BELUM]** Handler & endpoint fitur baru (tim, proposal, dokumen, bimbingan, review,
+   logbook, notifikasi, analisis AI) serta ETL data lama (bagian 3) — menyusul.
+   CMS publik masih memakai tabel transisional (`contents`, `timelines`, `pedoman`, `portfolios`).
+6. **[BELUM]** Penyesuaian frontend: modul baru untuk halaman mahasiswa/dosen/reviewer.
 
 Rekomendasi urutan: **auth+role → master periode/skema → tim → proposal+dokumen → review →
 logbook → notifikasi → konten/AI**, sejalan dengan prioritas di
@@ -576,8 +579,9 @@ logbook → notifikasi → konten/AI**, sejalan dengan prioritas di
 - **[SELESAI v2]** `guidelines` kini punya `source` & `note` (menutup kehilangan dari `pedoman`).
 - **[SELESAI v2]** Naming tambahan diselaraskan: `feedbacks`, `contact_infos`.
 - **[SELESAI v3]** Statistik skema **diterima sebagai turunan** `proposals` (`v_scheme_stats`).
-  Tabel `scheme_stats` dihapus dari target; edit manual di admin dihilangkan; angka selalu
-  konsisten dengan data proposal. (Penghapusan kode menyusul di implementasi backend v2.)
+  Tabel `scheme_stats` dihapus; edit manual di admin dihilangkan; angka selalu konsisten
+  dengan data proposal. Kode terkait (`SchemeStat`, `StatsHandler.Update`, `PUT /api/admin/stats`,
+  editor angka admin) **telah dihapus** pada implementasi backend v2.
 - **[TERBUKA]** Belum ada tabel berkas/lampiran generik; semua lampiran berupa URL
   (`file_url`, `attachment_url`, `certificate_url`, `cover_image_url`). Sesuai kebutuhan saat ini
   (fitur upload berkas belum ada), kolom URL dipertahankan. Bila upload masuk roadmap,
@@ -588,6 +592,14 @@ logbook → notifikasi → konten/AI**, sejalan dengan prioritas di
 ---
 
 ## 9. Changelog revisi
+
+### v4 — 09-10-2026 (implementasi backend)
+- Model GORM v2 lengkap (semua tabel) + runner migrasi SQL yang dijalankan otomatis saat startup.
+- Auth bermigrasi ke `users` ber-UUID + `user_roles`/`roles`; login mengembalikan peran utama.
+- `GET /api/stats` & `GET /api/admin/stats` membaca `v_scheme_stats` (read-only); `PUT` dihapus;
+  editor angka di panel admin diganti tampilan hanya-baca.
+- Seed v2: periode 2026 + tahapan + tim demo + proposal contoh (statistik terisi konsisten).
+- Divalidasi runtime pada database bersih: 37 tabel (33 v2 + 4 CMS transisional) + 1 view; login & stats OK.
 
 ### v3 — 09-10-2026 (keputusan statistik)
 - **Diputuskan: statistik skema murni turunan** dari `proposals` (`v_scheme_stats`).

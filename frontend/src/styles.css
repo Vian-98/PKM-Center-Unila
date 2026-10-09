@@ -1464,6 +1464,7 @@ footer {
 .stat-input b { font: 700 0.8rem 'DM Mono'; color: var(--accent); letter-spacing: 0.04em; }
 .stat-input small { color: var(--muted); font-size: 0.75rem; }
 .stat-input input { width: 6.5rem; margin-top: 0; text-align: center; }
+.stat-value { font: 700 1.1rem 'DM Mono'; color: var(--fg, inherit); min-width: 3rem; text-align: right; }
 
 @media (min-width: 768px) {
   .home-stats, .services-section, .preview-section, .timeline-section, .feedback-section { padding: 4.5rem 5.5vw; }

@@ -3,6 +3,8 @@ package models
 import "time"
 
 // Timeline PKM per tahun: tahapan pengusulan → review → penetapan → PIMNAS.
+// Catatan: pada skema v2 ini masih dipertahankan sebagai tabel transisional
+// (padanan penuhnya: pkm_periods + pkm_stages).
 type Timeline struct {
 	ID        uint      `json:"id" gorm:"primaryKey"`
 	Year      int       `json:"year" gorm:"index;not null"`
@@ -14,7 +16,7 @@ type Timeline struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
-// Pedoman PKM per tahun.
+// Pedoman PKM per tahun. Padanan skema v2: guidelines (source & note sudah ada).
 type Pedoman struct {
 	ID        uint      `json:"id" gorm:"primaryKey"`
 	Year      int       `json:"year" gorm:"index;not null"`
@@ -26,7 +28,8 @@ type Pedoman struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
-// Portfolio: arsip proposal yang lolos pendanaan per tahun.
+// Portfolio: arsip proposal yang lolos pendanaan per tahun. Padanan skema v2:
+// proposals (konseptual; arsip tetap dipertahankan sebagai data transisional).
 type Portfolio struct {
 	ID          uint      `json:"id" gorm:"primaryKey"`
 	Year        int       `json:"year" gorm:"index;not null"`
@@ -42,30 +45,25 @@ type Portfolio struct {
 }
 
 // Feedback: Kritik & Saran dari guest + pesan form kontak.
+// Skema v2 menamai kolom flag baca sebagai `is_read`.
 type Feedback struct {
 	ID        uint      `json:"id" gorm:"primaryKey"`
 	Kind      string    `json:"kind" gorm:"index;not null"` // "saran" | "kontak"
 	Name      string    `json:"name"`
 	Email     string    `json:"email"`
 	Message   string    `json:"message" gorm:"type:text;not null"`
-	Read      bool      `json:"read" gorm:"default:false"`
+	Read      bool      `json:"read" gorm:"column:is_read;default:false"`
 	CreatedAt time.Time `json:"createdAt"`
 }
 
-// SchemeStat: jumlah usulan proposal per skema PKM (ditampilkan di Home).
-type SchemeStat struct {
-	ID     uint   `json:"id" gorm:"primaryKey"`
-	Scheme string `json:"scheme" gorm:"uniqueIndex;not null"` // PKM-K, PKM-PI, dst
-	Count  int    `json:"count" gorm:"default:0"`
-}
-
 // ContactInfo: informasi kontak PKM Center (baris tunggal, id=1).
+// Skema v2 menamai kolom WhatsApp sebagai `whatsapp` (tanpa underscore).
 type ContactInfo struct {
 	ID        uint      `json:"id" gorm:"primaryKey"`
 	Address   string    `json:"address" gorm:"type:text"`
 	Email     string    `json:"email"`
 	Phone     string    `json:"phone"`
-	WhatsApp  string    `json:"whatsApp"`
+	WhatsApp  string    `json:"whatsApp" gorm:"column:whatsapp"`
 	Instagram string    `json:"instagram"`
 	Facebook  string    `json:"facebook"`
 	MapEmbed  string    `json:"mapEmbed" gorm:"type:text"` // URL embed peta

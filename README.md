@@ -20,11 +20,13 @@ Stack berjalan sepenuhnya melalui Docker Compose:
 - **Video & galeri foto** dengan lightbox (tombol Sebelumnya/Berikutnya + keyboard `Esc`/panah): `/#galeri`.
 - Navigasi **"⋯ Lainnya"** di navbar (Pedoman, Portofolio, Kontak) + breadcrumb di halaman tersebut.
 - Login JWT dengan role `admin`, `mahasiswa`, dan `dosen`.
-- **Panel admin** (`/#admin`) dengan **7 seksi**: Konten (berita/video/galeri), Timeline, Pedoman, Portofolio, Masukan (Kritik & Saran + pesan kontak), Statistik, dan Kontak.
-- Migrasi tabel dan seed otomatis: **21 tahapan timeline, 4 pedoman, 10 proposal portofolio, 9 skema statistik, info kontak, 2 contoh masukan, 9 berita, 8 foto galeri, 3 video, dan 3 akun demo** — *upsert non-destruktif*, jadi konten yang pernah diubah/ditambah lewat panel admin tidak tertimpa saat backend dinyalakan ulang.
+- **Panel admin** (`/#admin`) dengan **7 seksi**: Konten (berita/video/galeri), Timeline, Pedoman, Portofolio, Masukan (Kritik & Saran + pesan kontak), Statistik, dan Kontak. Seksi **Statistik kini hanya-baca** — angkanya dihitung otomatis dari data proposal.
+- Skema database v2 dikelola migrasi SQL (`backend/migrations/`) yang dijalankan otomatis saat backend menyala, ditambah seed non-destruktif: **periode PKM 2026, tahapan, 1 tim demo, 426 proposal contoh (agar statistik per skema terisi), 21 tahapan timeline, 4 pedoman, 10 proposal portofolio, info kontak, 2 contoh masukan, 9 berita, 8 foto galeri, 3 video, dan 3 akun demo** — *upsert non-destruktif*, jadi konten yang pernah diubah/ditambah lewat panel admin tidak tertimpa saat backend dinyalakan ulang.
 - PostgreSQL dengan volume Docker persisten.
 
 > Konten berita, video, galeri, dan portofolio saat ini merupakan **data contoh** — termasuk gambar placeholder dari Unsplash — bukan pengumuman resmi Unila. Seluruh konten dapat diubah, ditambah, atau dihapus lewat panel admin di `/#admin` (login sebagai `admin`, lihat akun demo di bawah).
+
+> **Catatan migrasi:** skema v2 mengganti beberapa tabel lama (`users` kini ber-UUID, `feedbacks`/`contact_infos` memakai kolom baru, `scheme_stats` dihapus). Untuk mesin yang sudah pernah menjalankan versi lama, jalankan ulang database dev dari nol: `docker compose down -v && docker compose up --build`. Data contoh akan dibuat ulang; rincian pemetaan ada di [revisi struktur DB](docs/revisi-struktur-db-pkm-center.md).
 
 ## Menjalankan secara lokal
 
@@ -83,7 +85,7 @@ Gunakan hanya untuk development. Ganti semua kredensial dan `JWT_SECRET` sebelum
 | `GET` | `/api/timeline` | Timeline PKM per tahun (publik) |
 | `GET` | `/api/pedoman` | Daftar pedoman PKM (publik) |
 | `GET` | `/api/portfolio?year=&scheme=` | Arsip proposal lolos pendanaan, filter opsional (publik) |
-| `GET` | `/api/stats` | Jumlah usulan per skema PKM (publik) |
+| `GET` | `/api/stats` | Jumlah usulan per skema PKM, **turunan dari `proposals`** (view `v_scheme_stats`; publik) |
 | `GET` | `/api/contact` | Informasi kontak PKM Center (publik) |
 | `POST` | `/api/feedback` | Kirim Kritik & Saran (`kind: "saran"`) atau pesan kontak (`kind: "kontak"`) |
 | `GET` | `/api/admin/content` | Daftar semua konten (khusus `admin`) |
@@ -96,7 +98,7 @@ Gunakan hanya untuk development. Ganti semua kredensial dan `JWT_SECRET` sebelum
 | `GET` | `/api/admin/feedback` | Daftar masukan (khusus `admin`) |
 | `PUT` | `/api/admin/feedback/:id/read` | Tandai masukan sudah dibaca (khusus `admin`) |
 | `DELETE` | `/api/admin/feedback/:id` | Hapus masukan (khusus `admin`) |
-| `GET/PUT` | `/api/admin/stats` | Lihat & perbarui statistik per skema (khusus `admin`) |
+| `GET` | `/api/admin/stats` | Lihat statistik per skema (khusus `admin`; **hanya-baca**, tanpa `PUT`) |
 | `GET/PUT` | `/api/admin/contact` | Lihat & perbarui info kontak (khusus `admin`) |
 
 Contoh login melalui terminal:
@@ -114,11 +116,12 @@ curl -X POST http://localhost:8081/api/auth/login \
 ├── backend/                 # REST API Go/Gin
 │   ├── cmd/api/             # titik masuk aplikasi (routing + seed data)
 │   │   └── main.go
+│   ├── migrations/          # skema v2 (SQL, dijalankan otomatis saat startup)
 │   └── internal/
 │       ├── config/          # koneksi DB, env config
 │       ├── handlers/        # auth, content, info (timeline/pedoman/portfolio), feedback (masukan/stats/kontak)
 │       ├── middleware/      # auth guard (JWT)
-│       └── models/          # user, content, info (grup model baru)
+│       └── models/          # skema v2 (user, pkm, team, proposal, review, logbook, cms) + model transisional
 ├── frontend/                # React + Vite
 │   ├── public/              # favicon dan aset logo
 │   └── src/
@@ -156,6 +159,7 @@ Warna fakultas dan pascasarjana—abu-abu FEB, merah FH, ungu FKIP, hijau Pertan
 - [Daftar fitur](daftar-fitur-pkm-center-unila.md): backlog fitur proyek (admin CRUD & fitur lanjutan).
 - [Acuan desain](acuan-design-pkm-center.md): bahasa visual & komponen UI yang dipakai di seluruh halaman.
 - [Acuan warna referensi](docs/acuan-warna-referensi.md): palet hasil ekstraksi dari desain referensi.
+- [Revisi struktur database v2](docs/revisi-struktur-db-pkm-center.md): ERD, katalog tabel, pemetaan tabel lama → baru, dan changelog.
 - [Perubahan UI 07-10-2026](docs/perubahan-ui-sesuaikan-desain-2026-10-07.md): penyesuaian tema biru-putih + redesign sesuai 4 gambar referensi.
 
 ## Tahap berikutnya

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/rand"
+	"fmt"
 	"log"
 	"time"
 
@@ -11,15 +13,24 @@ import (
 	"pkm-center/backend/internal/handlers"
 	"pkm-center/backend/internal/middleware"
 	"pkm-center/backend/internal/models"
+	"pkm-center/backend/migrations"
 	"gorm.io/gorm"
 )
 
 func main() {
 	db := config.Database()
-	if err := db.AutoMigrate(&models.User{}, &models.Content{}, &models.Timeline{}, &models.Pedoman{}, &models.Portfolio{}, &models.Feedback{}, &models.SchemeStat{}, &models.ContactInfo{}); err != nil { log.Fatal(err) }
+	// Skema v2 dikelola oleh migrasi SQL (backend/migrations). GORM AutoMigrate
+	// hanya dipakai untuk tabel CMS transisional yang belum punya padanan v2.
+	if err := migrations.Run(db); err != nil {
+		log.Fatal(err)
+	}
+	if err := db.AutoMigrate(&models.Content{}, &models.Timeline{}, &models.Pedoman{}, &models.Portfolio{}); err != nil {
+		log.Fatal(err)
+	}
 	seedUsers(db)
 	seedContent(db)
 	seedInfo(db)
+	seedV2(db)
 	secret := config.Env("JWT_SECRET", "development-secret")
 	r := gin.Default()
 	r.Use(cors.New(cors.Config{AllowOrigins: []string{config.Env("CORS_ORIGIN", "http://localhost:5173")}, AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}, AllowHeaders: []string{"Origin", "Content-Type", "Authorization"}}))
@@ -43,7 +54,7 @@ func main() {
 	api.GET("/stats", stats.List)
 	api.GET("/contact", contact.Get)
 	api.POST("/feedback", feedback.Create)
-	admin := api.Group("/admin", middleware.RequireAuth(secret, string(models.RoleAdmin)))
+	admin := api.Group("/admin", middleware.RequireAuth(secret, "admin"))
 	admin.GET("/overview", func(c *gin.Context) { c.JSON(200, gin.H{"message": "Selamat datang, Admin PKM Center"}) })
 	admin.GET("/content", content.ListAdmin)
 	admin.POST("/content", content.Create)
@@ -65,7 +76,6 @@ func main() {
 	admin.PUT("/feedback/:id/read", feedback.MarkRead)
 	admin.DELETE("/feedback/:id", feedback.Delete)
 	admin.GET("/stats", stats.List)
-	admin.PUT("/stats", stats.Update)
 	admin.GET("/contact", contact.Get)
 	admin.PUT("/contact", contact.Update)
 	r.Run(":" + config.Env("PORT", "8080"))
@@ -170,17 +180,44 @@ func seedContent(db *gorm.DB) {
 	}
 }
 
+// seedUsers membuat akun demo pada skema v2 (users + user_roles + profil).
 func seedUsers(db *gorm.DB) {
-	accounts := []struct { Name, Email, Password string; Role models.Role }{
-		{"Admin PKM", "admin@pkm.unila.ac.id", "admin123", models.RoleAdmin},
-		{"Nadia Mahasiswa", "mahasiswa@pkm.unila.ac.id", "mahasiswa123", models.RoleMahasiswa},
-		{"Dr. Budi Dosen", "dosen@pkm.unila.ac.id", "dosen123", models.RoleDosen},
+	accounts := []struct{ Name, Email, Password, Role string }{
+		{"Admin PKM", "admin@pkm.unila.ac.id", "admin123", "admin"},
+		{"Nadia Mahasiswa", "mahasiswa@pkm.unila.ac.id", "mahasiswa123", "mahasiswa"},
+		{"Dr. Budi Dosen", "dosen@pkm.unila.ac.id", "dosen123", "dosen"},
 	}
 	for _, account := range accounts {
 		var user models.User
-		if db.Where("email = ?", account.Email).First(&user).Error == gorm.ErrRecordNotFound {
+		err := db.Where("email = ?", account.Email).First(&user).Error
+		if err == gorm.ErrRecordNotFound {
 			hash, _ := bcrypt.GenerateFromPassword([]byte(account.Password), bcrypt.DefaultCost)
-			db.Create(&models.User{Name: account.Name, Email: account.Email, Password: string(hash), Role: account.Role})
+			user = models.User{ID: newUUID(), Email: account.Email, PasswordHash: string(hash), FullName: account.Name, AccountStatus: "active", AuthProvider: "local"}
+			if err := db.Create(&user).Error; err != nil {
+				log.Printf("seed user %s gagal: %v", account.Email, err)
+				continue
+			}
+		} else if err != nil {
+			continue
+		}
+		var role models.Role
+		if db.Where("code = ?", account.Role).First(&role).Error == nil {
+			var ur models.UserRole
+			if db.Where("user_id = ? AND role_id = ?", user.ID, role.ID).First(&ur).Error == gorm.ErrRecordNotFound {
+				db.Create(&models.UserRole{UserID: user.ID, RoleID: role.ID})
+			}
+		}
+		switch account.Role {
+		case "mahasiswa":
+			var sp models.StudentProfile
+			if db.Where("user_id = ?", user.ID).First(&sp).Error == gorm.ErrRecordNotFound {
+				db.Create(&models.StudentProfile{UserID: user.ID, StudentNumber: "2117051001", Faculty: "Fakultas Teknik", Department: "Teknik Elektro", StudyProgram: "Teknik Elektro", EntryYear: 2021, GPA: 3.72, AcademicStatus: "active", Biography: "Mahasiswa aktif Universitas Lampung."})
+			}
+		case "dosen":
+			var lp models.LecturerProfile
+			if db.Where("user_id = ?", user.ID).First(&lp).Error == gorm.ErrRecordNotFound {
+				db.Create(&models.LecturerProfile{UserID: user.ID, LecturerNumber: "0012345678", Faculty: "Fakultas Teknik", Department: "Teknik Elektro", StudyProgram: "Teknik Elektro", AcademicPosition: "Lektor", SupervisionCapacity: 10})
+			}
 		}
 	}
 }
@@ -264,17 +301,10 @@ func seedInfo(db *gorm.DB) {
 		if len(updates) > 0 { db.Model(&existing).Updates(updates) }
 	}
 
-	// --- STATISTIK jumlah usulan per skema PKM ---
-	schemes := []struct { Scheme string; Count int }{
-		{"PKM-K", 87}, {"PKM-PI", 92}, {"PKM-PM", 64}, {"PKM-KC", 41},
-		{"PKM-GFT", 12}, {"PKM-KI", 38}, {"PKM-AI", 9}, {"PKM-RE", 56}, {"PKM-RSH", 27},
-	}
-	for _, s := range schemes {
-		var existing models.SchemeStat
-		if db.Where("scheme = ?", s.Scheme).First(&existing).Error == gorm.ErrRecordNotFound {
-			db.Create(&models.SchemeStat{Scheme: s.Scheme, Count: s.Count})
-		}
-	}
+	// --- STATISTIK jumlah usulan per skema ---
+	// Dihapus: statistik kini murni turunan dari `proposals` (view v_scheme_stats),
+	// tanpa tabel `scheme_stats` dan tanpa input manual. Contoh data proposal
+	// dibuat oleh seedV2().
 
 	// --- KONTAK (baris tunggal id=1) ---
 	var contactExisting models.ContactInfo
@@ -302,4 +332,117 @@ func seedInfo(db *gorm.DB) {
 			db.Create(&f)
 		}
 	}
+}
+
+// seedV2 mengisi data contoh skema v2 (periode, tahapan, tim, dan proposal)
+// secara non-destruktif. Proposal contoh membuat view v_scheme_stats terisi
+// sehingga statistik yang ditampilkan konsisten dengan data proposal nyata.
+func seedV2(db *gorm.DB) {
+	// --- PERIODE 2026 ---
+	var period models.PKMPeriod
+	err := db.Where("year = ?", 2026).First(&period).Error
+	if err == gorm.ErrRecordNotFound {
+		start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+		end := time.Date(2026, 3, 31, 0, 0, 0, 0, time.UTC)
+		period = models.PKMPeriod{ID: newUUID(), Name: "PKM 2026", Year: 2026, RegistrationStart: &start, RegistrationEnd: &end, Status: "open"}
+		if err := db.Create(&period).Error; err != nil {
+			log.Printf("seed periode gagal: %v", err)
+			return
+		}
+	} else if err != nil {
+		log.Printf("seed periode cek gagal: %v", err)
+		return
+	}
+
+	// --- TAHAPAN PKM ---
+	stages := []struct {
+		Name   string
+		Order  int
+		Status string
+	}{
+		{"Pendaftaran & pengusulan", 1, "active"},
+		{"Review proposal", 2, "pending"},
+		{"Penetapan pendanaan", 3, "pending"},
+		{"Pelaksanaan & monitoring", 4, "pending"},
+		{"Pelaporan & PIMNAS", 5, "pending"},
+	}
+	for _, s := range stages {
+		var existing models.PKMStage
+		if db.Where("period_id = ? AND stage_order = ?", period.ID, s.Order).First(&existing).Error == gorm.ErrRecordNotFound {
+			db.Create(&models.PKMStage{ID: newUUID(), PeriodID: period.ID, Name: s.Name, StageOrder: s.Order, Status: s.Status})
+		}
+	}
+
+	// --- TIM DEMO (butuh akun mahasiswa) ---
+	var student models.User
+	if err := db.Where("email = ?", "mahasiswa@pkm.unila.ac.id").First(&student).Error; err != nil {
+		return
+	}
+	var team models.Team
+	err = db.Where("period_id = ? AND name = ?", period.ID, "Tim Demo PKM Center").First(&team).Error
+	if err == gorm.ErrRecordNotFound {
+		team = models.Team{ID: newUUID(), PeriodID: period.ID, LeaderID: student.ID, Name: "Tim Demo PKM Center", Status: "formed"}
+		if err := db.Create(&team).Error; err != nil {
+			log.Printf("seed tim gagal: %v", err)
+			return
+		}
+	} else if err != nil {
+		return
+	}
+	var member models.TeamMember
+	if db.Where("team_id = ? AND student_id = ?", team.ID, student.ID).First(&member).Error == gorm.ErrRecordNotFound {
+		joined := time.Now()
+		db.Create(&models.TeamMember{TeamID: team.ID, StudentID: student.ID, MemberRole: "leader", InvitationStatus: "accepted", JoinedAt: &joined})
+	}
+
+	// --- PROPOSAL CONTOH (hanya bila periode ini belum punya proposal) ---
+	var count int64
+	db.Model(&models.Proposal{}).Where("period_id = ?", period.ID).Count(&count)
+	if count > 0 {
+		return
+	}
+	seedCounts := []struct {
+		Code string
+		N    int
+	}{
+		{"PKM-K", 87}, {"PKM-PI", 92}, {"PKM-PM", 64}, {"PKM-KC", 41},
+		{"PKM-GFT", 12}, {"PKM-KI", 38}, {"PKM-AI", 9}, {"PKM-RE", 56}, {"PKM-RSH", 27},
+	}
+	for _, sc := range seedCounts {
+		var scheme models.PKMScheme
+		if err := db.Where("code = ?", sc.Code).First(&scheme).Error; err != nil {
+			continue
+		}
+		proposals := make([]models.Proposal, 0, sc.N)
+		for i := 0; i < sc.N; i++ {
+			status, funded := "submitted", false
+			if i%4 == 0 {
+				status, funded = "funded", true
+			}
+			proposals = append(proposals, models.Proposal{
+				ID:       newUUID(),
+				TeamID:   team.ID,
+				SchemeID: scheme.ID,
+				PeriodID: period.ID,
+				Title:    fmt.Sprintf("Usulan %s #%d", sc.Code, i+1),
+				Abstract: "Data contoh untuk mengisi statistik usulan per skema PKM.",
+				Status:   status,
+				IsFunded: funded,
+			})
+		}
+		if err := db.CreateInBatches(proposals, 200).Error; err != nil {
+			log.Printf("seed proposal %s gagal: %v", sc.Code, err)
+		}
+	}
+}
+
+// newUUID menghasilkan UUID v4 tanpa dependensi eksternal.
+func newUUID() string {
+	b := make([]byte, 16)
+	if _, err := rand.Read(b); err != nil {
+		return fmt.Sprintf("%d", time.Now().UnixNano())
+	}
+	b[6] = (b[6] & 0x0f) | 0x40
+	b[8] = (b[8] & 0x3f) | 0x80
+	return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:16])
 }

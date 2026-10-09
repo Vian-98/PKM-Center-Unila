@@ -283,35 +283,21 @@ function FeedbackView() {
 /* ---------------- Statistik skema ---------------- */
 
 function StatsView() {
-  const { items, setItems, message, setMessage, token } = useAdminList('/stats')
-  const [busy, setBusy] = useState(false)
-
-  const update = (index, value) => {
-    const next = [...items]
-    next[index] = { ...next[index], count: Math.max(0, Number(value) || 0) }
-    setItems(next)
-  }
-  const save = async () => {
-    setBusy(true)
-    try {
-      await adminRequest(token, '/stats', 'PUT', items)
-      setMessage('Statistik tersimpan.')
-    } catch (error) { setMessage(error.message) } finally { setBusy(false) }
-  }
+  const { items, message } = useAdminList('/stats')
+  const total = items.reduce((sum, item) => sum + (item.count || 0), 0)
 
   return (
     <section className="admin-stats">
       <div className="form-heading"><h2>Usulan per skema PKM</h2><span>{items.length} skema</span></div>
-      <p className="section-copy">Angka ini ditampilkan pada halaman beranda (bagian "Angka per skema").</p>
+      <p className="section-copy">Dihitung otomatis dari data proposal (status bukan draf) melalui view <code>v_scheme_stats</code> — tidak dapat diubah manual. Total {total} usulan.</p>
       <div className="stats-editor">
-        {items.map((item, index) => (
-          <label className="stat-input" key={item.id ?? item.scheme}>
+        {items.map((item) => (
+          <div className="stat-input" key={item.scheme}>
             <span><b>{item.scheme}</b><small>{schemeNames[item.scheme] || 'Skema PKM'}</small></span>
-            <input type="number" min="0" value={item.count} onChange={(e) => update(index, e.target.value)} aria-label={`Jumlah usulan ${item.scheme}`} />
-          </label>
+            <strong className="stat-value">{item.count ?? 0}</strong>
+          </div>
         ))}
       </div>
-      <button className="button dark" type="button" onClick={save} disabled={busy}>{busy ? 'Menyimpan…' : 'Simpan statistik'} <b>→</b></button>
       {message && <p className="form-message">{message}</p>}
     </section>
   )
