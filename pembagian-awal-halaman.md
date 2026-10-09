@@ -10,7 +10,7 @@
 
 - [x] Hero/banner utama
 - [x] Ringkasan "Tentang Kami" (deskripsi singkat PKM Center)
-- [x] Statistik jumlah usulan proposal per skema PKM (PKM-K, PKM-PI, PKM-PM, PKM-KC, PKM-GFT, PKM-KI, PKM-AI, PKM-RE, PKM-RSH) — *diatur lewat panel admin (seksi Statistik)*
+- [x] Statistik jumlah usulan proposal per skema PKM (PKM-K, PKM-PI, PKM-PM, PKM-KC, PKM-GFT, PKM-KI, PKM-AI, PKM-RE, PKM-RSH) — *turunan otomatis dari data proposal; seksi Statistik di panel admin hanya-baca (v3)*
 - [x] Preview berita/update terbaru (beberapa item + tombol "lihat semua")
 - [x] Section "Apa yang Kami Lakukan" (poin-poin layanan/peran PKM Center)
 - [x] Preview galeri foto kegiatan
@@ -82,5 +82,6 @@
 
 ## Catatan
 - Dokumen ini pelengkap dari `rencana-awal-proyek-pkm-center-unila.md` — detail teknis (tech stack, folder, fase pengerjaan) tetap merujuk ke dokumen tersebut.
-- Fitur admin CRUD (kelola berita, timeline, pedoman, portofolio, statistik, masukan, kontak) sudah diimplementasikan sebagai seksi-seksi pada panel admin `/#admin` — daftar per fitur ada di `daftar-fitur-pkm-center-unila.md`.
+- Fitur admin CRUD (kelola berita, timeline, pedoman, portofolio, masukan, kontak) sudah diimplementasikan sebagai seksi-seksi pada panel admin `/#admin` — daftar per fitur ada di `daftar-fitur-pkm-center-unila.md`. Statistik tidak lagi CRUD: kini turunan otomatis dari data proposal (read-only).
+- Update 09-10-2026: skema database v2 diterapkan (migrasi SQL otomatis + model GORM baru). Statistik per skema dihitung dari `proposals` (`v_scheme_stats`). Lihat `docs/revisi-struktur-db-pkm-center.md`.
 - Update 07-10-2026: Beranda di-redesign mengikuti 4 gambar `docs/reference/` (hero, stats navy, ekosistem, timeline navy, berita, panduan, footer navy). Detail di `docs/perubahan-ui-sesuaikan-desain-2026-10-07.md`.

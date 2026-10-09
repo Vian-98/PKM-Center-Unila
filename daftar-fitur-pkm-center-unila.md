@@ -39,6 +39,8 @@
 
 Fitur ini tidak ada di situs referensi, tapi relevan kalau PKM-Center Unila mau lebih dari sekadar company profile:
 
+> **Fondasi data (skema v2) sudah tersedia** untuk fitur-fitur ini: `teams`/`team_members`, `proposals`/`proposal_documents`, `supervisor_requests`, `reviews`, `logbook_entries`, `notifications`, dan `ai_analyses` — tinggal handler/endpoint & UI. Lihat `docs/revisi-struktur-db-pkm-center.md`.
+
 - [ ] **Login mahasiswa** — untuk submit proposal PKM langsung lewat sistem
 - [ ] **Upload & tracking status proposal** — mahasiswa bisa lihat status (submitted, direview, lolos, ditolak)
 - [ ] **Dashboard reviewer/dosen pembimbing** — untuk menilai/memberi feedback proposal
@@ -53,7 +55,7 @@ Fitur ini tidak ada di situs referensi, tapi relevan kalau PKM-Center Unila mau 
 
 | Prioritas | Fitur |
 |---|---|
-| **Tahap 2 (setelah 4 halaman awal selesai)** | Admin CRUD dasar (berita, pedoman, portofolio), dashboard admin, statistik realtime di Home |
+| **Tahap 2** ✅ | Admin CRUD dasar (berita, pedoman, portofolio), dashboard admin, statistik per skema (otomatis dari data proposal) |
 | **Tahap 3 (lanjutan)** | Login mahasiswa, upload proposal, tracking status, dashboard reviewer, notifikasi |
 
 ---
@@ -62,3 +64,4 @@ Fitur ini tidak ada di situs referensi, tapi relevan kalau PKM-Center Unila mau 
 - Untuk daftar halaman guest & checklist-nya, lihat `pembagian-awal-halaman.md`.
 - Untuk detail teknis (tech stack, folder, fase pengerjaan), lihat `rencana-awal-proyek-pkm-center-unila.md`.
 - Update 07-10-2026: redesign Beranda sesuai referensi (lihat `docs/perubahan-ui-sesuaikan-desain-2026-10-07.md`). Fungsionalitas lama (Berita, Galeri, Pedoman, Portofolio, Kontak, Admin) tetap dipertahankan.
+- Update 09-10-2026: **implementasi skema database v2** — model GORM baru (user/role, periode/skema/tahap, tim, proposal, review, logbook, notifikasi, AI, CMS posts/media), migrasi SQL otomatis saat startup, auth pindah ke `users` ber-UUID + `user_roles`/`roles`, dan **statistik per skema jadi turunan** dari `proposals` (read-only). Rincian: `docs/revisi-struktur-db-pkm-center.md`.

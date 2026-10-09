@@ -531,16 +531,21 @@ Keduanya didukung `UNIQUE (id, period_id)` pada `pkm_stages` dan `teams`.
 Jalankan terhadap database `pkmcenter` (PostgreSQL 16). DDL bersifat idempoten
 (`IF NOT EXISTS` / `ON CONFLICT DO NOTHING`), aman dijalankan ulang.
 
-**Opsi A — langsung ke container Docker:**
+**Cara utama — otomatis saat startup (sudah diterapkan):**
+Backend menjalankan `backend/migrations/*.sql` lewat runner `migrations.Run(db)` tepat
+setelah koneksi DB dibuat di `main.go`. `AutoMigrate` hanya dipakai untuk tabel CMS
+transisional (`contents`, `timelines`, `pedoman`, `portfolios`). Jadi cukup:
+
+```bash
+docker compose up --build
+```
+
+**Opsi manual — langsung ke container Docker:**
 ```bash
 docker compose up -d db
 docker compose exec -T db \
   psql -U pkm -d pkmcenter < backend/migrations/0001_init_pkm_schema.sql
 ```
-
-**Opsi B — migrasi otomatis saat startup (rekomendasi):**
-Pindahkan eksekusi file `backend/migrations/*.sql` ke `config.Database()` / `main.go`
-setelah koneksi DB dibuat, lalu nonaktifkan `AutoMigrate` untuk tabel yang sudah dikelola SQL.
 
 Verifikasi:
 ```sql
