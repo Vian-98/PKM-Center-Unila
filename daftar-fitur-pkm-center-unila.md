@@ -27,7 +27,7 @@
 
 ### 2.3 Statistik & Dashboard
 - [x] Dashboard ringkasan konten (daftar + jumlah item yang terbit) — *di panel admin*
-- [x] Input/update jumlah usulan proposal per skema PKM (yang tampil di Home) — *seksi Statistik di panel admin*
+- [~] ~~Input/update jumlah usulan proposal per skema PKM (yang tampil di Home)~~ — **diubah (v3, 09-10-2026):** statistik kini **turunan otomatis** dari data `proposals` (`v_scheme_stats`), **read-only**; edit manual dihapus agar angka selalu konsisten. Lihat `docs/revisi-struktur-db-pkm-center.md`.
 
 ### 2.4 Kritik & Saran
 - [x] Lihat daftar masukan yang masuk dari form guest (Home) & form Kontak — *seksi Masukan di panel admin*
