@@ -67,7 +67,10 @@ function TopNavbar({ active, user, onLogin, onLogout }) {
           {[...NAV_MAIN, ...NAV_MORE].map(([id, label]) => (
             <a key={id} href={`#${id}`} role="menuitem" className={`topnav-drawer-item ${active === id ? 'active' : ''}`} onClick={() => setOpen(false)}>{label}</a>
           ))}
-          {!user && <button className="btn-masuk wide" onClick={() => { setOpen(false); onLogin() }}>Masuk <b>→</b></button>}
+          {user?.role === 'admin' && <a href="#admin" role="menuitem" className="topnav-drawer-item" onClick={() => setOpen(false)}>Kelola konten</a>}
+          {user
+            ? <button className="btn-masuk wide" onClick={() => { setOpen(false); onLogout() }}>Keluar <b>→</b></button>
+            : <button className="btn-masuk wide" onClick={() => { setOpen(false); onLogin() }}>Masuk <b>→</b></button>}
         </div>
       )}
     </header>
