@@ -6,12 +6,17 @@
 # Alur:
 #   1. git fetch ringan ke origin/<branch>.
 #   2. Bandingkan HEAD lokal vs origin. Jika sama -> keluar (hampir tanpa beban).
-#   3. Jika ada commit baru -> git pull --ff-only, lalu rebuild & restart container.
+#   3. Jika ada commit baru -> git pull --ff-only.
+#   4. Rebuild & restart container HANYA bila perubahan menyentuh aplikasi
+#      (backend/, frontend/, docker-compose.yml); perubahan dokumen/skrip
+#      cukup di-pull tanpa rebuild.
 #
 # Variabel opsional:
-#   PKM_REPO   path repo   (default /home/ubuntu/PKM-Center-Unila)
-#   PKM_BRANCH branch      (default main)
-#   FORCE=1    paksa rebuild walau tidak ada commit baru (untuk pengujian)
+#   PKM_REPO          path repo   (default /home/ubuntu/PKM-Center-Unila)
+#   PKM_BRANCH        branch      (default main)
+#   PKM_BUILD_PATTERN regex path pemicu rebuild
+#                     (default ^(backend/|frontend/)|^docker-compose[.]yml$)
+#   FORCE=1           paksa rebuild walau tidak ada commit baru (untuk pengujian)
 #
 set -euo pipefail
 
@@ -43,9 +48,25 @@ if [ "${FORCE:-0}" != "1" ] && [ "$LOCAL" = "$REMOTE" ]; then
 fi
 
 log "commit baru terdeteksi: ${LOCAL:0:8} -> ${REMOTE:0:8}"
+
+# Filter path: rebuild hanya bila ada perubahan yang menyentuh aplikasi.
+# Default: backend/, frontend/, atau docker-compose.yml.
+BUILD_PATTERN="${PKM_BUILD_PATTERN:-^(backend/|frontend/)|^docker-compose[.]yml$}"
+CHANGED="$(git diff --name-only "$LOCAL" "$REMOTE" || true)"
+NEED_REBUILD=1
+if [ "${FORCE:-0}" != "1" ] && ! printf '%s\n' "$CHANGED" | grep -qE "$BUILD_PATTERN"; then
+  NEED_REBUILD=0
+fi
+
 git pull --ff-only origin "$BRANCH"
 
-log "rebuild & restart container..."
+if [ "$NEED_REBUILD" != "1" ]; then
+  log "hanya perubahan non-aplikasi (dokumen/skrip); repo diperbarui tanpa rebuild."
+  log "selesai pada commit $(git rev-parse --short HEAD)."
+  exit 0
+fi
+
+log "perubahan aplikasi terdeteksi; rebuild & restart container..."
 docker compose up -d --build
 
 log "membersihkan image lama (dangling)..."

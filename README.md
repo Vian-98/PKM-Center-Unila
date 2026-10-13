@@ -108,7 +108,7 @@ Server pengembangan ini menarik pembaruan otomatis dari GitHub **setiap 2 menit*
 - Skrip: `scripts/autodeploy.sh`
 - Unit systemd: `pkm-autodeploy.timer` → memanggil `pkm-autodeploy.service`
 
-Cara kerja: `git fetch` ringan → bila ada commit baru di `origin/main`, jalankan `git pull --ff-only` lalu `docker compose up -d --build`. Bila tidak ada perubahan, skrip keluar seketika (beban nyaris nol).
+Cara kerja: `git fetch` ringan → bila ada commit baru di `origin/main`, jalankan `git pull --ff-only`. Rebuild (`docker compose up -d --build`) hanya dilakukan bila perubahan menyentuh **`backend/`**, **`frontend/`**, atau **`docker-compose.yml`** — perubahan dokumen/skrip cukup di-pull tanpa rebuild. Bila tidak ada perubahan, skrip keluar seketika (beban nyaris nol).
 
 ```bash
 # Lihat jadwal & status timer
@@ -122,7 +122,7 @@ sudo systemctl start pkm-autodeploy.service
 journalctl -u pkm-autodeploy.service -f
 ```
 
-Variabel lingkungan opsional: `PKM_REPO` (path repo), `PKM_BRANCH` (default `main`), dan `FORCE=1` untuk memaksa rebuild walau tidak ada commit baru.
+Variabel lingkungan opsional: `PKM_REPO` (path repo), `PKM_BRANCH` (default `main`), `PKM_BUILD_PATTERN` (regex path pemicu rebuild), dan `FORCE=1` untuk memaksa rebuild walau tidak ada commit baru.
 
 ---
 
