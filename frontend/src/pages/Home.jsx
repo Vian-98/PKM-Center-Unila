@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { GlowCard } from '../components/GlowCard'
 import { useContent, fallbackNews, useTimeline, usePedoman, formatDate, hideBrokenImage } from '../lib/content'
 
 function HeroSection() {
@@ -40,10 +41,10 @@ function HeroSection() {
 
 function StatsBar() {
   const items = [
-    ['438', 'Proposal diajukan'],
-    ['127', 'Tim terbentuk'],
-    ['64', 'Dosen pembimbing'],
-    ['18', 'Proposal didanai'],
+    ['321', 'Proposal terdata (2026)'],
+    ['168', 'Dosen pembimbing'],
+    ['23', 'Reviewer internal'],
+    ['8', 'Fakultas berpartisipasi'],
   ]
   return (
     <section className="ref-stats" aria-label="Statistik PKM">
@@ -86,13 +87,18 @@ function Ecosystem() {
       <h2>Satu ruang untuk setiap langkah perjalananmu</h2>
       <p className="ref-desc">Teknologi membantu proses, kolaborasi menguatkan ide, dan mentor mengarahkanmu menuju dampak yang nyata.</p>
       <div className="ref-eco-grid">
-        {cards.map((c) => (
-          <article className={`eco-card ${c.dark ? 'dark' : ''}`} key={c.title}>
+        {cards.map((c, i) => (
+          <GlowCard
+            key={c.title}
+            customSize
+            glowColor={c.dark ? 'gold' : i === 1 ? 'blue' : 'green'}
+            className={`eco-card ${c.dark ? 'dark' : ''}`}
+          >
             <div className="eco-top">{c.tag && <span className="eco-tag">{c.tag}</span>}<span className="eco-icon" aria-hidden="true">{c.icon}</span></div>
             <h3>{c.title}</h3>
             <p>{c.copy}</p>
             <a href={c.href}>{c.link} <b>&rarr;</b></a>
-          </article>
+          </GlowCard>
         ))}
       </div>
     </section>

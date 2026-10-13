@@ -108,7 +108,7 @@ export function Gallery() {
         </div>
         <div className="gallery-grid">
           {galleryItems.map((item, index) => (
-            <GlowCard glowColor={item.color} className="gallery-glow" key={item.id}>
+            <GlowCard customSize noPadding glowColor={item.color} className="gallery-glow" key={item.id}>
               <button
                 className={`gallery-item ${item.color}${item.mediaUrl ? ' has-image' : ''}`}
                 onClick={() => setSelected(index)}

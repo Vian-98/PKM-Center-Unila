@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { PageIntro } from '../components/PageIntro'
 import { Breadcrumb } from '../components/Breadcrumb'
+import GlassFolder from '../components/GlassFolder'
 import { usePedoman } from '../lib/content'
 
 export function PedomanIndex() {
@@ -16,6 +17,11 @@ export function PedomanIndex() {
   })
   const years = [...new Set(filtered.map((item) => item.year))].sort((a, b) => b - a)
 
+  const pedoman2026 = items.find((i) => i.year === 2026)
+  const pedoman2025 = items.find((i) => i.year === 2025)
+  const pedoman2024 = items.find((i) => i.year === 2024)
+  const pedoman2023 = items.find((i) => i.year === 2023)
+
   return (
     <main>
       <Breadcrumb trail={[['Beranda', '#beranda'], ['Pedoman']]} />
@@ -24,6 +30,60 @@ export function PedomanIndex() {
         title={<>Panduan untuk<br /><em>setiap langkah.</em></>}
         copy="Unduh pedoman resmi Program Kreativitas Mahasiswa setiap tahunnya, lengkap dengan versi dan sumber dokumen."
       />
+
+      {/* Interactive Glass Folder Showcase */}
+      <section className="doc-folder-showcase" aria-label="Arsip Berkas Pedoman">
+        <div className="doc-folder-intro">
+          <p className="ref-eyebrow gold">MAP BERKAS RESMI</p>
+          <h3>Buku Panduan & Format Usulan</h3>
+          <p>Buka map kaca interaktif di bawah untuk melihat dokumen panduan, lampiran, dan format resmi.</p>
+        </div>
+        <div className="doc-folder-grid">
+          <GlassFolder
+            label="Pedoman PKM 2026"
+            meta="3 berkas aktif"
+            art="unila"
+            seed={3}
+            width={320}
+            appearDelay={0}
+            files={[
+              { name: "Pedoman Umum 2026", meta: "PDF · SIMBELMAWA", art: "unila", href: pedoman2026?.fileUrl },
+              { name: "Format Usulan Proposal", meta: "Template Dokumen", art: "glacier" },
+              { name: "Rubrik Penilaian 2026", meta: "Kriteria Skor", art: "aurora" },
+            ]}
+          />
+          <GlassFolder
+            label="Pedoman PKM 2025"
+            meta="2 berkas rujukan"
+            art="glacier"
+            seed={7}
+            width={320}
+            appearDelay={120}
+            files={[
+              { name: "Pedoman PKM 2025", meta: "PDF · SIMBELMAWA", art: "glacier", href: pedoman2025?.fileUrl },
+              { name: "Juknis Monev 2025", meta: "Pedoman Kemajuan", art: "dusk" },
+            ]}
+          />
+          <GlassFolder
+            label="Arsip Panduan"
+            meta="Koleksi Lampau"
+            art="verdant"
+            seed={11}
+            width={320}
+            action="none"
+            labelPlacement="top-left"
+            appearDelay={240}
+            files={[
+              { name: "Pedoman 2024", meta: "PDF · 12 Medali", art: "verdant", href: pedoman2024?.fileUrl },
+              { name: "Pedoman 2023", meta: "PDF · Arsip", art: "ember", href: pedoman2023?.fileUrl },
+            ]}
+          />
+        </div>
+        <p className="doc-folder-hint">
+          💡 <em>Arahkan kursor atau sentuh map folder untuk membuka dan melihat berkas di dalamnya.</em>
+        </p>
+      </section>
+
       <section className="doc-index">
         <div className="filter-row">
           <label className="search-wrap">
