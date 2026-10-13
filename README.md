@@ -1,174 +1,180 @@
 # PKM Center Unila
 
-Frontend awal untuk **PKM Center Universitas Lampung**. Proyek ini menyediakan ruang informasi publik PKM, tampilan berita dan galeri, serta fondasi autentikasi berbasis peran untuk admin, mahasiswa, dan dosen.
+Platform digital manajemen **Program Kreativitas Mahasiswa (PKM) Universitas Lampung**. Proyek ini menyediakan ruang informasi publik, direktori pedoman dan portofolio, pengelolaan tim dan bimbingan dosen, peninjauan proposal oleh reviewer, sistem pesan langsung (*direct messages*), serta panel administrasi berbasis peran (*Role-Based Access Control* / RBAC).
 
-Stack berjalan sepenuhnya melalui Docker Compose:
+Aplikasi dibangun dengan stack:
+* **Frontend:** React + Vite (Vanilla CSS berbasis Token & Neo-Glassmorphism, tanpa Tailwind/shadcn CLI)
+* **Backend:** Go 1.22 + Gin + GORM
+* **Database:** PostgreSQL 16 (Skema v2 dengan 34 tabel terkelola migrasi SQL otomatis)
+* **Autentikasi:** JSON Web Token (JWT)
 
-- Frontend: React + Vite
-- Backend: Go + Gin + GORM
-- Database: PostgreSQL 16
-- Autentikasi: JWT
+---
 
-## Yang sudah tersedia
+## 📚 Indeks Dokumentasi Proyek (Documentation Hub)
 
-- **Beranda lengkap** (`/#beranda`): hero, statistik usulan per skema PKM, layanan "Apa yang Kami Lakukan", daftar jenis skema PKM, preview berita & galeri, timeline PKM per tahun (tahapan submit → review → pengumuman → PIMNAS), dan form Kritik & Saran.
-- **Pedoman PKM** (`/#pedoman`): daftar dokumen per tahun + pencarian + tombol unduh (tautan resmi).
-- **Portofolio** (`/#portofolio`): arsip proposal lolos pendanaan, filter tahun (chip) & skema, ringkasan per proposal.
-- **Kontak** (`/#kontak`): info kontak, peta lokasi (embed), dan form pesan.
-- **Berita** dengan pagination dan gambar sampul nyata: `/#berita`.
-- Halaman detail artikel (`/#berita/1`) + halaman "berita tidak ditemukan" untuk URL tidak valid.
-- **Video & galeri foto** dengan lightbox (tombol Sebelumnya/Berikutnya + keyboard `Esc`/panah): `/#galeri`.
-- Navigasi **"⋯ Lainnya"** di navbar (Pedoman, Portofolio, Kontak) + breadcrumb di halaman tersebut.
-- Login JWT dengan role `admin`, `mahasiswa`, dan `dosen`.
-- **Panel admin** (`/#admin`) dengan **7 seksi**: Konten (berita/video/galeri), Timeline, Pedoman, Portofolio, Masukan (Kritik & Saran + pesan kontak), Statistik, dan Kontak. Seksi **Statistik kini hanya-baca** — angkanya dihitung otomatis dari data proposal.
-- Skema database v2 dikelola migrasi SQL (`backend/migrations/`) yang dijalankan otomatis saat backend menyala, ditambah seed non-destruktif: **periode PKM 2026, tahapan, 1 tim demo, 426 proposal contoh (agar statistik per skema terisi), 21 tahapan timeline, 4 pedoman, 10 proposal portofolio, info kontak, 2 contoh masukan, 9 berita, 8 foto galeri, 3 video, dan 3 akun demo** — *upsert non-destruktif*, jadi konten yang pernah diubah/ditambah lewat panel admin tidak tertimpa saat backend dinyalakan ulang.
-- PostgreSQL dengan volume Docker persisten.
+Repository ini memiliki dokumentasi arsitektur, desain, basis data, dan riwayat sprint yang sangat terperinci di direktori [`docs/`](docs/). Gunakan indeks di bawah ini sebagai pintu masuk navigasi:
 
-> Konten berita, video, galeri, dan portofolio saat ini merupakan **data contoh** — termasuk gambar placeholder dari Unsplash — bukan pengumuman resmi Unila. Seluruh konten dapat diubah, ditambah, atau dihapus lewat panel admin di `/#admin` (login sebagai `admin`, lihat akun demo di bawah).
+### 1. Desain Sistem & Panduan Visual (UI/UX)
+| Dokumen | Keterangan & Cakupan | PIC / Tanggal |
+| :--- | :--- | :--- |
+| 📘 [**Acuan Desain PKM Center**](acuan-design-pkm-center.md) <br> *(Mirror: [docs/acuan-design-pkm-center.md](docs/acuan-design-pkm-center.md))* | **Single Source of Truth (SSOT) Desain UI/UX.** Menjelaskan standar resmi **Neo-Glassmorphism**, palet warna almamater (Navy `#123B66`, Sky `#175B91`, Emas Unila `#FFD700`, Putih Es `#F7FBFF`), komponen atomik `/components/ui/` (`GlowCard`, `GlassFolder`), serta kelas utilitas CSS. | Vian <br> *13 Okt 2026* |
+| 🎨 [**Acuan Warna Referensi**](docs/acuan-warna-referensi.md) | Ekstraksi palet warna asli dari 4 berkas visual acuan dan warna fakultas berdasarkan Statuta Unila BAB II. | Tim UI/UX |
+| 📱 [**Perbaikan Layout Responsif**](docs/perbaikan-layout-responsif-2026-10-09.md) | Catatan refactoring header mengambang, modal login, dan drawer navigasi mobile (320px – 1024px). | Tim Frontend <br> *09 Okt 2026* |
+| 🖼️ [**Perubahan UI Sesuai Desain**](docs/perubahan-ui-sesuaikan-desain-2026-10-07.md) | Catatan penyesuaian tema biru-putih dan restrukturisasi kartu seksi Beranda. | Tim Frontend <br> *07 Okt 2026* |
 
-> **Catatan migrasi:** skema v2 mengganti beberapa tabel lama (`users` kini ber-UUID, `feedbacks`/`contact_infos` memakai kolom baru, `scheme_stats` dihapus). Untuk mesin yang sudah pernah menjalankan versi lama, jalankan ulang database dev dari nol: `docker compose down -v && docker compose up --build`. Data contoh akan dibuat ulang; rincian pemetaan ada di [revisi struktur DB](docs/revisi-struktur-db-pkm-center.md).
+---
 
-## Menjalankan secara lokal
+### 2. Perencanaan, Roadmap & Pembagian Kerja Tim
+| Dokumen | Keterangan & Cakupan | PIC / Tanggal |
+| :--- | :--- | :--- |
+| 🚀 [**Roadmap Fitur & Audit Database**](docs/roadmap-fitur-dan-audit-database-2026-10-13.md) | **Audit Mendalam 34 Tabel Database v2** (16 aktif vs 18 model-only). Pemetaan tugas resmi 4 anggota tim berdasarkan `docs/pkm - Sheet1.csv`: **Aidil** (AI Idea Lab & Cari Tim), **Vian** (UI/UX, Portal Mhs, Logbook), **Radhit** (Auth, DB Migration, Admin Kampus), dan **Dimas** (Modul Dosen, Reviewer, Pesan). | Vian <br> *13 Okt 2026* |
+| 📋 [**Laporan Eksekusi Desain & Fitur**](docs/laporan-eksekusi-desain-dan-fitur-2026-10-13.md) | Rekapitulasi lengkap eksekusi desain Neo-Glassmorphism, komponen baru, perbaikan grid responsif, eliminasi teks terpotong pada berita, dan integrasi metrik 2026. | Vian <br> *13 Okt 2026* |
+| 📊 [**Rencana Dinamisasi Data Riil 2026**](docs/rencana-dinamisasi-data-riil-pkm-2026-10-13.md) | Analisis rekapitulasi data nyata **321 Proposal PKM Unila 2026**, 168 dosen pembimbing unik, 23 reviewer internal, dan master direktori dosen FT. | Vian <br> *13 Okt 2026* |
+| 📑 [**Daftar Fitur PKM-Center Unila**](docs/daftar-fitur-pkm-center-unila.md) | Backlog fitur komprehensif (fitur publik, panel admin, serta modul lanjutan mahasiswa, dosen, dan reviewer) beserta log pembaruan. | Vian & Tim <br> *13 Okt 2026* |
+| 📌 [**Rencana Awal Proyek**](docs/rencana-awal-proyek-pkm-center-unila.md) | Gambaran awal proyek, arsitektur teknis, pemilihan tech stack, dan sasaran luaran. | Tim PKM-Center |
+| ✅ [**Pembagian Awal Halaman**](docs/pembagian-awal-halaman.md) | Pembagian tugas awal 4 halaman publik utama (seluruh checklist telah selesai). | Tim Frontend |
 
-Prasyarat: [Docker Desktop](https://www.docker.com/products/docker-desktop/) harus aktif.
+---
+
+### 3. Arsitektur Database & Modul Internal
+| Dokumen | Keterangan & Cakupan | PIC / Tanggal |
+| :--- | :--- | :--- |
+| 🗄️ [**Revisi Struktur Database v2**](docs/revisi-struktur-db-pkm-center.md) | Skema database relasional PostgreSQL v2, Entity-Relationship Diagram (ERD), kamus 34 tabel, relasi GORM, dan panduan migrasi. | Radhit & Tim DB <br> *09 Okt 2026* |
+| 💬 [**Integrasi Modul Dosen, Reviewer & Pesan**](docs/integrasi-modul-dosen-reviewer-2026-10-13.md) | Implementasi endpoint `/api/dosen/*`, `/api/reviewer/*`, tabel `direct_messages` (`0002_direct_messages.sql`), dan perbaikan autentikasi token JWT. | Dimas & Tim Backend <br> *13 Okt 2026* |
+
+---
+
+### 4. Berkas Data Rujukan (Datasets)
+* [`docs/pkm - Sheet1.csv`](docs/pkm%20-%20Sheet1.csv): Matriks pembagian kerja resmi 4 anggota tim pengembang.
+* [`docs/PKM UNILA 2026  - Sheet1.csv`](docs/PKM%20UNILA%202026%20%20-%20Sheet1.csv): Rekapitulasi nyata 321 usulan proposal mahasiswa Unila tahun 2026 lintas 8 fakultas.
+* [`docs/UNTUK Nurkhawarizmi (1).xlsx`](docs/UNTUK%20Nurkhawarizmi%20%281%29.xlsx): Direktori master dosen & tendik Fakultas Teknik (FT) Universitas Lampung lengkap dengan NIP 18 digit.
+
+---
+
+## 🚀 Fitur & Halaman yang Tersedia
+
+### A. Portal Publik (Guest)
+* **Beranda (`/#beranda`):** Hero section dinamis, statistik riil usulan 321 proposal PKM Unila 2026, 3 kartu Ekosistem interaktif berbingkai cahaya (`GlowCard`), timeline tahapan, kabar terkini, dan banner unduh panduan.
+* **Pedoman PKM (`/#pedoman`):** Showcase map berkas 3D interaktif (`GlassFolder`) berbasis seni cairan HTML5 Canvas untuk Pedoman 2026, 2025, dan Arsip lampau, dilengkapi filter pencarian.
+* **Portofolio Proposal (`/#portofolio`):** Arsip proposal yang lolos seleksi dan pendanaan, filter chip tahun, skema, dan ringkasan proposal.
+* **Kabar & Berita (`/#berita`):** Grid 3 kolom responsif dengan kartu Neo-Glassmorphism, penomoran halaman (pagination), dan halaman detail artikel lengkap (`/#berita/:id`).
+* **Galeri Foto & Video (`/#galeri`):** Video kegiatan tersemat dan galeri dokumentasi dengan interaksi lightbox foto.
+* **Kontak & Masukan (`/#kontak`):** Peta kampus tersemat, detail sekretariat, serta formulir pengiriman kritik & saran langsung ke database.
+
+### B. Modul Terautentikasi (Internal)
+* **Panel Admin (`/#admin`):** 7 sub-seksi manajemen konten (Berita, Video, Galeri), Timeline tahapan, Pedoman PDF, Portofolio, Masukan pengguna, Statistik per skema (otomatis dari tabel `proposals`), dan Info Kontak.
+* **Dashboard Dosen Pembimbing (`/#dosen`):** Ringkasan kuota bimbingan, verifikasi permohonan bimbingan tim mahasiswa, riwayat proposal bimbingan, dan log bimbingan.
+* **Dashboard Reviewer (`/#reviewer`):** Antrean penugasan review proposal, lembar penilaian rubrik terstandar, dan pemberian catatan evaluasi per butir kriteria.
+* **Pusat Pesan / Direct Messages (`/#pesan`):** Komunikasi langsung dua arah antara mahasiswa, dosen pembimbing, dan reviewer.
+
+---
+
+## 💻 Menjalankan Secara Lokal
+
+Prasyarat: [Docker Desktop](https://www.docker.com/products/docker-desktop/) telah terpasang dan berjalan di komputer Anda.
 
 ```bash
+# Jalankan seluruh stack (Frontend, Backend, Database)
 docker compose up --build
-```
 
-Untuk menjalankan di background:
-
-```bash
+# Atau jalankan di latar belakang (background daemon)
 docker compose up --build -d
 ```
 
-| Layanan | URL |
-|---|---|
-| Frontend | http://localhost:5173 |
-| API | http://localhost:8081 |
-| Health check API | http://localhost:8081/health |
+| Layanan | URL Lokal | Keterangan |
+| :--- | :--- | :--- |
+| **Frontend Web** | http://localhost:5173 | Antarmuka React + Vite |
+| **Backend REST API** | http://localhost:8081 | API Go Gin |
+| **Health Check API** | http://localhost:8081/health | Pengecekan status backend & koneksi DB |
+| **Database PostgreSQL** | `localhost:5432` | Database persisten (`pkm_center_unila`) |
 
-Port host API menggunakan `8081` karena `8080` dapat saja telah dipakai proses lain. Di dalam jaringan Docker, backend tetap berjalan pada port `8080`.
-
-Untuk menghentikan layanan tanpa menghapus data PostgreSQL:
-
+Untuk menghentikan layanan:
 ```bash
 docker compose down
 ```
 
-Untuk melihat log:
-
+Untuk melihat log kontainer:
 ```bash
-docker compose logs -f backend
 docker compose logs -f frontend
+docker compose logs -f backend
 ```
 
-## Akun demo
+---
 
-| Peran | Email | Kata sandi |
-|---|---|---|
-| Admin | `admin@pkm.unila.ac.id` | `admin123` |
-| Mahasiswa | `mahasiswa@pkm.unila.ac.id` | `mahasiswa123` |
-| Dosen | `dosen@pkm.unila.ac.id` | `dosen123` |
+## 🔑 Akun Uji Coba Demo
 
-Gunakan hanya untuk development. Ganti semua kredensial dan `JWT_SECRET` sebelum aplikasi dipublikasikan.
+Sistem dilengkapi pendeteksian otomatis peran pengguna saat login melalui formulir modal topbar:
 
-## API saat ini
+| Peran Akun | Identitas Email | Kata Sandi | Akses Modul |
+| :--- | :--- | :--- | :--- |
+| **Administrator** | `admin@pkm.unila.ac.id` | `admin123` | Panel Admin Konten & Master Data (`/#admin`) |
+| **Dosen Pembimbing** | `dosen@pkm.unila.ac.id` | `dosen123` | Portal Bimbingan & Validasi (`/#dosen`) |
+| **Reviewer Internal** | `reviewer@pkm.unila.ac.id` | `reviewer123` | Antrean & Scoring Proposal (`/#reviewer`) |
+| **Mahasiswa** | `mahasiswa@pkm.unila.ac.id` | `mahasiswa123` | Portal Pengusulan Tim & Logbook |
 
-| Method | Endpoint | Keterangan |
-|---|---|---|
-| `GET` | `/health` | Status API |
-| `POST` | `/api/auth/login` | Login dan menerima token JWT |
-| `GET` | `/api/auth/me` | Profil token aktif; butuh header `Authorization: Bearer <token>` |
-| `GET` | `/api/content?type=news\|video\|gallery` | Daftar konten publik per jenis (berita, video, galeri) |
-| `GET` | `/api/content/:id` | Detail satu konten publik |
-| `GET` | `/api/timeline` | Timeline PKM per tahun (publik) |
-| `GET` | `/api/pedoman` | Daftar pedoman PKM (publik) |
-| `GET` | `/api/portfolio?year=&scheme=` | Arsip proposal lolos pendanaan, filter opsional (publik) |
-| `GET` | `/api/stats` | Jumlah usulan per skema PKM, **turunan dari `proposals`** (view `v_scheme_stats`; publik) |
-| `GET` | `/api/contact` | Informasi kontak PKM Center (publik) |
-| `POST` | `/api/feedback` | Kirim Kritik & Saran (`kind: "saran"`) atau pesan kontak (`kind: "kontak"`) |
-| `GET` | `/api/admin/content` | Daftar semua konten (khusus `admin`) |
-| `POST` | `/api/admin/content` | Tambah konten (khusus `admin`) |
-| `PUT` | `/api/admin/content/:id` | Ubah konten (khusus `admin`) |
-| `DELETE` | `/api/admin/content/:id` | Hapus konten (khusus `admin`) |
-| `GET/POST/PUT/DELETE` | `/api/admin/timeline[/:id]` | CRUD timeline (khusus `admin`) |
-| `GET/POST/PUT/DELETE` | `/api/admin/pedoman[/:id]` | CRUD pedoman (khusus `admin`) |
-| `GET/POST/PUT/DELETE` | `/api/admin/portfolio[/:id]` | CRUD portofolio (khusus `admin`) |
-| `GET` | `/api/admin/feedback` | Daftar masukan (khusus `admin`) |
-| `PUT` | `/api/admin/feedback/:id/read` | Tandai masukan sudah dibaca (khusus `admin`) |
-| `DELETE` | `/api/admin/feedback/:id` | Hapus masukan (khusus `admin`) |
-| `GET` | `/api/admin/stats` | Lihat statistik per skema (khusus `admin`; **hanya-baca**, tanpa `PUT`) |
-| `GET/PUT` | `/api/admin/contact` | Lihat & perbarui info kontak (khusus `admin`) |
+*(Kredensial di atas hanya untuk lingkungan pengembangan lokal).*
 
-Contoh login melalui terminal:
+---
 
-```bash
-curl -X POST http://localhost:8081/api/auth/login \
-  -H 'Content-Type: application/json' \
-  -d '{"email":"admin@pkm.unila.ac.id","password":"admin123"}'
-```
+## 🌐 Daftar Endpoint REST API Utama
 
-## Struktur proyek
+| Method | Endpoint | Deskripsi | Akses |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/health` | Status server dan konektivitas database | Publik |
+| `POST` | `/api/auth/login` | Login akun & penerbitan token JWT | Publik |
+| `GET` | `/api/auth/me` | Informasi profil pengguna yang sedang login | Bearer Token |
+| `GET` | `/api/content?type=news\|video\|gallery` | Daftar konten berita, video, atau foto galeri | Publik |
+| `GET` | `/api/timeline` | Daftar agenda tahapan PKM per tahun | Publik |
+| `GET` | `/api/pedoman` | Berkas dan tautan buku panduan PKM | Publik |
+| `GET` | `/api/portfolio?year=&scheme=` | Arsip proposal didanai dengan filter tahun & skema | Publik |
+| `GET` | `/api/stats` | Agregasi statistik usulan 10 skema PKM (`v_scheme_stats`) | Publik |
+| `GET` | `/api/contact` | Informasi alamat dan kontak resmi lembaga | Publik |
+| `POST` | `/api/feedback` | Pengiriman kritik, saran, atau pesan kontak | Publik |
+| `GET/POST/PUT/DELETE` | `/api/admin/*` | Manajemen CRUD konten, timeline, pedoman, portofolio | Khusus Admin |
+| `GET` | `/api/dosen/overview` | Ringkasan statistik dan kuota bimbingan dosen | Khusus Dosen |
+| `GET` | `/api/dosen/requests` | Daftar permohonan bimbingan tim mahasiswa | Khusus Dosen |
+| `GET` | `/api/dosen/proposals` | Daftar proposal yang sedang dibimbing | Khusus Dosen |
+| `GET` | `/api/reviewer/overview` | Metrik penugasan dan status penilaian reviewer | Khusus Reviewer |
+| `GET` | `/api/reviewer/assignments` | Daftar proposal yang ditugaskan untuk dinilai | Khusus Reviewer |
+| `POST` | `/api/reviewer/reviews` | Input skor kriteria dan evaluasi kelayakan proposal | Khusus Reviewer |
+| `GET/POST` | `/api/messages/*` | Pengiriman dan pengambilan riwayat pesan langsung | Dosen / Reviewer / Mhs |
+
+---
+
+## 📂 Struktur Direktori Proyek
 
 ```text
 .
-├── backend/                 # REST API Go/Gin
-│   ├── cmd/api/             # titik masuk aplikasi (routing + seed data)
-│   │   └── main.go
-│   ├── migrations/          # skema v2 (SQL, dijalankan otomatis saat startup)
-│   └── internal/
-│       ├── config/          # koneksi DB, env config
-│       ├── handlers/        # auth, content, info (timeline/pedoman/portfolio), feedback (masukan/stats/kontak)
-│       ├── middleware/      # auth guard (JWT)
-│       └── models/          # skema v2 (user, pkm, team, proposal, review, logbook, cms) + model transisional
-├── frontend/                # React + Vite
-│   ├── public/              # favicon dan aset logo
+├── backend/                       # REST API Backend (Go 1.22 + Gin)
+│   ├── cmd/api/                   # Titik masuk utama (routing, seeder, server)
+│   ├── internal/
+│   │   ├── config/                # Konfigurasi database & environment
+│   │   ├── handlers/              # Controllers: auth, dosen, reviewer, pesan, admin, content
+│   │   ├── middleware/            # Auth guard JWT & role-based validation
+│   │   └── models/                # GORM Models PostgreSQL v2 (34 Tabel)
+│   └── migrations/                # SQL DDL Migration scripts (0001, 0002)
+├── frontend/                      # Web Single Page Application (React + Vite)
+│   ├── public/                    # Favicon, lambang institusi, dan aset publik
 │   └── src/
-│       ├── components/      # GlassNavbar, GlowCard, PageIntro, Breadcrumb
-│       ├── lib/             # content.js: fallback data + hook API (useContent, useTimeline, usePedoman, …)
-│       ├── pages/           # Home, News, Gallery, Pedoman, Portofolio, Kontak, AdminPanel
-│       └── main.jsx         # shell aplikasi: hash routing + login
-├── docker-compose.yml       # frontend, backend, dan PostgreSQL
-├── pembagian-awal-halaman.md
-├── daftar-fitur-pkm-center-unila.md
-├── rencana-awal-proyek-pkm-center-unila.md
-└── acuan-design-pkm-center.md
+│       ├── components/            # Komponen reaktif: GlowCard, GlassFolder, PageIntro, TopNavbar
+│       │   └── ui/                # Presentation atomic components (spotlight-card, glass-folder-cards)
+│       ├── lib/                   # content.js (API client, fallback stats 321 proposal, helper)
+│       ├── pages/                 # Home, News, Gallery, Pedoman, Portofolio, Kontak, AdminPanel, Dosen, Reviewer, Pesan
+│       ├── ref.css                # Sistem Desain Neo-Glassmorphism resmi
+│       └── styles.css             # Stylesheet pendukung dan utilitas modul
+├── docs/                          # Knowledge Base & Dokumentasi Lengkap
+│   ├── acuan-design-pkm-center.md # Standardisasi desain Neo-Glassmorphism (Bab 1–8)
+│   ├── roadmap-fitur-dan-audit-database-2026-10-13.md # Audit 34 tabel & WBS 4 anggota tim
+│   ├── laporan-eksekusi-desain-dan-fitur-2026-10-13.md # Laporan hasil eksekusi resmi (PIC: Vian)
+│   ├── rencana-dinamisasi-data-riil-pkm-2026-10-13.md # Dinamisasi 321 proposal riil 2026
+│   ├── revisi-struktur-db-pkm-center.md # Kamus tabel skema database v2
+│   ├── integrasi-modul-dosen-reviewer-2026-10-13.md # Integrasi modul internal & pesan
+│   ├── daftar-fitur-pkm-center-unila.md # Backlog fitur lengkap
+│   ├── PKM UNILA 2026  - Sheet1.csv # Dataset riil 321 proposal Unila 2026
+│   ├── pkm - Sheet1.csv           # Matriks kerja tim (Aidil, Vian, Radhit, Dimas)
+│   └── UNTUK Nurkhawarizmi (1).xlsx # Master direktori dosen FT Unila
+├── acuan-design-pkm-center.md     # Mirror acuan desain di root repository
+├── docker-compose.yml             # Orkestrasi multi-container Docker
+└── README.md                      # Dokumentasi utama & indeks navigasi repository
 ```
 
-## Identitas visual
-
-Pedoman identitas lengkap ada di [rencana awal proyek](rencana-awal-proyek-pkm-center-unila.md), yang mengacu pada **Statuta Unila BAB II Identitas (Pasal 2–5)**. Aplikasi menggunakan:
-
-| Peran UI | Warna | Kode |
-|---|---|---|
-| Primary / aksen brand | Kuning keemasan Unila | `#FFD700` |
-| Secondary / aksen struktural | Biru muda perisai lambang | `#1E90FF` |
-| Teks utama | Hitam | `#000000` |
-| Aksen simbolik | Merah lidah api | `#FF0000` |
-| Aksen simbolik | Hijau daun lada | `#008000` |
-
-Warna fakultas dan pascasarjana—abu-abu FEB, merah FH, ungu FKIP, hijau Pertanian, biru tua Teknik, jingga FISIP, biru laut MIPA, hijau lumut Kedokteran, dan merah marun Pascasarjana—bersifat opsional. Gunakan untuk badge, kategori, atau filter data berdasarkan fakultas.
-
-> Pada kutipan Statuta, kode kuning keemasan tertulis `FF D7` pada empat elemen lambang serta bendera Unila. Komponen RGB ketiga tidak tampak akibat ekstraksi/OCR; `#FFD700` adalah nilai Gold yang paling mendekati dan digunakan sebagai nilai kerja. Konfirmasi ke berkas lambang resmi atau Peraturan Rektor diperlukan sebelum branding/cetak final.
-
-## Dokumen kerja
-
-- [Rencana awal proyek](rencana-awal-proyek-pkm-center-unila.md): scope, stack, fase, dan pedoman visual.
-- [Pembagian awal halaman](pembagian-awal-halaman.md): pembagian PIC dan checklist pengerjaan — seluruh bagian (Home, Pedoman + Portofolio, Berita & Galeri, Kontak + Login) sudah selesai dan ditandai centang.
-- [Daftar fitur](daftar-fitur-pkm-center-unila.md): backlog fitur proyek (admin CRUD & fitur lanjutan).
-- [Acuan desain](acuan-design-pkm-center.md): bahasa visual & komponen UI yang dipakai di seluruh halaman.
-- [Acuan warna referensi](docs/acuan-warna-referensi.md): palet hasil ekstraksi dari desain referensi.
-- [Revisi struktur database v2](docs/revisi-struktur-db-pkm-center.md): ERD, katalog tabel, pemetaan tabel lama → baru, dan changelog.
-- [Perubahan UI 07-10-2026](docs/perubahan-ui-sesuaikan-desain-2026-10-07.md): penyesuaian tema biru-putih + redesign sesuai 4 gambar referensi.
-
-## Tahap berikutnya
-
-1. Ganti konten contoh (termasuk gambar placeholder Unsplash) dengan data dan dokumentasi PKM Center yang telah diverifikasi.
-2. Pindahkan kata sandi, database URL, dan JWT secret ke `.env` yang tidak dilacak Git.
-3. Tambahkan rate limiting login, reset kata sandi, pengujian API (unit test), dan konfigurasi production (Nginx/HTTPS).
-4. Fitur lanjutan (opsional): login mahasiswa, submit & tracking status proposal, dashboard reviewer/dosen, serta notifikasi.
-
-## Catatan keamanan
-
-Konfigurasi saat ini diperuntukkan bagi development. Jangan memakai kata sandi demo, `JWT_SECRET` bawaan, atau password database yang ada di `docker-compose.yml` pada server production.
