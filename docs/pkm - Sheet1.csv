@@ -1,0 +1,38 @@
+,,,
+,Anggota,Modul / Fitur yang Dipegang,Cakupan Kerja (FE + BE)
+Aidil,Anggota 1,"1. Idea Lab (Brainstorming LLM)
+
+2. Fitur Pencarian Tim & Pembimbing
+
+3. Gateway REST API untuk Sinkronisasi AI","* Idea Lab: Tampilan chat AI + integrasi API LLM.
+
+* Cari Tim & Pembimbing: Tampilan list/grid mahasiswa & dosen, fitur filter manual, tombol Chat & Add/Invite, modal profil, serta pembuatan endpoint/gateway REST API untuk jalur masuk AI skripsi Anda nanti."
+Favian ,Anggota 2,"1. Setup UI Layout & Design System
+
+2. Dashboard Mahasiswa
+
+3. Form Ajukan Proposal
+
+4. Logbook PKM","* UI Base: Setup Tailwind/Shadcn, Sidebar, dan Layout 4 Role.
+
+* Dashboard Mhs: Ringkasan status proposal (stepper progress), agenda terdekat, & catatan.
+
+* Ajukan Proposal: Form multi-step upload proposal, judul, abstrak, skim, & kriteria jurusan.
+
+* Logbook: Tampilan & API kronologi riwayat proposal."
+Radhit,Anggota 3,"1. Autentikasi & Management User (JWT)
+
+2. Skema & Migrasi Database PostgreSQL
+
+3. Modul Admin Kampus","* Auth & DB: Setup ERD Database, Migrasi PostgreSQL, Login/Register JWT, RBAC 4 Role.
+
+* Modul Admin: Fitur Kelola Akun User, Setting Alokasi Kuota Bimbingan Dosen, Kelola Timeline PKM, & Input Pengumuman."
+DImas,Anggota 4,"1. Modul Dosen Pembimbing
+
+2. Modul Reviewer
+
+3. Modul Pesan & Feedback","* Modul Dosen: Dashboard Dosen, ACC/Reject permintaan bimbingan, Kelola Slot Jadwal Bimbingan.
+
+* Modul Reviewer: Dashboard Reviewer, Antrean Penilaian pasca-deadline, Form Scoring, Keputusan Lolos.
+
+* Pesan & Feedback: Sistem Direct Message (Chat) & Rekap Catatan Revisi."

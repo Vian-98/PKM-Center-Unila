@@ -111,15 +111,16 @@ export const fallbackPortfolio = [
 ]
 
 export const fallbackStats = [
-  { id: 1, scheme: 'PKM-K', count: 87 },
-  { id: 2, scheme: 'PKM-PI', count: 92 },
-  { id: 3, scheme: 'PKM-PM', count: 64 },
-  { id: 4, scheme: 'PKM-KC', count: 41 },
-  { id: 5, scheme: 'PKM-GFT', count: 12 },
-  { id: 6, scheme: 'PKM-KI', count: 38 },
-  { id: 7, scheme: 'PKM-AI', count: 9 },
-  { id: 8, scheme: 'PKM-RE', count: 56 },
-  { id: 9, scheme: 'PKM-RSH', count: 27 },
+  { id: 1, scheme: 'PKM-K', count: 115 },
+  { id: 2, scheme: 'PKM-RE', count: 58 },
+  { id: 3, scheme: 'PKM-RSH', count: 41 },
+  { id: 4, scheme: 'PKM-PM', count: 32 },
+  { id: 5, scheme: 'PKM-KC', count: 28 },
+  { id: 6, scheme: 'PKM-AI', count: 15 },
+  { id: 7, scheme: 'PKM-GFT', count: 13 },
+  { id: 8, scheme: 'PKM-KI', count: 7 },
+  { id: 9, scheme: 'PKM-VGK', count: 6 },
+  { id: 10, scheme: 'PKM-PI', count: 3 },
 ]
 
 export const fallbackContact = {
@@ -169,6 +170,7 @@ export const schemeNames = {
   'PKM-KC': 'Karsa Cipta',
   'PKM-GFT': 'Gagasan Futuristik Tertulis',
   'PKM-KI': 'Karya Inovatif',
+  'PKM-VGK': 'Video Gagasan Konstruktif',
   'PKM-AI': 'Artikel Ilmiah',
   'PKM-RE': 'Riset Eksakta',
   'PKM-RSH': 'Riset Sosial Humaniora',
