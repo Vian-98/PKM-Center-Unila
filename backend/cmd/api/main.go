@@ -43,6 +43,10 @@ func main() {
 	feedback := handlers.FeedbackHandler{DB: db}
 	stats := handlers.StatsHandler{DB: db}
 	contact := handlers.ContactHandler{DB: db}
+	dosen := handlers.DosenHandler{DB: db}
+	reviewer := handlers.ReviewerHandler{DB: db}
+	msgFeedback := handlers.MessageFeedbackHandler{DB: db}
+
 	api := r.Group("/api")
 	api.POST("/auth/login", auth.Login)
 	api.GET("/auth/me", middleware.RequireAuth(secret), auth.Me)
@@ -54,6 +58,35 @@ func main() {
 	api.GET("/stats", stats.List)
 	api.GET("/contact", contact.Get)
 	api.POST("/feedback", feedback.Create)
+
+	// --- Modul Dosen Pembimbing ---
+	dosenGroup := api.Group("/dosen", middleware.RequireAuth(secret, "dosen", "admin"))
+	dosenGroup.GET("/overview", dosen.GetOverview)
+	dosenGroup.GET("/proposals", dosen.GetProposals)
+	dosenGroup.GET("/requests", dosen.GetRequests)
+	dosenGroup.PUT("/requests/:id/respond", dosen.RespondRequest)
+	dosenGroup.GET("/guidance", dosen.GetGuidanceSessions)
+	dosenGroup.POST("/guidance", dosen.CreateGuidanceSession)
+	dosenGroup.PUT("/guidance/:id", dosen.UpdateGuidanceSession)
+	dosenGroup.DELETE("/guidance/:id", dosen.DeleteGuidanceSession)
+
+	// --- Modul Reviewer ---
+	reviewerGroup := api.Group("/reviewer", middleware.RequireAuth(secret, "reviewer", "admin"))
+	reviewerGroup.GET("/overview", reviewer.GetOverview)
+	reviewerGroup.GET("/assignments", reviewer.GetAssignments)
+	reviewerGroup.GET("/assignments/:id", reviewer.GetAssignmentDetail)
+	reviewerGroup.POST("/assignments/:id/save", reviewer.SaveReview)
+	reviewerGroup.POST("/assignments/:id/submit", reviewer.SubmitReview)
+
+	// --- Modul Pesan & Feedback ---
+	authGroup := api.Group("", middleware.RequireAuth(secret))
+	authGroup.GET("/messages/conversations", msgFeedback.GetConversations)
+	authGroup.GET("/messages/thread/:contactId", msgFeedback.GetThread)
+	authGroup.POST("/messages/send", msgFeedback.SendMessage)
+	authGroup.GET("/feedback/proposal/:proposalId", msgFeedback.GetProposalFeedback)
+	authGroup.POST("/feedback/proposal/:proposalId", msgFeedback.CreateProposalFeedback)
+
+	// --- Modul Admin ---
 	admin := api.Group("/admin", middleware.RequireAuth(secret, "admin"))
 	admin.GET("/overview", func(c *gin.Context) { c.JSON(200, gin.H{"message": "Selamat datang, Admin PKM Center"}) })
 	admin.GET("/content", content.ListAdmin)
@@ -186,6 +219,7 @@ func seedUsers(db *gorm.DB) {
 		{"Admin PKM", "admin@pkm.unila.ac.id", "admin123", "admin"},
 		{"Nadia Mahasiswa", "mahasiswa@pkm.unila.ac.id", "mahasiswa123", "mahasiswa"},
 		{"Dr. Budi Dosen", "dosen@pkm.unila.ac.id", "dosen123", "dosen"},
+		{"Dr. Hendri Reviewer", "reviewer@pkm.unila.ac.id", "reviewer123", "reviewer"},
 	}
 	for _, account := range accounts {
 		var user models.User
@@ -217,6 +251,11 @@ func seedUsers(db *gorm.DB) {
 			var lp models.LecturerProfile
 			if db.Where("user_id = ?", user.ID).First(&lp).Error == gorm.ErrRecordNotFound {
 				db.Create(&models.LecturerProfile{UserID: user.ID, LecturerNumber: "0012345678", Faculty: "Fakultas Teknik", Department: "Teknik Elektro", StudyProgram: "Teknik Elektro", AcademicPosition: "Lektor", SupervisionCapacity: 10})
+			}
+		case "reviewer":
+			var lp models.LecturerProfile
+			if db.Where("user_id = ?", user.ID).First(&lp).Error == gorm.ErrRecordNotFound {
+				db.Create(&models.LecturerProfile{UserID: user.ID, LecturerNumber: "0098765432", Faculty: "FMIPA", Department: "Ilmu Komputer", StudyProgram: "Ilmu Komputer", AcademicPosition: "Lektor Kepala", SupervisionCapacity: 15})
 			}
 		}
 	}
@@ -395,43 +434,179 @@ func seedV2(db *gorm.DB) {
 		db.Create(&models.TeamMember{TeamID: team.ID, StudentID: student.ID, MemberRole: "leader", InvitationStatus: "accepted", JoinedAt: &joined})
 	}
 
-	// --- PROPOSAL CONTOH (hanya bila periode ini belum punya proposal) ---
+	// --- SEED ANGGOTA 4: Dosen, Reviewer, Guidance, Review, & Messages ---
+	var dosen models.User
+	var reviewer models.User
+	db.Where("email = ?", "dosen@pkm.unila.ac.id").First(&dosen)
+	db.Where("email = ?", "reviewer@pkm.unila.ac.id").First(&reviewer)
+
+	var demoProposal models.Proposal
+	if db.Where("team_id = ?", team.ID).First(&demoProposal).Error == gorm.ErrRecordNotFound {
+		var scheme models.PKMScheme
+		db.Where("code = ?", "PKM-KC").First(&scheme)
+		demoProposal = models.Proposal{
+			ID:       newUUID(),
+			TeamID:   team.ID,
+			SchemeID: scheme.ID,
+			PeriodID: period.ID,
+			Title:    "Smart Agriculture IoT untuk Monitoring Lahan Lada Lampung",
+			Abstract: "Pengembangan sistem monitoring cerdas berbasis Internet of Things dan sensor kelembaban untuk petani lada di Lampung.",
+			Status:   "submitted",
+			IsFunded: false,
+		}
+		db.Create(&demoProposal)
+	}
+
+	// --- PROPOSAL CONTOH UNTUK STATISTIK (hanya bila periode ini belum punya proposal massal) ---
 	var count int64
 	db.Model(&models.Proposal{}).Where("period_id = ?", period.ID).Count(&count)
-	if count > 0 {
-		return
-	}
-	seedCounts := []struct {
-		Code string
-		N    int
-	}{
-		{"PKM-K", 87}, {"PKM-PI", 92}, {"PKM-PM", 64}, {"PKM-KC", 41},
-		{"PKM-GFT", 12}, {"PKM-KI", 38}, {"PKM-AI", 9}, {"PKM-RE", 56}, {"PKM-RSH", 27},
-	}
-	for _, sc := range seedCounts {
-		var scheme models.PKMScheme
-		if err := db.Where("code = ?", sc.Code).First(&scheme).Error; err != nil {
-			continue
+	if count < 10 {
+		seedCounts := []struct {
+			Code string
+			N    int
+		}{
+			{"PKM-K", 87}, {"PKM-PI", 92}, {"PKM-PM", 64}, {"PKM-KC", 41},
+			{"PKM-GFT", 12}, {"PKM-KI", 38}, {"PKM-AI", 9}, {"PKM-RE", 56}, {"PKM-RSH", 27},
 		}
-		proposals := make([]models.Proposal, 0, sc.N)
-		for i := 0; i < sc.N; i++ {
-			status, funded := "submitted", false
-			if i%4 == 0 {
-				status, funded = "funded", true
+		for _, sc := range seedCounts {
+			var scheme models.PKMScheme
+			if err := db.Where("code = ?", sc.Code).First(&scheme).Error; err != nil {
+				continue
 			}
-			proposals = append(proposals, models.Proposal{
-				ID:       newUUID(),
-				TeamID:   team.ID,
-				SchemeID: scheme.ID,
-				PeriodID: period.ID,
-				Title:    fmt.Sprintf("Usulan %s #%d", sc.Code, i+1),
-				Abstract: "Data contoh untuk mengisi statistik usulan per skema PKM.",
-				Status:   status,
-				IsFunded: funded,
+			proposals := make([]models.Proposal, 0, sc.N)
+			for i := 0; i < sc.N; i++ {
+				status, funded := "submitted", false
+				if i%4 == 0 {
+					status, funded = "funded", true
+				}
+				proposals = append(proposals, models.Proposal{
+					ID:       newUUID(),
+					TeamID:   team.ID,
+					SchemeID: scheme.ID,
+					PeriodID: period.ID,
+					Title:    fmt.Sprintf("Usulan %s #%d", sc.Code, i+1),
+					Abstract: "Data contoh untuk mengisi statistik usulan per skema PKM.",
+					Status:   status,
+					IsFunded: funded,
+				})
+			}
+			if err := db.CreateInBatches(proposals, 200).Error; err != nil {
+				log.Printf("seed proposal %s gagal: %v", sc.Code, err)
+			}
+		}
+	}
+	if db.Where("team_id = ?", team.ID).First(&demoProposal).Error == nil {
+		// 1. Permintaan Bimbingan (Supervisor Request)
+		var existingReq models.SupervisorRequest
+		if dosen.ID != "" && db.Where("proposal_id = ? AND lecturer_id = ?", demoProposal.ID, dosen.ID).First(&existingReq).Error == gorm.ErrRecordNotFound {
+			db.Create(&models.SupervisorRequest{
+				ID:             newUUID(),
+				ProposalID:     demoProposal.ID,
+				LecturerID:     dosen.ID,
+				RequestedBy:    &student.ID,
+				RequestMessage: "Selamat siang Bapak Dr. Budi, mohon kesediaan Bapak untuk menjadi dosen pembimbing tim kami pada skema PKM-KC pengembangan Smart IoT Monitoring. Kami sangat mengharapkan arahan Bapak.",
+				Status:         "pending",
+				CreatedAt:      time.Now().Add(-48 * time.Hour),
 			})
 		}
-		if err := db.CreateInBatches(proposals, 200).Error; err != nil {
-			log.Printf("seed proposal %s gagal: %v", sc.Code, err)
+
+		// 2. Proposal Bimbingan Aktif (Accepted proposal)
+		var acceptedProposal models.Proposal
+		if err := db.Where("team_id = ? AND id != ?", team.ID, demoProposal.ID).First(&acceptedProposal).Error; err == gorm.ErrRecordNotFound {
+			acceptedProposal = models.Proposal{
+				ID:          newUUID(),
+				TeamID:      team.ID,
+				SchemeID:    demoProposal.SchemeID,
+				PeriodID:    period.ID,
+				Title:       "Implementasi AI Vision untuk Sortir Biji Kopi Robusta Lampung",
+				Abstract:    "Inovasi sistem sortir otomatis kualitas biji kopi menggunakan computer vision berbasis edge AI untuk meningkatkan nilai jual petani kopi Tanggamus.",
+				Status:      "submitted",
+				IsFunded:    false,
+			}
+			db.Create(&acceptedProposal)
+		}
+
+		if dosen.ID != "" && acceptedProposal.ID != "" {
+			var sup models.ProposalSupervisor
+			if db.Where("proposal_id = ? AND lecturer_id = ?", acceptedProposal.ID, dosen.ID).First(&sup).Error == gorm.ErrRecordNotFound {
+				db.Create(&models.ProposalSupervisor{
+					ProposalID: acceptedProposal.ID,
+					LecturerID: dosen.ID,
+					IsPrimary:  true,
+					AssignedAt: time.Now().Add(-7 * 24 * time.Hour),
+				})
+			}
+
+			// Guidance Sessions (Slot & Jadwal Bimbingan)
+			var gs models.GuidanceSession
+			if db.Where("proposal_id = ? AND lecturer_id = ?", acceptedProposal.ID, dosen.ID).First(&gs).Error == gorm.ErrRecordNotFound {
+				db.Create(&models.GuidanceSession{
+					ID:           newUUID(),
+					ProposalID:   acceptedProposal.ID,
+					LecturerID:   &dosen.ID,
+					ScheduledAt:  time.Now().Add(48 * time.Hour),
+					Location:     "Ruang Dosen Teknik Elektro Lt. 2",
+					MeetingURL:   "https://meet.google.com/pkm-unila-bimbingan",
+					Status:       "scheduled",
+					Agenda:       "Review bab 3 metodologi riset dan pengujian model deep learning",
+					MeetingNotes: "Siapkan sampel dataset uji biji kopi dan skema wiring hardware",
+				})
+			}
+
+			// Proposal Feedback (Rekap Catatan Revisi)
+			var fb models.ProposalFeedback
+			if db.Where("proposal_id = ?", acceptedProposal.ID).First(&fb).Error == gorm.ErrRecordNotFound {
+				db.Create(&models.ProposalFeedback{
+					ID:               newUUID(),
+					ProposalID:       acceptedProposal.ID,
+					AuthorID:         &dosen.ID,
+					FeedbackType:     "revision",
+					Comment:          "Perbaiki tabel perbandingan akurasi model AI dengan riset terdahulu, dan pertegas mitra pengujian lapangan.",
+					RequiresRevision: true,
+					CreatedAt:        time.Now().Add(-24 * time.Hour),
+				})
+			}
+		}
+
+		// 3. Reviewer Assignment & Criteria
+		if reviewer.ID != "" {
+			var ra models.ReviewAssignment
+			deadline := time.Now().Add(5 * 24 * time.Hour)
+			if db.Where("proposal_id = ? AND reviewer_id = ?", demoProposal.ID, reviewer.ID).First(&ra).Error == gorm.ErrRecordNotFound {
+				db.Create(&models.ReviewAssignment{
+					ID:             newUUID(),
+					ProposalID:     demoProposal.ID,
+					ReviewerID:     reviewer.ID,
+					Status:         "assigned",
+					ReviewDeadline: &deadline,
+					AssignedAt:     time.Now().Add(-2 * 24 * time.Hour),
+				})
+			}
+		}
+
+		// 4. Direct Messages (Sistem Chat)
+		if dosen.ID != "" && student.ID != "" {
+			var dm models.DirectMessage
+			if db.Where("sender_id = ? AND receiver_id = ?", student.ID, dosen.ID).First(&dm).Error == gorm.ErrRecordNotFound {
+				db.Create(&models.DirectMessage{
+					ID:         newUUID(),
+					SenderID:   student.ID,
+					ReceiverID: dosen.ID,
+					ProposalID: &demoProposal.ID,
+					Message:    "Selamat siang Bapak Dr. Budi, izin bertanya untuk revisi metodologi apakah dataset minimal 500 sampel sudah mencukupi?",
+					IsRead:     true,
+					CreatedAt:  time.Now().Add(-3 * time.Hour),
+				})
+				db.Create(&models.DirectMessage{
+					ID:         newUUID(),
+					SenderID:   dosen.ID,
+					ReceiverID: student.ID,
+					ProposalID: &demoProposal.ID,
+					Message:    "Siang Nadia. 500 sampel sudah bagus sebagai data awal, pastikan ada variasi pencahayaan dan resolusi kamera ya.",
+					IsRead:     false,
+					CreatedAt:  time.Now().Add(-2 * time.Hour),
+				})
+			}
 		}
 	}
 }

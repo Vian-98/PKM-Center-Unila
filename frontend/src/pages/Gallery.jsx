@@ -28,7 +28,9 @@ function VideoCard({ item, onPreview }) {
           : item.mediaUrl
             ? <video src={item.mediaUrl} muted preload="metadata" />
             : <div className="video-placeholder">VIDEO<br />BELUM DITAUTKAN</div>}
-        <button className="play video-play" type="button" onClick={() => onPreview(item)} aria-label={`Putar ${item.title}`}>▶</button>
+        <button className="play video-play" type="button" onClick={() => onPreview(item)} aria-label={`Putar ${item.title}`}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </button>
       </div>
       <div className="video-copy">
         <p className="card-meta">VIDEO · {item.category || 'KEGIATAN'}</p>
@@ -44,14 +46,14 @@ function VideoPreview({ item, close }) {
   return (
     <div className="lightbox video-preview" onMouseDown={close}>
       <section className="video-preview-content" onMouseDown={(event) => event.stopPropagation()}>
-        <button className="close" onClick={close}>×</button>
+        <button className="close" onClick={close}>x</button>
         <p className="eyebrow">VIDEO KEGIATAN</p>
         <h2>{item.title}</h2>
         {embed
           ? <iframe src={embed} title={item.title} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen />
           : item.mediaUrl
             ? <video src={item.mediaUrl} controls autoPlay>Browser Anda belum mendukung pemutar video.</video>
-            : <div className="video-empty"><b>▶</b><p>Video belum ditautkan oleh admin.</p><small>Tambahkan URL YouTube atau berkas video pada panel Kelola konten.</small></div>}
+            : <div className="video-empty"><p>Video belum ditautkan oleh admin.</p><small>Tambahkan URL YouTube atau berkas video pada panel Kelola konten.</small></div>}
       </section>
     </div>
   )
@@ -115,7 +117,7 @@ export function Gallery() {
                 {item.mediaUrl && <img className="gallery-thumb" src={item.mediaUrl} alt={item.title} onError={hideBrokenImage} />}
                 <span>{String(index + 1).padStart(2, '0')}</span>
                 <strong>{item.title}</strong>
-                <b>↗</b>
+                <b>&rarr;</b>
               </button>
             </GlowCard>
           ))}

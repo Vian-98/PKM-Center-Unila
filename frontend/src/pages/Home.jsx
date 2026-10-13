@@ -5,15 +5,15 @@ function HeroSection() {
   return (
     <section className="ref-hero" id="beranda">
       <div className="ref-hero-copy">
-        <p className="ref-badge"><span aria-hidden="true">✦</span> PUSAT KREATIVITAS MAHASISWA UNIVERSITAS LAMPUNG</p>
+        <p className="ref-badge">PUSAT KREATIVITAS MAHASISWA UNIVERSITAS LAMPUNG</p>
         <h1>Ide hebat dimulai dari <span className="hl-blue">langkah</span><br /><span className="hl-blue underline-gold">pertama.</span></h1>
         <p className="ref-sub">Wujudkan gagasan, temukan kolaborator, dan raih prestasi melalui ekosistem PKM terintegrasi berbasis AI.</p>
         <div className="ref-cta">
-          <a className="btn-primary" href="#kontak">Mulai ajukan proposal <b>→</b></a>
-          <a className="link-more" href="#tentang">Pelajari PKM <b>›</b></a>
+          <a className="btn-primary" href="#kontak">Mulai ajukan proposal <b>&rarr;</b></a>
+          <a className="link-more" href="#tentang">Pelajari PKM <b>&rsaquo;</b></a>
         </div>
         <div className="ref-social">
-          <div className="avatars" aria-hidden="true"><span>AR</span><span>DN</span><span>RS</span><span className="more">•</span></div>
+          <div className="avatars" aria-hidden="true"><span>AR</span><span>DN</span><span>RS</span><span className="more">&bull;</span></div>
           <p><b>1.248 mahasiswa</b><br />telah bergabung tahun ini</p>
         </div>
       </div>
@@ -21,18 +21,18 @@ function HeroSection() {
         <div className="art-bg" />
         <div className="art-person"><div className="head" /><div className="body" /><div className="arm" /><div className="laptop"><span>PKM</span></div></div>
         <div className="card score">
-          <span className="bulb">◍</span>
+          <span className="bulb"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/></svg></span>
           <small>IDEA SCORE</small>
           <strong>92<small>/100</small></strong>
           <span className="bar"><i /></span>
           <em>Sangat potensial untuk dikembangkan</em>
         </div>
         <div className="card team">
-          <span className="team-ico">⚇</span>
+          <span className="team-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span>
           <div><b>Tim terbaik ditemukan</b><small>98% kecocokan bidang</small></div>
-          <span className="check">✓</span>
+          <span className="check">OK</span>
         </div>
-        <span className="deco sigma">Σ</span><span className="deco ai">AI</span><span className="deco star">✦</span>
+        <span className="deco ai">AI</span>
       </div>
     </section>
   )
@@ -56,9 +56,29 @@ function StatsBar() {
 
 function Ecosystem() {
   const cards = [
-    { tag: 'DIDUKUNG AI', title: 'Uji kekuatan idemu', copy: 'Dapatkan analisis kebaruan, dampak, dan kelayakan ide sebelum menyusun proposal.', link: 'Coba Idea Lab', href: '#kontak', dark: true, icon: '◍' },
-    { title: 'Temukan tim multidisiplin', copy: 'Rekomendasi anggota dengan kompetensi yang saling melengkapi dari seluruh fakultas.', link: 'Cari anggota', href: '#portofolio', icon: '⚇' },
-    { title: 'Terhubung dengan mentor', copy: 'Pilih dosen pembimbing berdasarkan bidang riset dan pengalaman PKM.', link: 'Lihat pembimbing', href: '#kontak', icon: '○' },
+    {
+      tag: 'DIDUKUNG AI',
+      title: 'Uji kekuatan idemu',
+      copy: 'Dapatkan analisis kebaruan, dampak, dan kelayakan ide sebelum menyusun proposal.',
+      link: 'Coba Idea Lab',
+      href: '#kontak',
+      dark: true,
+      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/></svg>,
+    },
+    {
+      title: 'Temukan tim multidisiplin',
+      copy: 'Rekomendasi anggota dengan kompetensi yang saling melengkapi dari seluruh fakultas.',
+      link: 'Cari anggota',
+      href: '#portofolio',
+      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>,
+    },
+    {
+      title: 'Terhubung dengan mentor',
+      copy: 'Pilih dosen pembimbing berdasarkan bidang riset dan pengalaman PKM.',
+      link: 'Lihat pembimbing',
+      href: '#kontak',
+      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>,
+    },
   ]
   return (
     <section className="ref-eco" id="tentang">
@@ -71,7 +91,7 @@ function Ecosystem() {
             <div className="eco-top">{c.tag && <span className="eco-tag">{c.tag}</span>}<span className="eco-icon" aria-hidden="true">{c.icon}</span></div>
             <h3>{c.title}</h3>
             <p>{c.copy}</p>
-            <a href={c.href}>{c.link} <b>→</b></a>
+            <a href={c.href}>{c.link} <b>&rarr;</b></a>
           </article>
         ))}
       </div>
@@ -94,16 +114,16 @@ function Timeline() {
         <p className="ref-eyebrow gold">TIMELINE PKM UNILA 2025</p>
         <h2>Catat setiap tahap. Jangan lewatkan kesempatan.</h2>
         <p>Pastikan timmu menyelesaikan setiap proses tepat waktu untuk mengikuti seleksi internal.</p>
-        <button className="btn-outline" type="button" onClick={() => window.alert('Fitur kalender segera hadir.')}>▢ Tambahkan ke kalender</button>
+        <button className="btn-outline" type="button" onClick={() => window.alert('Fitur kalender segera hadir.')}>Tambahkan ke kalender</button>
       </div>
       <ol className="tl-right">
         {shown.map((s, i) => (
           <li key={s.id ?? i} className={i === 0 ? 'active' : ''}>
-            <span className="tl-num">{i === 0 ? '✓' : `0${i + 1}`}</span>
+            <span className="tl-num">{i === 0 ? '01' : `0${i + 1}`}</span>
             <div>
               <small>{i === 0 ? 'SEDANG BERLANGSUNG' : s.note?.toUpperCase().includes('TAHAP') ? s.note : `TAHAP ${i + 1}`}</small>
               <h3>{s.stage}</h3>
-              <p>◷ {s.label}</p>
+              <p>{s.label}</p>
             </div>
           </li>
         ))}
@@ -119,7 +139,7 @@ function NewsPreview() {
   return (
     <section className="ref-news">
       <p className="ref-eyebrow gold left">KABAR TERKINI</p>
-      <div className="ref-news-head"><h2>Berita dari PKM Center</h2><a href="#berita">Lihat semua berita <b>→</b></a></div>
+      <div className="ref-news-head"><h2>Berita dari PKM Center</h2><a href="#berita">Lihat semua berita <b>&rarr;</b></a></div>
       <div className="ref-news-grid">
         {items.map((item, i) => (
           <a className="news-card-new" href={`#berita/${item.id}`} key={item.id}>
@@ -131,7 +151,7 @@ function NewsPreview() {
               <p className="news-meta"><span className="pill">{item.category}</span> {formatDate(item)}</p>
               <h3>{item.title}</h3>
               <p className="excerpt">{item.description}</p>
-              <span className="read">Baca selengkapnya <b>→</b></span>
+              <span className="read">Baca selengkapnya <b>&rarr;</b></span>
             </div>
           </a>
         ))}
@@ -145,13 +165,15 @@ function PanduanBanner() {
   const latest = [...pedoman].sort((a, b) => b.year - a.year)[0]
   return (
     <section className="ref-panduan">
-      <div className="panduan-ico" aria-hidden="true">▢</div>
+      <div className="panduan-ico" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
+      </div>
       <div>
         <p className="ref-eyebrow gold left small">PANDUAN RESMI</p>
         <h2>Siap menyusun proposal terbaikmu?</h2>
         <p>Unduh panduan PKM {latest?.year || 2025} dan pahami setiap ketentuan sebelum memulai.</p>
       </div>
-      <a className="btn-primary" href={latest?.fileUrl || '#pedoman'} target={latest?.fileUrl ? '_blank' : undefined} rel="noreferrer">⤓ Unduh panduan PKM {latest?.year || 2025}</a>
+      <a className="btn-primary" href={latest?.fileUrl || '#pedoman'} target={latest?.fileUrl ? '_blank' : undefined} rel="noreferrer">Unduh panduan PKM {latest?.year || 2025} <b>&rarr;</b></a>
     </section>
   )
 }

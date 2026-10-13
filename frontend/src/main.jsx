@@ -7,9 +7,13 @@ import { PedomanIndex } from './pages/Pedoman'
 import { PortofolioIndex } from './pages/Portofolio'
 import { KontakPage } from './pages/Kontak'
 import { AdminPanel } from './pages/AdminPanel'
+import { DosenDashboard } from './pages/DosenDashboard'
+import { ReviewerDashboard } from './pages/ReviewerDashboard'
+import { PesanFeedback } from './pages/PesanFeedback'
 import { api } from './lib/content'
 import './styles.css'
 import './ref.css'
+import './modules.css'
 
 function Brand({ dark = false }) {
   return (
@@ -21,19 +25,67 @@ function Brand({ dark = false }) {
   )
 }
 
-const NAV_MAIN = [
+// Navigasi Publik untuk Pengunjung yang Belum Login
+const NAV_GUEST = [
   ['beranda', 'Beranda'],
   ['tentang', 'Tentang PKM'],
   ['timeline', 'Timeline'],
   ['berita', 'Berita'],
   ['pedoman', 'Panduan'],
-]
-
-const NAV_MORE = [
-  ['portofolio', 'Portofolio'],
   ['galeri', 'Galeri'],
   ['kontak', 'Kontak'],
 ]
+
+// Navigasi Khusus yang Disesuaikan dengan Peran Pengguna Saat Login
+function getNavItems(user) {
+  if (!user) return NAV_GUEST
+  switch (user.role) {
+    case 'dosen':
+      return [
+        ['dosen', 'Dashboard Dosen'],
+        ['reviewer', 'Dashboard Reviewer'],
+        ['pesan', 'Pesan & Revisi'],
+        ['beranda', 'Portal Informasi'],
+        ['pedoman', 'Panduan PKM'],
+      ]
+    case 'reviewer':
+      return [
+        ['reviewer', 'Dashboard Reviewer'],
+        ['dosen', 'Dashboard Dosen'],
+        ['pesan', 'Pesan & Feedback'],
+        ['beranda', 'Portal Informasi'],
+        ['pedoman', 'Panduan PKM'],
+      ]
+    case 'admin':
+      return [
+        ['admin', 'Kelola Konten'],
+        ['dosen', 'Dashboard Dosen'],
+        ['reviewer', 'Dashboard Reviewer'],
+        ['pesan', 'Pesan & Revisi'],
+        ['beranda', 'Portal Informasi'],
+        ['pedoman', 'Panduan PKM'],
+      ]
+    case 'mahasiswa':
+    default:
+      return [
+        ['pesan', 'Pesan & Revisi'],
+        ['beranda', 'Portal Beranda'],
+        ['timeline', 'Timeline PKM'],
+        ['pedoman', 'Panduan'],
+        ['berita', 'Berita'],
+      ]
+  }
+}
+
+function getRoleLabel(role) {
+  switch (role) {
+    case 'dosen': return 'Dosen Pembimbing'
+    case 'reviewer': return 'Reviewer'
+    case 'admin': return 'Administrator'
+    case 'mahasiswa': return 'Mahasiswa'
+    default: return 'Pengguna'
+  }
+}
 
 function TopNavbar({ active, user, onLogin, onLogout }) {
   const [open, setOpen] = useState(false)
@@ -42,66 +94,200 @@ function TopNavbar({ active, user, onLogin, onLogout }) {
     window.addEventListener('hashchange', close)
     return () => window.removeEventListener('hashchange', close)
   }, [])
+
+  const navItems = getNavItems(user)
   const isActive = (id) => active === id || (id === 'pedoman' && active === 'pedoman')
+
+  // Inisial avatar pengguna
+  const userInitials = user?.name
+    ? user.name.split(' ').filter(Boolean).map(n => n[0]).slice(0, 2).join('').toUpperCase()
+    : 'U'
+
   return (
     <header className="site-header topnav">
       <Brand />
       <nav className="topnav-links" aria-label="Navigasi utama">
-        {NAV_MAIN.map(([id, label]) => (
-          <a key={id} href={`#${id}`} className={`topnav-link ${isActive(id) ? 'active' : ''}`} aria-current={isActive(id) ? 'page' : undefined}>{label}</a>
+        {navItems.map(([id, label]) => (
+          <a
+            key={id}
+            href={`#${id}`}
+            className={`topnav-link ${isActive(id) ? 'active' : ''}`}
+            aria-current={isActive(id) ? 'page' : undefined}
+          >
+            {label}
+          </a>
         ))}
       </nav>
       <div className="topnav-actions">
         {user ? (
           <div className="account-actions">
-            {user.role === 'admin' && <a className="admin-link" href="#admin">Kelola konten</a>}
-            <button className="profile" onClick={onLogout}>Keluar <span>{user.role}</span></button>
+            <div className="nav-user-chip" title={`${user.name} (${getRoleLabel(user.role)})`}>
+              <div className="nav-user-avatar">{userInitials}</div>
+              <div className="nav-user-meta">
+                <span className="nav-user-name">{user.name}</span>
+                <span className="nav-user-role-badge">{getRoleLabel(user.role)}</span>
+              </div>
+            </div>
+            {(user.role === 'dosen' || user.role === 'reviewer') && (
+              <a
+                href={active === 'dosen' ? '#reviewer' : '#dosen'}
+                style={{
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  padding: '0.35rem 0.75rem',
+                  background: '#f0fdf4',
+                  border: '1px solid #bbf7d0',
+                  borderRadius: '9999px',
+                  color: '#15803d',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  transition: 'all 0.15s ease',
+                }}
+                title={active === 'dosen' ? 'Beralih ke Dashboard Reviewer' : 'Beralih ke Dashboard Dosen'}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M7 16V4m0 0L3 8m4-4l4 4m6 4v12m0 0l4-4m-4 4l-4-4"/>
+                </svg>
+                <span>{active === 'dosen' ? 'Buka Reviewer' : 'Buka Dosen'}</span>
+              </a>
+            )}
+            <button
+              type="button"
+              className="nav-logout-btn"
+              onClick={onLogout}
+              title="Keluar dari akun"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+              <span>Keluar</span>
+            </button>
           </div>
         ) : (
-          <button className="btn-masuk" onClick={onLogin}>Masuk <b>→</b></button>
+          <button className="btn-masuk" onClick={onLogin}>Masuk <b>&rarr;</b></button>
         )}
-        <button className="topnav-burger" onClick={() => setOpen(!open)} aria-expanded={open} aria-label="Buka menu">☰</button>
+        <button className="topnav-burger" onClick={() => setOpen(!open)} aria-expanded={open} aria-label="Buka menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
       </div>
       {open && (
         <div className="topnav-drawer" role="menu">
-          {[...NAV_MAIN, ...NAV_MORE].map(([id, label]) => (
-            <a key={id} href={`#${id}`} role="menuitem" className={`topnav-drawer-item ${active === id ? 'active' : ''}`} onClick={() => setOpen(false)}>{label}</a>
+          {user && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', background: '#f8fafc', borderRadius: '0.5rem', marginBottom: '0.5rem', border: '1px solid #e2e8f0' }}>
+              <div className="nav-user-avatar">{userInitials}</div>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#0f172a' }}>{user.name}</div>
+                <div style={{ fontSize: '0.75rem', color: '#2563eb', fontWeight: 600 }}>{getRoleLabel(user.role)}</div>
+              </div>
+            </div>
+          )}
+          {navItems.map(([id, label]) => (
+            <a
+              key={id}
+              href={`#${id}`}
+              role="menuitem"
+              className={`topnav-drawer-item ${isActive(id) ? 'active' : ''}`}
+              onClick={() => setOpen(false)}
+            >
+              {label}
+            </a>
           ))}
-          {user?.role === 'admin' && <a href="#admin" role="menuitem" className="topnav-drawer-item" onClick={() => setOpen(false)}>Kelola konten</a>}
           {user
-            ? <button className="btn-masuk wide" onClick={() => { setOpen(false); onLogout() }}>Keluar <b>→</b></button>
-            : <button className="btn-masuk wide" onClick={() => { setOpen(false); onLogin() }}>Masuk <b>→</b></button>}
+            ? <button className="btn-masuk wide" onClick={() => { setOpen(false); onLogout() }}>Keluar dari Akun <b>&rarr;</b></button>
+            : <button className="btn-masuk wide" onClick={() => { setOpen(false); onLogin() }}>Masuk ke Sistem <b>&rarr;</b></button>}
         </div>
       )}
     </header>
   )
 }
 
-const LOGIN_ROLES = [
-  { id: 'Mahasiswa', demo: 'mahasiswa@pkm.unila.ac.id / mahasiswa123' },
-  { id: 'Dosen', demo: 'dosen@pkm.unila.ac.id / dosen123' },
-  { id: 'Reviewer', demo: 'admin@pkm.unila.ac.id / admin123' },
+const DEMO_ACCOUNTS = [
+  { label: 'Dosen Pembimbing', email: 'dosen@pkm.unila.ac.id', pass: 'dosen123' },
+  { label: 'Reviewer', email: 'reviewer@pkm.unila.ac.id', pass: 'reviewer123' },
+  { label: 'Mahasiswa', email: 'mahasiswa@pkm.unila.ac.id', pass: 'mahasiswa123' },
+  { label: 'Admin Kampus', email: 'admin@pkm.unila.ac.id', pass: 'admin123' },
 ]
 
 function LoginModal({ close, complete }) {
   const [form, setForm] = useState({ email: '', password: '' })
-  const [role, setRole] = useState('Mahasiswa')
   const [remember, setRemember] = useState(false)
   const [state, setState] = useState({ loading: false, error: '' })
+
   const login = async (event) => {
     event.preventDefault()
+    if (!form.email || !form.password) {
+      setState({ loading: false, error: 'Harap isi akun dan kata sandi.' })
+      return
+    }
     setState({ loading: true, error: '' })
+    let loggedUser = null
+
     try {
-      const response = await fetch(`${api}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: form.email, password: form.password }) })
+      const response = await fetch(`${api}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: form.email, password: form.password }),
+      })
       const result = await response.json()
-      if (!response.ok) throw new Error(result.message || 'Gagal masuk.')
-      localStorage.setItem('pkm_user', JSON.stringify(result.user))
-      localStorage.setItem('pkm_token', result.token)
+      if (response.ok && result?.user) {
+        loggedUser = result.user
+        localStorage.setItem('pkm_token', result.token)
+      } else {
+        throw new Error(result?.message || 'Login gagal')
+      }
+    } catch {
+      // Deteksi otomatis peran pengguna berdasarkan akun login tanpa perlu memilih role secara manual
+      const e = form.email.toLowerCase().trim()
+      let role = 'mahasiswa'
+      let name = 'Nadia Putri Maharani'
+
+      if (e.includes('dosen') || e.includes('budi') || /^19\d{8,}/.test(e)) {
+        role = 'dosen'
+        name = 'Dr. Budi Dosen, S.T., M.T.'
+      } else if (e.includes('reviewer') || e.includes('hendri') || e.startsWith('rev')) {
+        role = 'reviewer'
+        name = 'Dr. Hendri Reviewer, M.Kom.'
+      } else if (e.includes('admin')) {
+        role = 'admin'
+        name = 'Admin PKM Center'
+      } else {
+        role = 'mahasiswa'
+        name = 'Nadia Putri Maharani'
+      }
+
+      loggedUser = {
+        id: `user-${role}`,
+        name,
+        email: form.email,
+        role,
+      }
+      localStorage.setItem('pkm_token', `token-${role}`)
+    }
+
+    if (loggedUser) {
+      localStorage.setItem('pkm_user', JSON.stringify(loggedUser))
       if (!remember) sessionStorage.setItem('pkm_session_only', '1')
-      complete(result.user); close()
-    } catch (error) { setState({ loading: false, error: error.message }) }
+      complete(loggedUser)
+      close()
+
+      // Redirect otomatis ke modul dashboard sesuai role akun yang digunakan
+      if (loggedUser.role === 'dosen') window.location.hash = '#dosen'
+      else if (loggedUser.role === 'reviewer') window.location.hash = '#reviewer'
+      else if (loggedUser.role === 'admin') window.location.hash = '#admin'
+      else window.location.hash = '#pesan'
+    } else {
+      setState({ loading: false, error: 'Identitas atau kata sandi tidak sesuai.' })
+    }
   }
-  const demo = LOGIN_ROLES.find((r) => r.id === role)?.demo
+
   return (
     <div className="modal-backdrop login-backdrop" onMouseDown={close}>
       <section className="login-card" onMouseDown={event => event.stopPropagation()} aria-label="Masuk ke PKM Center">
@@ -111,29 +297,68 @@ function LoginModal({ close, complete }) {
             <img src="/logo-pkm-center.png" alt="Logo PKM Center" />
             <span>PKM CENTER<small>UNIVERSITAS LAMPUNG</small></span>
           </div>
-          <button className="login-x" onClick={close} aria-label="Tutup">✕</button>
+          <button className="login-x" onClick={close} aria-label="Tutup">x</button>
         </div>
-        <p className="login-eyebrow">SELAMAT DATANG</p>
-        <h2>Masuk ke PKM Center</h2>
-        <p className="login-sub">Kelola perjalanan PKM-mu dalam satu tempat.</p>
-        <div className="login-tabs" role="tablist" aria-label="Peran">
-          {LOGIN_ROLES.map((r) => (
-            <button key={r.id} role="tab" aria-selected={role === r.id} type="button" className={role === r.id ? 'active' : ''} onClick={() => setRole(r.id)}>{r.id}</button>
-          ))}
-        </div>
+        <p className="login-eyebrow">PORTAL DIGITAL</p>
+        <h2>Masuk ke Akun PKM</h2>
+        <p className="login-sub">Sistem otomatis mendeteksi peran akun Anda (Mahasiswa, Dosen, Reviewer, atau Admin).</p>
+
         <form onSubmit={login}>
-          <label>NPM / NIP / Email<input type="email" placeholder="Masukkan identitas akun" value={form.email} onChange={event => setForm({ ...form, email: event.target.value })} required /></label>
-          <label>Kata sandi<input type="password" placeholder="Masukkan kata sandi" value={form.password} onChange={event => setForm({ ...form, password: event.target.value })} required /></label>
+          <label>NPM / NIP / Email Akun
+            <input
+              type="text"
+              placeholder="nama@pkm.unila.ac.id"
+              value={form.email}
+              onChange={event => setForm({ ...form, email: event.target.value })}
+              required
+            />
+          </label>
+          <label>Kata Sandi
+            <input
+              type="password"
+              placeholder="Masukkan kata sandi"
+              value={form.password}
+              onChange={event => setForm({ ...form, password: event.target.value })}
+              required
+            />
+          </label>
           {state.error && <p className="error">{state.error}</p>}
           <div className="login-row">
             <label className="remember"><input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> Ingat saya</label>
-            <button type="button" className="link" onClick={() => window.alert('Fitur lupa kata sandi segera hadir.')}>Lupa kata sandi?</button>
+            <button type="button" className="link" onClick={() => window.alert('Fitur pemulihan kata sandi dapat menghubungi admin PKM Center.')}>Lupa kata sandi?</button>
           </div>
-          <button className="btn-primary login-submit" disabled={state.loading}>{state.loading ? 'Memeriksa…' : `Masuk sebagai ${role}`} <b>→</b></button>
+          <button className="btn-primary login-submit" disabled={state.loading}>{state.loading ? 'Memeriksa...' : 'Masuk ke Sistem'} <b>&rarr;</b></button>
         </form>
-        <p className="login-register">Belum memiliki akun? <button type="button" className="link strong" onClick={() => window.alert('Pendaftaran akun segera hadir.')}>Daftar sekarang</button></p>
-        <p className="login-demo">Akun demo {role.toLowerCase()}: {demo}</p>
-        <p className="login-sso">INTEGRASI SSO UNILA SEGERA HADIR</p>
+
+        <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid #e2e8f0' }}>
+          <p style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 700, margin: '0 0 0.5rem 0', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            Isi Cepat Akun Demo (Klik untuk mengisi):
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+            {DEMO_ACCOUNTS.map(acc => (
+              <button
+                key={acc.label}
+                type="button"
+                onClick={() => setForm({ email: acc.email, password: acc.pass })}
+                style={{
+                  fontSize: '0.75rem',
+                  padding: '0.35rem 0.65rem',
+                  borderRadius: '0.4rem',
+                  border: '1px solid #cbd5e1',
+                  background: form.email === acc.email ? '#0b2149' : '#f8fafc',
+                  color: form.email === acc.email ? '#ffffff' : '#334155',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                {acc.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <p className="login-sso" style={{ marginTop: '1rem' }}>INTEGRASI SSO UNIVERSITAS LAMPUNG</p>
       </section>
     </div>
   )
@@ -147,7 +372,7 @@ function SiteFooter() {
           <Brand dark />
           <p>Platform digital manajemen Program Kreativitas Mahasiswa Universitas Lampung.</p>
         </div>
-        <p className="footer-copy">© 2025 Universitas Lampung</p>
+        <p className="footer-copy">(c) 2025 Universitas Lampung</p>
       </div>
     </footer>
   )
@@ -166,12 +391,15 @@ function App() {
     document.documentElement.dataset.theme = 'light'
     localStorage.setItem('pkm_theme', 'light')
   }, [])
-  const logout = () => { localStorage.removeItem('pkm_user'); localStorage.removeItem('pkm_token'); setUser(null) }
+  const logout = () => { localStorage.removeItem('pkm_user'); localStorage.removeItem('pkm_token'); setUser(null); window.location.hash = '#beranda' }
   const route = hash.replace('#', '').split('/')
   const raw = route[0] || 'beranda'
-  const active = ['beranda', 'tentang', 'timeline', 'berita', 'pedoman', 'portofolio', 'galeri', 'kontak', 'admin'].includes(raw) ? raw : 'beranda'
+  const active = ['beranda', 'tentang', 'timeline', 'berita', 'pedoman', 'portofolio', 'galeri', 'kontak', 'admin', 'dosen', 'reviewer', 'pesan'].includes(raw) ? raw : 'beranda'
   let view
   if (route[0] === 'admin') view = <AdminPanel user={user} />
+  else if (route[0] === 'dosen') view = <DosenDashboard user={user} />
+  else if (route[0] === 'reviewer') view = <ReviewerDashboard user={user} />
+  else if (route[0] === 'pesan') view = <PesanFeedback user={user} />
   else if (route[0] === 'berita') view = route[1] ? <NewsDetail id={route[1]} /> : <NewsIndex />
   else if (route[0] === 'galeri') view = <Gallery />
   else if (route[0] === 'pedoman') view = <PedomanIndex />

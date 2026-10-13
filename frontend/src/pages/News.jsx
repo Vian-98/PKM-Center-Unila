@@ -11,7 +11,7 @@ function NewsVisual({ item }) {
     <div className={`news-visual ${image ? 'has-image' : ''} ${item.color}`}>
       {image && <img src={image} alt="" aria-hidden="true" onError={hideBrokenImage} />}
       <span>{item.category}</span>
-      <b>↗</b>
+      <b>&rarr;</b>
     </div>
   )
 }
