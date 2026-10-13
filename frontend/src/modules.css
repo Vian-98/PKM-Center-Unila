@@ -1092,3 +1092,224 @@
 }
 
 
+/* ==========================================================================
+   Portal Mahasiswa (Anggota 2 — Favian)
+   Dashboard, Form Ajukan Proposal Multi-Step, Logbook PKM, & Cek Status.
+   Mobile-first, selaras dengan bahasa desain modul Dosen/Reviewer.
+   ========================================================================== */
+
+/* --- Header kanan modul (identitas pengusul + CTA) --- */
+.student-header-meta { text-align: left; display: flex; flex-direction: column; gap: 0.2rem; }
+.student-header-meta .student-eyebrow { font-size: 0.85rem; color: rgba(255, 255, 255, 0.8); }
+.student-header-meta .student-name { font-weight: 800; font-size: 1.15rem; color: #ffffff; }
+.student-header-meta .student-sub { font-size: 0.8rem; color: #fbbf24; }
+.student-header-actions { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.5rem; flex-wrap: wrap; }
+.student-cta {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.5rem 1rem; background: #f59e0b; color: #ffffff; border: 1px solid #fbbf24;
+  border-radius: 0.5rem; font-size: 0.8rem; font-weight: 700; text-decoration: none;
+  transition: all 0.2s ease;
+}
+.student-cta:hover { background: #d97706; transform: translateY(-1px); }
+.student-cta.ghost { background: rgba(255, 255, 255, 0.14); border-color: rgba(255, 255, 255, 0.35); color: #ffffff; }
+.student-cta.ghost:hover { background: rgba(255, 255, 255, 0.24); }
+
+/* --- Lonceng notifikasi in-app --- */
+.student-bell-wrap { position: relative; }
+.student-bell-btn {
+  position: relative; width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14); border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff; font-size: 1.15rem; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s ease;
+}
+.student-bell-btn:hover { background: rgba(255, 255, 255, 0.26); }
+.student-bell-count {
+  position: absolute; top: -3px; right: -3px; min-width: 19px; height: 19px; padding: 0 4px;
+  background: #ef4444; color: #ffffff; border-radius: 9999px; font-size: 0.68rem;
+  font-weight: 800; display: flex; align-items: center; justify-content: center;
+}
+.student-bell-panel {
+  position: absolute; top: 54px; right: 0; width: min(340px, 86vw);
+  background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.85rem;
+  box-shadow: 0 18px 40px -12px rgba(11, 33, 73, 0.35); z-index: 60; overflow: hidden;
+  animation: fadeIn 0.18s ease;
+}
+.student-bell-head {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.85rem 1rem; border-bottom: 1px solid #e2e8f0; background: #f8fafc;
+}
+.student-bell-head strong { color: #0b2149; font-size: 0.9rem; }
+.student-bell-head button {
+  background: none; border: none; color: #2563eb; font-size: 0.75rem; font-weight: 700; cursor: pointer;
+}
+.student-bell-list { max-height: 340px; overflow-y: auto; }
+.student-bell-item { display: flex; gap: 0.7rem; padding: 0.8rem 1rem; border-bottom: 1px solid #f1f5f9; }
+.student-bell-item.unread { background: #eff6ff; }
+.student-bell-dot { width: 8px; height: 8px; margin-top: 0.4rem; border-radius: 50%; background: #cbd5e1; flex: none; }
+.student-bell-item.unread .student-bell-dot { background: #2563eb; }
+.student-bell-item-title { font-weight: 700; font-size: 0.85rem; color: #0f172a; }
+.student-bell-item-msg { font-size: 0.8rem; color: #64748b; line-height: 1.45; margin-top: 0.15rem; }
+.student-bell-item-time { font-size: 0.7rem; color: #94a3b8; margin-top: 0.25rem; }
+.student-bell-empty { padding: 1.75rem 1rem; text-align: center; color: #94a3b8; font-size: 0.85rem; }
+
+/* --- Tata letak umum --- */
+.student-stack { display: flex; flex-direction: column; gap: 1.25rem; }
+.student-split { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
+.student-panel {
+  background: #ffffff; border: 1px solid #e2e8f0; border-radius: 1rem;
+  padding: 1.5rem; box-shadow: 0 2px 6px rgba(11, 33, 73, 0.04);
+}
+.student-panel-title { font-size: 1.05rem; font-weight: 800; color: #0b2149; margin: 0 0 1rem; }
+.student-section-title { font-size: 1.1rem; font-weight: 800; color: #0b2149; margin: 1.5rem 0 1rem; }
+.student-empty {
+  text-align: center; padding: 2.75rem 1.5rem; background: #ffffff;
+  border-radius: 1rem; border: 1px dashed #cbd5e1; color: #64748b;
+}
+.student-empty h4 { margin: 0 0 0.4rem; color: #0b2149; }
+.student-empty p { margin: 0 0 1rem; font-size: 0.9rem; }
+
+/* --- Stepper 5 tahap --- */
+.student-stepper { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+.student-step {
+  position: relative; display: flex; gap: 0.85rem; align-items: flex-start;
+  background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.9rem; padding: 1.1rem;
+  box-shadow: 0 2px 6px rgba(11, 33, 73, 0.04); transition: all 0.2s ease;
+}
+.student-step:hover { border-color: #cbd5e1; }
+.student-step.done { border-color: #a7f3d0; background: #f0fdf4; }
+.student-step.active { border-color: #fcd34d; background: #fffbeb; box-shadow: 0 8px 18px -8px rgba(245, 158, 11, 0.5); }
+.student-step-index {
+  width: 2.1rem; height: 2.1rem; border-radius: 50%; flex: none;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 0.9rem; color: #ffffff; background: #cbd5e1;
+}
+.student-step.done .student-step-index { background: #10b981; }
+.student-step.active .student-step-index { background: #f59e0b; }
+.student-step-body { min-width: 0; }
+.student-step-eyebrow { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; }
+.student-step-label { font-weight: 700; color: #0f172a; line-height: 1.3; margin-top: 0.15rem; }
+.student-step-status { font-size: 0.75rem; font-weight: 700; margin-top: 0.35rem; color: #94a3b8; }
+.student-step.done .student-step-status { color: #059669; }
+.student-step.active .student-step-status { color: #b45309; }
+
+/* --- Kartu sub-entitas (pembimbing/anggota) --- */
+.student-member-row {
+  display: flex; justify-content: space-between; align-items: center; gap: 0.6rem;
+  padding: 0.65rem 0.85rem; background: #f8fafc; border-radius: 0.55rem;
+}
+.student-member-name { font-weight: 700; font-size: 0.9rem; color: #0f172a; }
+.student-member-sub { font-size: 0.78rem; color: #64748b; }
+.student-member-row > span:last-child { flex: none; }
+
+/* --- Progress bar (logbook) --- */
+.student-progress { margin-top: 0.6rem; }
+.student-progress-track { background: #e2e8f0; height: 8px; border-radius: 9999px; overflow: hidden; }
+.student-progress-fill { height: 100%; border-radius: 9999px; background: linear-gradient(90deg, #0b2149, #1d4ed8); transition: width 0.4s ease; }
+
+/* --- Formulir --- */
+.student-form-card {
+  background: #ffffff; border: 1px solid #e2e8f0; border-radius: 1rem;
+  padding: 1.5rem; box-shadow: 0 4px 14px rgba(11, 33, 73, 0.06);
+}
+.student-stepbar { display: flex; gap: 0.6rem; margin-bottom: 1.75rem; overflow-x: auto; padding-bottom: 0.25rem; }
+.student-stepbar-item {
+  flex: 1; min-width: 150px; padding: 0.75rem 1rem; border-radius: 0.65rem;
+  background: #f1f5f9; border: 1px solid #e2e8f0; color: #64748b;
+  font-weight: 700; font-size: 0.85rem; white-space: nowrap;
+}
+.student-stepbar-item.done { background: #ecfdf5; border-color: #a7f3d0; color: #047857; }
+.student-stepbar-item.active { background: #0b2149; border-color: #0b2149; color: #ffffff; }
+.student-field { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.1rem; }
+.student-label { font-weight: 700; color: #0f172a; font-size: 0.9rem; }
+.student-hint { font-size: 0.8rem; color: #94a3b8; margin: 0; }
+.student-input, .student-textarea, .student-select {
+  width: 100%; padding: 0.7rem 0.85rem; font-size: 0.92rem; font-family: inherit;
+  color: #0f172a; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 0.55rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.student-textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+.student-input:focus, .student-textarea:focus, .student-select:focus {
+  outline: none; border-color: #175b91; box-shadow: 0 0 0 3px rgba(23, 91, 145, 0.15);
+}
+.student-form-actions {
+  display: flex; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap;
+  margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid #f1f5f9;
+}
+.student-actions-right { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.student-summary {
+  background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.65rem; padding: 1rem 1.1rem;
+}
+.student-summary-row { display: flex; gap: 0.5rem; font-size: 0.87rem; color: #334155; line-height: 1.9; }
+.student-summary-row strong { color: #0b2149; min-width: 110px; }
+
+/* Editor anggota tim */
+.student-member-editor {
+  display: grid; grid-template-columns: 1fr; gap: 0.6rem;
+  padding: 0.85rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+.student-member-editor input {
+  width: 100%; padding: 0.55rem 0.7rem; border: 1px solid #cbd5e1; border-radius: 0.45rem; font-size: 0.88rem;
+}
+
+/* Unggah berkas */
+.student-upload-box {
+  border: 1.5px dashed #cbd5e1; border-radius: 0.7rem; padding: 1.25rem; text-align: center;
+  background: #f8fafc; transition: all 0.2s ease;
+}
+.student-upload-box:hover { border-color: #175b91; background: #eff6ff; }
+.student-file-chip {
+  display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 0.6rem;
+  background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857;
+  padding: 0.4rem 0.75rem; border-radius: 0.5rem; font-size: 0.8rem; font-weight: 700;
+}
+.student-doc-version {
+  display: flex; justify-content: space-between; align-items: center; gap: 0.75rem;
+  padding: 0.75rem 0.9rem; border: 1px solid #e2e8f0; border-radius: 0.55rem; background: #ffffff;
+  margin-bottom: 0.6rem;
+}
+.student-doc-version .v-badge {
+  background: #0b2149; color: #ffffff; font-size: 0.72rem; font-weight: 800;
+  padding: 0.2rem 0.55rem; border-radius: 0.35rem;
+}
+
+/* --- Logbook --- */
+.student-log-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+.student-log-card {
+  background: #ffffff; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 1.25rem;
+  box-shadow: 0 2px 6px rgba(11, 33, 73, 0.04);
+}
+.student-log-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.55rem; }
+.student-log-title { font-size: 1.05rem; font-weight: 700; color: #0f172a; margin: 0 0 0.4rem; }
+.student-log-desc { font-size: 0.9rem; color: #475569; line-height: 1.55; margin: 0 0 0.6rem; }
+.student-log-meta { display: flex; flex-wrap: wrap; gap: 0.5rem 1.1rem; font-size: 0.83rem; color: #64748b; }
+.student-percent-chip {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe;
+  padding: 0.2rem 0.6rem; border-radius: 9999px; font-size: 0.74rem; font-weight: 800;
+}
+.student-log-comment {
+  margin-top: 0.6rem; background: #f8fafc; border-left: 3px solid #3b82f6;
+  padding: 0.65rem 0.85rem; border-radius: 0 0.5rem 0.5rem 0; font-size: 0.86rem; color: #334155;
+}
+
+/* --- Cek Status Publik --- */
+.student-search { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1.25rem; }
+.student-search input {
+  flex: 1; min-width: 220px; padding: 0.85rem 1rem; border-radius: 0.65rem;
+  border: 1px solid rgba(255, 255, 255, 0.4); font-size: 1rem; font-family: inherit;
+}
+.student-result-steps { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.75rem 0; }
+
+/* --- Responsive --- */
+@media (min-width: 640px) {
+  .student-header-meta { text-align: right; align-items: flex-end; }
+  .student-header-actions { justify-content: flex-end; }
+  .student-stepper { grid-template-columns: repeat(2, 1fr); }
+  .student-member-editor { grid-template-columns: 0.8fr 1.4fr 1.4fr auto; align-items: center; }
+}
+@media (min-width: 900px) {
+  .student-stepper { grid-template-columns: repeat(5, 1fr); }
+  .student-split { grid-template-columns: minmax(0, 1.65fr) minmax(280px, 1fr); }
+  .student-log-grid { grid-template-columns: minmax(300px, 400px) minmax(0, 1fr); }
+}

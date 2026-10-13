@@ -5,13 +5,13 @@ import "time"
 // ---------- MASTER PKM ----------
 
 type PKMPeriod struct {
-	ID                string    `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
-	Name              string    `json:"name" gorm:"not null"`
-	Year              int       `json:"year" gorm:"not null"`
+	ID                string     `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
+	Name              string     `json:"name" gorm:"not null"`
+	Year              int        `json:"year" gorm:"not null"`
 	RegistrationStart *time.Time `json:"registrationStart" gorm:"column:registration_start;type:date"`
 	RegistrationEnd   *time.Time `json:"registrationEnd" gorm:"column:registration_end;type:date"`
-	Status            string    `json:"status" gorm:"default:draft"`
-	CreatedAt         time.Time `json:"createdAt"`
+	Status            string     `json:"status" gorm:"default:draft"`
+	CreatedAt         time.Time  `json:"createdAt"`
 }
 
 func (PKMPeriod) TableName() string { return "pkm_periods" }

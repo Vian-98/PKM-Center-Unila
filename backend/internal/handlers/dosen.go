@@ -73,15 +73,15 @@ func (h DosenHandler) GetOverview(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"data": gin.H{
-			"lecturerNumber":       lecturerProfile.LecturerNumber,
-			"faculty":              lecturerProfile.Faculty,
-			"department":           lecturerProfile.Department,
-			"studyProgram":         lecturerProfile.StudyProgram,
-			"academicPosition":     lecturerProfile.AcademicPosition,
-			"supervisionCapacity":  capacity,
+			"lecturerNumber":        lecturerProfile.LecturerNumber,
+			"faculty":               lecturerProfile.Faculty,
+			"department":            lecturerProfile.Department,
+			"studyProgram":          lecturerProfile.StudyProgram,
+			"academicPosition":      lecturerProfile.AcademicPosition,
+			"supervisionCapacity":   capacity,
 			"activeSupervisedCount": activeSupervisedCount,
-			"remainingCapacity":    capacity - int(activeSupervisedCount),
-			"pendingRequestsCount": pendingRequestsCount,
+			"remainingCapacity":     capacity - int(activeSupervisedCount),
+			"pendingRequestsCount":  pendingRequestsCount,
 			"upcomingSessionsCount": upcomingSessionsCount,
 		},
 	})
@@ -96,19 +96,19 @@ func (h DosenHandler) GetProposals(c *gin.Context) {
 	}
 
 	type ProposalItem struct {
-		ID            string    `json:"id"`
-		Title         string    `json:"title"`
-		Abstract      string    `json:"abstract"`
-		Status        string    `json:"status"`
-		SchemeCode    string    `json:"schemeCode"`
-		SchemeName    string    `json:"schemeName"`
-		TeamName      string    `json:"teamName"`
-		LeaderName    string    `json:"leaderName"`
-		LeaderFaculty string    `json:"leaderFaculty"`
-		IsFunded      bool      `json:"isFunded"`
+		ID            string     `json:"id"`
+		Title         string     `json:"title"`
+		Abstract      string     `json:"abstract"`
+		Status        string     `json:"status"`
+		SchemeCode    string     `json:"schemeCode"`
+		SchemeName    string     `json:"schemeName"`
+		TeamName      string     `json:"teamName"`
+		LeaderName    string     `json:"leaderName"`
+		LeaderFaculty string     `json:"leaderFaculty"`
+		IsFunded      bool       `json:"isFunded"`
 		SubmittedAt   *time.Time `json:"submittedAt"`
-		CreatedAt     time.Time `json:"createdAt"`
-		LogbookCount  int64     `json:"logbookCount"`
+		CreatedAt     time.Time  `json:"createdAt"`
+		LogbookCount  int64      `json:"logbookCount"`
 	}
 
 	var items []ProposalItem

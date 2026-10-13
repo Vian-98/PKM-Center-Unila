@@ -4,17 +4,18 @@ import (
 	"crypto/rand"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 	"pkm-center/backend/internal/config"
 	"pkm-center/backend/internal/handlers"
 	"pkm-center/backend/internal/middleware"
 	"pkm-center/backend/internal/models"
 	"pkm-center/backend/migrations"
-	"gorm.io/gorm"
 )
 
 func main() {
@@ -34,6 +35,9 @@ func main() {
 	secret := config.Env("JWT_SECRET", "development-secret")
 	r := gin.Default()
 	r.Use(cors.New(cors.Config{AllowOrigins: []string{config.Env("CORS_ORIGIN", "http://localhost:5173")}, AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}, AllowHeaders: []string{"Origin", "Content-Type", "Authorization"}}))
+	uploadDir := config.Env("UPLOAD_DIR", "uploads")
+	_ = os.MkdirAll(uploadDir, 0o755)
+	r.Static("/uploads", uploadDir)
 	r.GET("/health", func(c *gin.Context) { c.JSON(200, gin.H{"status": "ok"}) })
 	auth := handlers.AuthHandler{DB: db, Secret: secret}
 	content := handlers.ContentHandler{DB: db}
@@ -46,6 +50,7 @@ func main() {
 	dosen := handlers.DosenHandler{DB: db}
 	reviewer := handlers.ReviewerHandler{DB: db}
 	msgFeedback := handlers.MessageFeedbackHandler{DB: db}
+	student := handlers.StudentHandler{DB: db}
 
 	api := r.Group("/api")
 	api.POST("/auth/login", auth.Login)
@@ -86,6 +91,21 @@ func main() {
 	authGroup.GET("/feedback/proposal/:proposalId", msgFeedback.GetProposalFeedback)
 	authGroup.POST("/feedback/proposal/:proposalId", msgFeedback.CreateProposalFeedback)
 
+	// --- Modul Portal Mahasiswa (Anggota 2 — Favian) ---
+	api.GET("/proposals/track", student.TrackProposal) // publik: lacak status via NPM
+	studentGroup := api.Group("/student", middleware.RequireAuth(secret, "mahasiswa", "admin"))
+	studentGroup.GET("/dashboard", student.GetDashboard)
+	studentGroup.GET("/schemes", student.GetSchemes)
+	studentGroup.GET("/supervisors", student.GetSupervisors)
+	studentGroup.POST("/proposals", student.CreateProposal)
+	studentGroup.GET("/proposals/:id", student.GetProposalDetail)
+	studentGroup.POST("/proposals/upload", student.UploadProposalDocument)
+	studentGroup.POST("/upload", student.UploadStudentFile)
+	studentGroup.GET("/notifications", student.GetNotifications)
+	studentGroup.POST("/notifications/read", student.MarkNotificationsRead)
+	studentGroup.GET("/logbook", student.GetLogbook)
+	studentGroup.POST("/logbook", student.CreateLogbook)
+
 	// --- Modul Admin ---
 	admin := api.Group("/admin", middleware.RequireAuth(secret, "admin"))
 	admin.GET("/overview", func(c *gin.Context) { c.JSON(200, gin.H{"message": "Selamat datang, Admin PKM Center"}) })
@@ -116,7 +136,7 @@ func main() {
 
 type seedContentItem struct {
 	Type, Title, Category, Description, Body, MediaURL, ThumbnailURL, Color string
-	DaysAgo                                                                  int
+	DaysAgo                                                                 int
 }
 
 func seedContent(db *gorm.DB) {
@@ -194,22 +214,38 @@ func seedContent(db *gorm.DB) {
 			db.Create(&models.Content{Type: s.Type, Title: s.Title, Category: s.Category, Description: s.Description, Body: s.Body, MediaURL: s.MediaURL, ThumbnailURL: s.ThumbnailURL, Color: s.Color, PublishedAt: published})
 			continue
 		}
-		if err != nil { continue }
+		if err != nil {
+			continue
+		}
 		// Upsert non-destruktif: hanya mengisi kolom yang masih kosong,
 		// sehingga konten (mis. URL video) yang pernah dibuat/diubah admin tidak tertimpa.
 		updates := map[string]any{}
-		if existing.ThumbnailURL == "" && s.ThumbnailURL != "" { updates["thumbnail_url"] = s.ThumbnailURL }
-		if existing.MediaURL == "" && s.MediaURL != "" { updates["media_url"] = s.MediaURL }
-		if existing.Body == "" && s.Body != "" { updates["body"] = s.Body }
-		if existing.Description == "" && s.Description != "" { updates["description"] = s.Description }
-		if existing.Category == "" && s.Category != "" { updates["category"] = s.Category }
-		if existing.Color == "" && s.Color != "" { updates["color"] = s.Color }
+		if existing.ThumbnailURL == "" && s.ThumbnailURL != "" {
+			updates["thumbnail_url"] = s.ThumbnailURL
+		}
+		if existing.MediaURL == "" && s.MediaURL != "" {
+			updates["media_url"] = s.MediaURL
+		}
+		if existing.Body == "" && s.Body != "" {
+			updates["body"] = s.Body
+		}
+		if existing.Description == "" && s.Description != "" {
+			updates["description"] = s.Description
+		}
+		if existing.Category == "" && s.Category != "" {
+			updates["category"] = s.Category
+		}
+		if existing.Color == "" && s.Color != "" {
+			updates["color"] = s.Color
+		}
 		// Selaraskan tanggal terbit seed-known jika melenceng lebih dari sehari,
 		// supaya urutan berita tetap terbaru-ke-lama tanpa menimpa data admin.
 		if existing.PublishedAt.Add(24*time.Hour).Before(published) || existing.PublishedAt.After(published.Add(24*time.Hour)) {
 			updates["published_at"] = published
 		}
-		if len(updates) > 0 { db.Model(&existing).Updates(updates) }
+		if len(updates) > 0 {
+			db.Model(&existing).Updates(updates)
+		}
 	}
 }
 
@@ -265,7 +301,10 @@ func seedUsers(db *gorm.DB) {
 // kontak, feedback) secara non-destruktif: hanya membuat baris yang belum ada.
 func seedInfo(db *gorm.DB) {
 	// --- TIMELINE PKM per tahun ---
-	stages := []struct { Year, Order int; Stage, Label, Note string }{
+	stages := []struct {
+		Year, Order        int
+		Stage, Label, Note string
+	}{
 		// 2026
 		{2026, 1, "Sosialisasi & orientasi skema", "Januari — Februari 2026", "Pengenalan skema PKM dan sesi tanya jawab bagi calon pengusul."},
 		{2026, 2, "Pendampingan penyusunan proposal", "Februari — Maret 2026", "Kelas intensif, klinik proposal, dan konsultasi per kelompok."},
@@ -332,12 +371,20 @@ func seedInfo(db *gorm.DB) {
 			db.Create(&p)
 			continue
 		}
-		if err != nil { continue }
+		if err != nil {
+			continue
+		}
 		// Non-destruktif: hanya mengisi kolom ringkasan yang masih kosong.
 		updates := map[string]any{}
-		if existing.Description == "" && p.Description != "" { updates["description"] = p.Description }
-		if existing.Link == "" && p.Link != "" { updates["link"] = p.Link }
-		if len(updates) > 0 { db.Model(&existing).Updates(updates) }
+		if existing.Description == "" && p.Description != "" {
+			updates["description"] = p.Description
+		}
+		if existing.Link == "" && p.Link != "" {
+			updates["link"] = p.Link
+		}
+		if len(updates) > 0 {
+			db.Model(&existing).Updates(updates)
+		}
 	}
 
 	// --- STATISTIK jumlah usulan per skema ---
@@ -466,7 +513,7 @@ func seedV2(db *gorm.DB) {
 			N    int
 		}{
 			{"PKM-K", 87}, {"PKM-PI", 92}, {"PKM-PM", 64}, {"PKM-KC", 41},
-			{"PKM-GFT", 12}, {"PKM-KI", 38}, {"PKM-AI", 9}, {"PKM-RE", 56}, {"PKM-RSH", 27},
+			{"PKM-GFT", 12}, {"PKM-KI", 38}, {"PKM-AI", 9}, {"PKM-RE", 56}, {"PKM-RSH", 27}, {"PKM-VGK", 7},
 		}
 		for _, sc := range seedCounts {
 			var scheme models.PKMScheme
@@ -514,14 +561,14 @@ func seedV2(db *gorm.DB) {
 		var acceptedProposal models.Proposal
 		if err := db.Where("team_id = ? AND id != ?", team.ID, demoProposal.ID).First(&acceptedProposal).Error; err == gorm.ErrRecordNotFound {
 			acceptedProposal = models.Proposal{
-				ID:          newUUID(),
-				TeamID:      team.ID,
-				SchemeID:    demoProposal.SchemeID,
-				PeriodID:    period.ID,
-				Title:       "Implementasi AI Vision untuk Sortir Biji Kopi Robusta Lampung",
-				Abstract:    "Inovasi sistem sortir otomatis kualitas biji kopi menggunakan computer vision berbasis edge AI untuk meningkatkan nilai jual petani kopi Tanggamus.",
-				Status:      "submitted",
-				IsFunded:    false,
+				ID:       newUUID(),
+				TeamID:   team.ID,
+				SchemeID: demoProposal.SchemeID,
+				PeriodID: period.ID,
+				Title:    "Implementasi AI Vision untuk Sortir Biji Kopi Robusta Lampung",
+				Abstract: "Inovasi sistem sortir otomatis kualitas biji kopi menggunakan computer vision berbasis edge AI untuk meningkatkan nilai jual petani kopi Tanggamus.",
+				Status:   "submitted",
+				IsFunded: false,
 			}
 			db.Create(&acceptedProposal)
 		}

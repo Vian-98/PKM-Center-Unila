@@ -22,13 +22,13 @@ func (h MessageFeedbackHandler) GetConversations(c *gin.Context) {
 	}
 
 	type ConversationItem struct {
-		ContactID   string    `json:"contactId"`
-		ContactName string    `json:"contactName"`
-		ContactEmail string   `json:"contactEmail"`
-		ContactRole string    `json:"contactRole"`
-		LastMessage string    `json:"lastMessage"`
-		LastSentAt  time.Time `json:"lastSentAt"`
-		UnreadCount int64     `json:"unreadCount"`
+		ContactID    string    `json:"contactId"`
+		ContactName  string    `json:"contactName"`
+		ContactEmail string    `json:"contactEmail"`
+		ContactRole  string    `json:"contactRole"`
+		LastMessage  string    `json:"lastMessage"`
+		LastSentAt   time.Time `json:"lastSentAt"`
+		UnreadCount  int64     `json:"unreadCount"`
 	}
 
 	// Cari semua user yang pernah berkirim pesan dengan userID

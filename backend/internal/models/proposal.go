@@ -12,6 +12,7 @@ type Proposal struct {
 	Title          string     `json:"title" gorm:"not null"`
 	Abstract       string     `json:"abstract"`
 	Keywords       string     `json:"keywords"`
+	FieldOfStudy   string     `json:"fieldOfStudy" gorm:"column:field_of_study"`
 	Status         string     `json:"status" gorm:"default:draft"`
 	CurrentStageID *string    `json:"currentStageId" gorm:"column:current_stage_id;type:uuid"`
 	IsFunded       bool       `json:"isFunded" gorm:"column:is_funded;default:false"`
@@ -59,15 +60,15 @@ type ProposalSupervisor struct {
 func (ProposalSupervisor) TableName() string { return "proposal_supervisors" }
 
 type GuidanceSession struct {
-	ID           string     `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
-	ProposalID   string     `json:"proposalId" gorm:"column:proposal_id;type:uuid;not null"`
-	LecturerID   *string    `json:"lecturerId" gorm:"column:lecturer_id;type:uuid"`
-	ScheduledAt  time.Time  `json:"scheduledAt" gorm:"column:scheduled_at;not null"`
-	Location     string     `json:"location"`
-	MeetingURL   string     `json:"meetingUrl" gorm:"column:meeting_url"`
-	Status       string     `json:"status" gorm:"default:scheduled"`
-	Agenda       string     `json:"agenda"`
-	MeetingNotes string     `json:"meetingNotes" gorm:"column:meeting_notes"`
+	ID           string    `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
+	ProposalID   string    `json:"proposalId" gorm:"column:proposal_id;type:uuid;not null"`
+	LecturerID   *string   `json:"lecturerId" gorm:"column:lecturer_id;type:uuid"`
+	ScheduledAt  time.Time `json:"scheduledAt" gorm:"column:scheduled_at;not null"`
+	Location     string    `json:"location"`
+	MeetingURL   string    `json:"meetingUrl" gorm:"column:meeting_url"`
+	Status       string    `json:"status" gorm:"default:scheduled"`
+	Agenda       string    `json:"agenda"`
+	MeetingNotes string    `json:"meetingNotes" gorm:"column:meeting_notes"`
 }
 
 func (GuidanceSession) TableName() string { return "guidance_sessions" }

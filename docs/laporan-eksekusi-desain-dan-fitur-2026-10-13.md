@@ -182,9 +182,10 @@ Dokumen-dokumen berikut telah diperbarui dan diselaraskan pada direktori [docs/]
 1. **Untuk Radhit (Backend):**
    * Menjalankan skrip seeder Go atau migrasi SQL untuk mengimpor 321 proposal riil dari `PKM UNILA 2026  - Sheet1.csv` ke dalam tabel `proposals`, `student_profiles`, dan `users`.
    * Menghubungkan view `v_scheme_stats` ke endpoint `/api/stats` agar query langsung membaca 321 proposal dari database.
-2. **Untuk Vian (UI/UX):**
-   * Menyelesaikan antarmuka multi-step form pengajuan proposal bagi mahasiswa dengan tema Neo-Glassmorphism.
-   * Menyiapkan visual widget pelacak progres usulan 5 tahap di Beranda / Portal Mahasiswa.
+2. **Untuk Vian (UI/UX):** ✅ **Selesai 13 Okt 2026**
+   * Menyelesaikan antarmuka multi-step form pengajuan proposal bagi mahasiswa dengan tema Neo-Glassmorphism — `frontend/src/pages/AjukanProposal.jsx` (10 skema PKM, unggah berkas nyata ke `proposal_documents`, riwayat versi dokumen).
+   * Menyiapkan visual widget pelacak progres usulan 5 tahap di Beranda / Portal Mahasiswa — `frontend/src/pages/MahasiswaDashboard.jsx` (stepper 5 tahap + lonceng notifikasi in-app).
+   * (Tambahan) `LogbookPKM.jsx` dengan persentase capaian & unggah bukti, serta `CekStatusUsulan.jsx` untuk pelacakan publik via NPM/nama.
 3. **Untuk Dimas:**
    * Melanjutkan pengujian modul Dosen dan Reviewer dengan menghubungkan akun dosen riil dari rekap.
 4. **Untuk Aidil:**

@@ -570,7 +570,8 @@ INSERT INTO pkm_schemes (code, name, description, min_members, max_members) VALU
     ('PKM-KI',  'PKM Karya Inovatif',                'Karya inovatif yang aplikatif.', 3, 5),
     ('PKM-AI',  'PKM Artikel Ilmiah',                'Artikel ilmiah hasil kegiatan.', 3, 5),
     ('PKM-RE',  'PKM Riset Eksakta',                 'Penelitian bidang eksakta.', 3, 5),
-    ('PKM-RSH', 'PKM Riset Sosial Humaniora',        'Penelitian bidang sosial humaniora.', 3, 5)
+    ('PKM-RSH', 'PKM Riset Sosial Humaniora',        'Penelitian bidang sosial humaniora.', 3, 5),
+    ('PKM-VGK', 'PKM Video Gagasan Konstruktif',     'Video gagasan konstruktif bagi masyarakat.', 3, 5)
 ON CONFLICT (code) DO NOTHING;
 
 COMMIT;

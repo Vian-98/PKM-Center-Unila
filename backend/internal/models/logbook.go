@@ -15,6 +15,7 @@ type LogbookEntry struct {
 	Obstacle            string    `json:"obstacle"`
 	NextPlan            string    `json:"nextPlan" gorm:"column:next_plan"`
 	AttachmentURL       string    `json:"attachmentUrl" gorm:"column:attachment_url"`
+	ProgressPercentage  int       `json:"progressPercentage" gorm:"column:progress_percentage"`
 	VerificationStatus  string    `json:"verificationStatus" gorm:"column:verification_status;default:pending"`
 	CreatedAt           time.Time `json:"createdAt"`
 }

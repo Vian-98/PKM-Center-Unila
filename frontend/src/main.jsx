@@ -10,6 +10,13 @@ import { AdminPanel } from './pages/AdminPanel'
 import { DosenDashboard } from './pages/DosenDashboard'
 import { ReviewerDashboard } from './pages/ReviewerDashboard'
 import { PesanFeedback } from './pages/PesanFeedback'
+import { MahasiswaDashboard } from './pages/MahasiswaDashboard'
+import { AjukanProposal } from './pages/AjukanProposal'
+import { LogbookPKM } from './pages/LogbookPKM'
+import { CekStatusUsulan } from './pages/CekStatusUsulan'
+import { IdeaLab } from './pages/IdeaLab'
+import { CariTim } from './pages/CariTim'
+import { TeamManagement } from './pages/TeamManagement'
 import { api } from './lib/content'
 import './styles.css'
 import './ref.css'
@@ -66,11 +73,15 @@ function getNavItems(user) {
     case 'mahasiswa':
     default:
       return [
-        ['pesan', 'Pesan & Revisi'],
-        ['beranda', 'Portal Beranda'],
-        ['timeline', 'Timeline PKM'],
-        ['pedoman', 'Panduan'],
-        ['berita', 'Berita'],
+        ['mahasiswa', 'Dashboard'],
+        ['ajukan-proposal', 'Ajukan Proposal'],
+        ['logbook', 'Logbook'],
+        ['cek-status', 'Cek Status'],
+        ['idealab', 'Idea Lab'],
+        ['caritim', 'Cari Tim'],
+        ['tim', 'Manajemen Tim'],
+        ['pesan', 'Pesan'],
+        ['beranda', 'Beranda'],
       ]
   }
 }
@@ -281,7 +292,7 @@ function LoginModal({ close, complete }) {
       if (loggedUser.role === 'dosen') window.location.hash = '#dosen'
       else if (loggedUser.role === 'reviewer') window.location.hash = '#reviewer'
       else if (loggedUser.role === 'admin') window.location.hash = '#admin'
-      else window.location.hash = '#pesan'
+      else window.location.hash = '#mahasiswa'
     } else {
       setState({ loading: false, error: 'Identitas atau kata sandi tidak sesuai.' })
     }
@@ -393,12 +404,19 @@ function App() {
   const logout = () => { localStorage.removeItem('pkm_user'); localStorage.removeItem('pkm_token'); setUser(null); window.location.hash = '#beranda' }
   const route = hash.replace('#', '').split('/')
   const raw = route[0] || 'beranda'
-  const active = ['beranda', 'tentang', 'timeline', 'berita', 'pedoman', 'portofolio', 'galeri', 'kontak', 'admin', 'dosen', 'reviewer', 'pesan'].includes(raw) ? raw : 'beranda'
+  const active = ['beranda', 'tentang', 'timeline', 'berita', 'pedoman', 'portofolio', 'galeri', 'kontak', 'admin', 'dosen', 'reviewer', 'pesan', 'mahasiswa', 'ajukan-proposal', 'ajukanproposal', 'logbook', 'cek-status', 'cekstatus', 'idealab', 'caritim', 'tim'].includes(raw) ? raw : 'beranda'
   let view
   if (route[0] === 'admin') view = <AdminPanel user={user} />
   else if (route[0] === 'dosen') view = <DosenDashboard user={user} />
   else if (route[0] === 'reviewer') view = <ReviewerDashboard user={user} />
   else if (route[0] === 'pesan') view = <PesanFeedback user={user} />
+  else if (route[0] === 'mahasiswa') view = <MahasiswaDashboard user={user} />
+  else if (route[0] === 'ajukan-proposal' || route[0] === 'ajukanproposal') view = <AjukanProposal user={user} />
+  else if (route[0] === 'logbook') view = <LogbookPKM user={user} />
+  else if (route[0] === 'cek-status' || route[0] === 'cekstatus') view = <CekStatusUsulan user={user} />
+  else if (route[0] === 'idealab') view = <IdeaLab user={user} />
+  else if (route[0] === 'caritim') view = <CariTim user={user} />
+  else if (route[0] === 'tim') view = <TeamManagement user={user} />
   else if (route[0] === 'berita') view = route[1] ? <NewsDetail id={route[1]} /> : <NewsIndex />
   else if (route[0] === 'galeri') view = <Gallery />
   else if (route[0] === 'pedoman') view = <PedomanIndex />

@@ -30,12 +30,12 @@ Berikut adalah audit tabel yang belum tersentuh beserta **bakal fitur besar** ya
 | 4 | **`achievements`** | `user_id`, `title`, `event_name`, `level`, `year`, `medal`, `proof_url` | **Portofolio Prestasi Pengguna:** Mahasiswa & dosen menampilkan medali PIMNAS/lomba terdahulu di kartu profil pencarian tim. | **Aidil & Favian** |
 | 5 | **`lecturer_profiles`** | `user_id`, `nip`, `nidn`, `faculty`, `department`, `max_mentoring_quota`, `current_mentoring_count` | **Profil Resmi Dosen & Kontrol Kuota:** Menyimpan NIP 18 digit dari Excel FT dan kuota maksimal bimbingan tim per dosen. | **Radhit & Dimas** |
 | 6 | **`team_invitations`** | `team_id`, `inviter_id`, `invitee_id`, `role`, `status` (pending/accepted/rejected), `message` | **Sistem Undangan & Rekrutmen Tim:** Tombol *"Invite to Team"* saat mencari anggota di portal, lengkap dengan konfirmasi notifikasi. | **Aidil & Favian** |
-| 7 | **`team_members`** | `team_id`, `user_id`, `role_in_team` (leader/member), `joined_at` | **Dukungan Multi-Anggota Tim:** Mengakomodasi tim PKM nyata yang terdiri dari 3–5 mahasiswa lintas fakultas/jurusan. | **Favian** *(Anggota 2)* |
-| 8 | **`proposal_documents`** | `proposal_id`, `doc_type` (draft/pengesahan/kemajuan/akhir), `file_url`, `version`, `uploaded_by` | **Version Control Berkas Proposal:** Riwayat unggahan naskah usulan (Draft v1, Revisi v2, Final v3, Lembar Pengesahan). | **Favian** *(Anggota 2)* |
-| 9 | **`logbook_comments`** | `logbook_entry_id`, `user_id`, `comment`, `created_at` | **Interaksi Bimbingan Catatan Harian:** Dosen pembimbing memberikan arahan/paraf digital langsung pada entri logbook mahasiswa. | **Favian & Dimas** |
+| 7 | **`team_members`** | `team_id`, `user_id`, `role_in_team` (leader/member), `joined_at` | **Dukungan Multi-Anggota Tim:** Mengakomodasi tim PKM nyata yang terdiri dari 3–5 mahasiswa lintas fakultas/jurusan. | **Favian** *(Anggota 2)* ✅ |
+| 8 | **`proposal_documents`** | `proposal_id`, `doc_type` (draft/pengesahan/kemajuan/akhir), `file_url`, `version`, `uploaded_by` | **Version Control Berkas Proposal:** Riwayat unggahan naskah usulan (Draft v1, Revisi v2, Final v3, Lembar Pengesahan). | **Favian** *(Anggota 2)* ✅ |
+| 9 | **`logbook_comments`** | `logbook_entry_id`, `user_id`, `comment`, `created_at` | **Interaksi Bimbingan Catatan Harian:** Dosen pembimbing memberikan arahan/paraf digital langsung pada entri logbook mahasiswa. | **Favian** ✅ & Dimas |
 | 10 | **`review_criteria`** | `scheme_id`, `name`, `weight`, `max_score` | **Rubrik Penilaian Terstandar:** Kriteria resmi penilaian proposal per skema (mengadopsi rubrik Google Form dari CSV). | **Dimas** *(Anggota 4)* |
 | 11 | **`review_scores`** | `review_id`, `criterion_id`, `score`, `notes` | **Scoring Terkomputerisasi:** Nilai per butir penilaian oleh Reviewer 1 & 2 untuk menghasilkan total skor kelayakan otomatis. | **Dimas** *(Anggota 4)* |
-| 12 | **`notifications`** | `user_id`, `title`, `message`, `type`, `is_read`, `action_url` | **Pusat Notifikasi Real-time In-App:** Lonceng notifikasi saat usulan disetujui, ada pesan masuk, ada undangan tim, atau jadwal review. | **Radhit & Favian** |
+| 12 | **`notifications`** | `user_id`, `title`, `message`, `type`, `is_read`, `action_url` | **Pusat Notifikasi Real-time In-App:** Lonceng notifikasi saat usulan disetujui, ada pesan masuk, ada undangan tim, atau jadwal review. | **Radhit** & **Favian** ✅ |
 | 13 | **`pkm_periods`** | `year`, `theme`, `is_active`, `start_date`, `end_date` | **Manajemen Siklus Tahun PKM:** Mengatur tahun aktif (2026) dan mengarsipkan periode lampau secara dinamis. | **Radhit** *(Anggota 3)* |
 | 14 | **`pkm_stages`** | `period_id`, `stage_name`, `order_index`, `start_date`, `end_date`, `is_active` | **Timeline Terintegrasi & Auto-Lock:** Tahapan submit, review internal, seleksi Belmawa yang otomatis mengunci form saat deadline. | **Radhit** *(Anggota 3)* |
 | 15 | **`guidelines`** | `scheme_id`, `year`, `title`, `file_url`, `is_active` | **Katalog Panduan v2:** Menggantikan tabel transisional `pedoman` agar buku panduan terhubung langsung dengan skema resmi. | **Radhit** *(Anggota 3)* |
@@ -88,24 +88,28 @@ Berdasarkan pembagian kerja di `docs/pkm - Sheet1.csv`, berikut adalah peta jala
 
 ---
 
-### 👨‍💻 2.2 Favian (Anggota 2) — *Portal Mahasiswa, Pengajuan Proposal & Logbook*
+### 👨‍💻 2.2 Favian (Anggota 2) — *Portal Mahasiswa, Pengajuan Proposal & Logbook* ✅ **SELESAI (13 Okt 2026)**
 
 * **Kondisi Basis Data Saat Ini:** Tabel `proposals`, `proposal_documents`, `teams`, `team_members`, dan `logbook_entries` sudah ada, namun belum ada portal sisi mahasiswa.
 * **Integrasi Data Riil:** 321 judul proposal riil, ketua, dan dosen pembimbing dari CSV dijadikan basis status usulan awal.
-* **Tugas Lanjutan:**
-  1. **Dashboard Mahasiswa (`MahasiswaDashboard.jsx` di `/#mahasiswa`):**
+* **PIC/Penanggung Jawab:** **Favian (Vian)** — seluruh butir di bawah telah diimplementasikan, diuji, dan terhubung ke backend.
+* **Status Implementasi:**
+  1. **Dashboard Mahasiswa (`MahasiswaDashboard.jsx` di `/#mahasiswa`):** ✅
      * Visual Stepper 5 Tahap: `Draft` ➔ `Review Dosen` ➔ `Review Internal Reviewer 1 & 2` ➔ `Lolos Belmawa` ➔ `PIMNAS`.
-     * Kartu ringkasan anggota tim dan dosen pembimbing.
-     * Widget agenda terdekat & tenggat waktu tahapan.
-  2. **Formulir Ajukan Proposal Multi-Step (`AjukanProposal.jsx`):**
-     * *Langkah 1:* Pilih 10 Skema PKM, Input Judul Usulan, dan Abstrak Ringkas.
-     * *Langkah 2:* Input Anggota Tim (NPM, Nama, Jurusan) & Pilih Dosen Pembimbing dari direktori.
-     * *Langkah 3:* Upload berkas PDF proposal ke tabel `proposal_documents` atau lampirkan tautan Google Drive.
-  3. **Modul Logbook PKM (`LogbookPKM.jsx`):**
-     * Form tambah catatan harian kegiatan (tanggal, uraian progres, persentase capaian, upload bukti foto/nota).
-     * Timeline riwayat entri yang dapat dilihat dan dikomentari oleh dosen pembimbing.
-  4. **Widget Cek Status Usulan Publik:**
-     * Komponen pencarian cepat di portal publik untuk mahasiswa mengecek apakah proposalnya sudah memiliki reviewer atau belum menggunakan NPM.
+     * Kartu ringkasan anggota tim dan dosen pembimbing (terhubung ke `GET /api/student/dashboard`).
+     * Widget agenda terdekat & tenggat waktu tahapan, kartu capaian (`latestProgress`), dan tab ringkasan/status/agenda.
+     * Lonceng notifikasi in-app (tabel `notifications`) di header portal.
+  2. **Formulir Ajukan Proposal Multi-Step (`AjukanProposal.jsx`):** ✅
+     * *Langkah 1:* Pilih 10 Skema PKM (`PKM-K, RE, RSH, PM, KC, AI, GFT, KI, VGK, PI`), Input Judul Usulan, Abstrak, Kata Kunci, dan Kriteria Bidang/Jurusan (`proposals.field_of_study`).
+     * *Langkah 2:* Input Anggota Tim (NPM, Nama, Jurusan) — otomatis mendaftarkan mahasiswa terdaftar ke `team_members` dengan status undangan `pending` — & Pilih Dosen Pembimbing dari direktori (`GET /api/student/supervisors`).
+     * *Langkah 3:* Upload berkas PDF/DOCX nyata (multipart, `POST /api/student/upload`) ke tabel `proposal_documents` dengan penomoran versi otomatis, atau lampirkan tautan Google Drive.
+  3. **Modul Logbook PKM (`LogbookPKM.jsx`):** ✅
+     * Form tambah catatan harian kegiatan (tanggal, uraian progres, **persentase capaian** `logbook_entries.progress_percentage`, upload bukti foto/nota/dokumen).
+     * Timeline riwayat entri lengkap dengan progress bar dan komentar dosen pembimbing (`logbook_comments`).
+  4. **Widget Cek Status Usulan Publik (`CekStatusUsulan.jsx`):** ✅
+     * Komponen pencarian cepat (`GET /api/proposals/track?q=`) untuk mengecek status 5 tahap, dosen pembimbing, dan penugasan reviewer cukup dengan NPM/nama.
+* **Catatan Teknis:** Skema `PKM-VGK` ditambahkan ke seeder `pkm_schemes` (migrasi `0001`) agar genap 10 skema sesuai daftar resmi; migrasi aditif `0003_student_portal.sql` menambah `proposals.field_of_study` dan `logbook_entries.progress_percentage`.
+* **Endpoint Baru (aktif & terverifikasi):** `GET /api/student/dashboard`, `GET /api/student/schemes`, `GET /api/student/supervisors`, `POST /api/student/proposals`, `GET /api/student/proposals/:id`, `POST /api/student/proposals/upload`, `POST /api/student/upload`, `GET|POST /api/student/logbook`, `GET /api/student/notifications`, `POST /api/student/notifications/read`, `GET /api/proposals/track`.
 
 ---
 
@@ -156,18 +160,18 @@ Sprint 1: Ingestion Data & Quick Win Metrik Frontend (13–20 Okt 2026)
 └── Dimas: Hubungkan antrean reviewer ke data penugasan CSV
 
 Sprint 2: Portal Mahasiswa & Direktori Kolaborasi (21–31 Okt 2026)
-├── Favian: Buat MahasiswaDashboard.jsx & Form multi-step proposal
+├── Favian: Buat MahasiswaDashboard.jsx & Form multi-step proposal ✅ (selesai 13 Okt 2026)
 ├── Aidil: Buat CariTimPembimbing.jsx (direktori 168 dosen & mahasiswa)
-└── Favian: Buat widget publik "Cek Status Usulan PKM 2026"
+└── Favian: Buat widget publik "Cek Status Usulan PKM 2026" ✅ (selesai 13 Okt 2026)
 
 Sprint 3: Modul AI Idea Lab & Logbook Bimbingan (01–10 Nov 2026)
 ├── Aidil: Implementasi IdeaLab.jsx chat LLM & tabel ai_analyses
-├── Favian: Implementasi LogbookPKM.jsx untuk pelaporan progres
+├── Favian: Implementasi LogbookPKM.jsx untuk pelaporan progres ✅ (selesai 13 Okt 2026)
 └── Dimas: Fitur paraf/komentar dosen di logbook & form scoring kriteria
 
 Sprint 4: Admin RBAC, Kontrol Kuota & Notifikasi (11–20 Nov 2026)
 ├── Radhit: Tab Admin kelola akun user & batas kuota dosen
-├── Radhit/Favian: Lonceng notifikasi in-app (tabel notifications)
+├── Radhit/Favian: Lonceng notifikasi in-app (tabel notifications) ✅ (sisi mahasiswa selesai 13 Okt 2026)
 └── Dimas/Vian: Uji coba menyeluruh integrasi alur 4 role
 ```
 
