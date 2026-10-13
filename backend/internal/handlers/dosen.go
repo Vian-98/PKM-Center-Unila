@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"
 	"pkm-center/backend/internal/models"
 )
@@ -13,15 +14,31 @@ type DosenHandler struct {
 	DB *gorm.DB
 }
 
-// getUserIDFromContext mengambil User ID dari klaim JWT pengguna yang login
+// getUserIDFromContext mengambil User ID dari klaim JWT pengguna yang login.
+// Middleware menyimpan klaim sebagai jwt.MapClaims (map[string]interface{})
+// dengan ID pengguna pada klaim "sub"; helper ini juga menerima gin.H agar
+// tahan terhadap perubahan bentuk konteks.
 func getUserIDFromContext(c *gin.Context) string {
+	if id := c.GetString("userID"); id != "" {
+		return id
+	}
 	val, exists := c.Get("user")
 	if !exists {
 		return ""
 	}
-	userMap, ok := val.(gin.H)
-	if ok {
-		if id, ok := userMap["id"].(string); ok {
+	switch claims := val.(type) {
+	case jwt.MapClaims:
+		if id, _ := claims["sub"].(string); id != "" {
+			return id
+		}
+		if id, _ := claims["id"].(string); id != "" {
+			return id
+		}
+	case gin.H:
+		if id, _ := claims["sub"].(string); id != "" {
+			return id
+		}
+		if id, _ := claims["id"].(string); id != "" {
 			return id
 		}
 	}

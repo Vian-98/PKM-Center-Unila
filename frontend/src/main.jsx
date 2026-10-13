@@ -42,28 +42,26 @@ function getNavItems(user) {
   switch (user.role) {
     case 'dosen':
       return [
-        ['dosen', 'Dashboard Dosen'],
-        ['reviewer', 'Dashboard Reviewer'],
-        ['pesan', 'Pesan & Revisi'],
-        ['beranda', 'Portal Informasi'],
-        ['pedoman', 'Panduan PKM'],
+        ['dosen', 'Dosen'],
+        ['reviewer', 'Reviewer'],
+        ['pesan', 'Pesan'],
+        ['beranda', 'Beranda'],
+        ['pedoman', 'Panduan'],
       ]
     case 'reviewer':
       return [
-        ['reviewer', 'Dashboard Reviewer'],
-        ['dosen', 'Dashboard Dosen'],
-        ['pesan', 'Pesan & Feedback'],
-        ['beranda', 'Portal Informasi'],
-        ['pedoman', 'Panduan PKM'],
+        ['reviewer', 'Reviewer'],
+        ['dosen', 'Dosen'],
+        ['pesan', 'Pesan'],
+        ['beranda', 'Beranda'],
+        ['pedoman', 'Panduan'],
       ]
     case 'admin':
       return [
         ['admin', 'Kelola Konten'],
-        ['dosen', 'Dashboard Dosen'],
-        ['reviewer', 'Dashboard Reviewer'],
-        ['pesan', 'Pesan & Revisi'],
-        ['beranda', 'Portal Informasi'],
-        ['pedoman', 'Panduan PKM'],
+        ['dosen', 'Dosen'],
+        ['reviewer', 'Reviewer'],
+        ['pesan', 'Pesan'],
       ]
     case 'mahasiswa':
     default:
@@ -131,6 +129,7 @@ function TopNavbar({ active, user, onLogin, onLogout }) {
             {(user.role === 'dosen' || user.role === 'reviewer') && (
               <a
                 href={active === 'dosen' ? '#reviewer' : '#dosen'}
+                className="nav-switch-btn"
                 style={{
                   textDecoration: 'none',
                   display: 'inline-flex',

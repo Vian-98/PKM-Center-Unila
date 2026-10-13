@@ -22,6 +22,10 @@ func RequireAuth(secret string, allowedRoles ...string) gin.HandlerFunc {
 			for _, r := range allowedRoles { if role == r { permitted = true } }
 			if !permitted { c.JSON(http.StatusForbidden, gin.H{"message": "Akses tidak diizinkan"}); c.Abort(); return }
 		}
-		c.Set("user", claims); c.Next()
+		userID, _ := claims["sub"].(string)
+		c.Set("user", claims)
+		c.Set("userID", userID)
+		c.Set("role", role)
+		c.Next()
 	}
 }
