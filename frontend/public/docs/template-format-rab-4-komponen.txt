@@ -1,0 +1,93 @@
+FORMAT RENCANA ANGGARAN BIAYA (RAB) PKM
+SESUAI PEDOMAN RESMI SIMBELMAWA KEMDIKTISAINTEK
+
+================================================================================
+BAGIAN 1: REKAPITULASI RENCANA ANGGARAN BIAYA (DITEMPATKAN DI BAB 4 USULAN)
+================================================================================
+
+Tabel 4.1 Rekapitulasi Rencana Anggaran Biaya
++----+------------------------------------+--------------------------+-----------------------+
+| No | Jenis Pengeluaran                   | Sumber Dana              | Besaran Dana (Rp)     |
++----+------------------------------------+--------------------------+-----------------------+
+| 1  | Bahan habis pakai                  | Belmawa                  | Rp [Maks 60% Belmawa] |
+|    | (ATK, reagen, material riset, dll) | Perguruan Tinggi (Unila) | Rp [...]              |
+|    |                                    | Instansi Lain (jika ada) | Rp [...]              |
++----+------------------------------------+--------------------------+-----------------------+
+| 2  | Sewa dan jasa                      | Belmawa                  | Rp [Maks 15% Belmawa] |
+|    | (Sewa alat lab, uji sampel, cloud) | Perguruan Tinggi (Unila) | Rp [...]              |
+|    |                                    | Instansi Lain (jika ada) | Rp [...]              |
++----+------------------------------------+--------------------------+-----------------------+
+| 3  | Transportasi lokal                 | Belmawa                  | Rp [Maks 30% Belmawa] |
+|    | (Transport sampling, survei mitra) | Perguruan Tinggi (Unila) | Rp [...]              |
+|    |                                    | Instansi Lain (jika ada) | Rp [...]              |
++----+------------------------------------+--------------------------+-----------------------+
+| 4  | Lain-lain                          | Belmawa                  | Rp [Maks 15% Belmawa] |
+|    | (Komunikasi, publikasi, materai)   | Perguruan Tinggi (Unila) | Rp [...]              |
+|    |                                    | Instansi Lain (jika ada) | Rp [...]              |
++----+------------------------------------+--------------------------+-----------------------+
+| JUMLAH KESELURUHAN                      |                          | Rp [Rp 6 - 10 Juta]   |
++----+------------------------------------+--------------------------+-----------------------+
+
+Rekapitulasi Sumber Pendanaan:
+1. Kemdiktisaintek (Belmawa) : Rp [Rp 6.000.000 - Rp 10.000.000]
+2. Perguruan Tinggi (Unila)   : Rp [...]
+3. Instansi Lain (jika ada)   : Rp [...]
+TOTAL AKUMULASI DANA          : Rp [...]
+
+
+================================================================================
+BAGIAN 2: JUSTIFIKASI ANGGARAN KEGIATAN (LAMPIRAN 2 PROPOSAL)
+================================================================================
+
+1. Jenis Pengeluaran: Bahan Habis Pakai (Maksimal 60%)
++----+---------------------+--------+--------+------------------+------------------+
+| No | Komponen            | Volume | Satuan | Harga Satuan(Rp) | Total Biaya (Rp) |
++----+---------------------+--------+--------+------------------+------------------+
+| 1  | [Nama Bahan/ATK]    | [...]  | [unit] | Rp [...]         | Rp [...]         |
+| 2  | [Material Riset]    | [...]  | [unit] | Rp [...]         | Rp [...]         |
++----+---------------------+--------+--------+------------------+------------------+
+| SUB TOTAL (1)                                                 | Rp [...]         |
++----+----------------------------------------------------------+------------------+
+
+2. Jenis Pengeluaran: Sewa dan Jasa (Maksimal 15%)
++----+---------------------+--------+--------+------------------+------------------+
+| No | Komponen            | Volume | Satuan | Harga Satuan(Rp) | Total Biaya (Rp) |
++----+---------------------+--------+--------+------------------+------------------+
+| 1  | Sewa Alat Uji / Lab | [...]  | [jam]  | Rp [...]         | Rp [...]         |
+| 2  | Jasa Fabrikasi PCB  | [...]  | [unit] | Rp [...]         | Rp [...]         |
++----+---------------------+--------+--------+------------------+------------------+
+| SUB TOTAL (2)                                                 | Rp [...]         |
++----+----------------------------------------------------------+------------------+
+
+3. Jenis Pengeluaran: Transportasi Lokal (Maksimal 30%)
++----+---------------------+--------+--------+------------------+------------------+
+| No | Komponen            | Volume | Satuan | Harga Satuan(Rp) | Total Biaya (Rp) |
++----+---------------------+--------+--------+------------------+------------------+
+| 1  | Transport Lapangan  | [...]  | [hari] | Rp [...]         | Rp [...]         |
+| 2  | Kunjungan ke Mitra  | [...]  | [kali] | Rp [...]         | Rp [...]         |
++----+---------------------+--------+--------+------------------+------------------+
+| SUB TOTAL (3)                                                 | Rp [...]         |
++----+----------------------------------------------------------+------------------+
+
+4. Jenis Pengeluaran: Lain-lain (Maksimal 15%)
++----+---------------------+--------+--------+------------------+------------------+
+| No | Komponen            | Volume | Satuan | Harga Satuan(Rp) | Total Biaya (Rp) |
++----+---------------------+--------+--------+------------------+------------------+
+| 1  | Kuota Internet Tim  | 3      | Bulan  | Rp 100.000       | Rp 300.000       |
+| 2  | Bea Publikasi / Web | 1      | Paket  | Rp [...]         | Rp [...]         |
+| 3  | E-Materai Rp 10.000 | 2      | Lembar | Rp 12.000        | Rp 24.000        |
++----+---------------------+--------+--------+------------------+------------------+
+| SUB TOTAL (4)                                                 | Rp [...]         |
++----+----------------------------------------------------------+------------------+
+| TOTAL KESELURUHAN (SUB 1 + 2 + 3 + 4)                         | Rp [...]         |
++----+----------------------------------------------------------+------------------+
+
+================================================================================
+CATATAN KRUSIAL BELMAWA (PENGELUARAN YANG DILARANG KERAS / BIKIN GUGUR MONEV):
+================================================================================
+1. DILARANG menganggarkan honorarium untuk tim pengusul, dosen pendamping, maupun narasumber.
+2. DILARANG membeli aset peralatan keras permanen dengan harga > Rp 1.000.000/unit.
+3. DILARANG menyewa perangkat umum seperti laptop, komputer, ponsel, kamera, atau printer.
+4. DILARANG membeli media penyimpanan (Flashdisk, Harddisk eksternal).
+5. DILARANG menganggarkan konsumsi rapat tim pengusul.
+6. Pembelian kuota internet tim dibatasi maksimal Rp 100.000/bulan/tim.

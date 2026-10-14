@@ -55,7 +55,12 @@ Repository ini memiliki dokumentasi arsitektur, desain, basis data, dan riwayat 
 
 ### A. Portal Publik (Guest)
 * **Beranda (`/#beranda`):** Hero section dinamis, statistik riil usulan 321 proposal PKM Unila 2026, 3 kartu Ekosistem interaktif berbingkai cahaya (`GlowCard`), timeline tahapan, kabar terkini, dan banner unduh panduan.
-* **Pedoman PKM (`/#pedoman`):** Showcase map berkas 3D interaktif (`GlassFolder`) berbasis seni cairan HTML5 Canvas untuk Pedoman 2026, 2025, dan Arsip lampau, dilengkapi filter pencarian.
+* **Pedoman & Format Usulan PKM (`/#pedoman`):** Hub rujukan resmi SIMBELMAWA Kemdiktisaintek dengan 5 tab interaktif:
+  1. *Buku Panduan Resmi:* Showcase map berkas 3D interaktif (`GlassFolder`) + direktori filter 13 buku panduan resmi (Umum & 10 Skema) dengan tautan langsung ke portal SIMBELMAWA.
+  2. *Format & Sistematika Usulan:* Peringatan Anti-Gugur Evaluasi Tahap 1 (wajib tanpa cover & tanpa lembar pengesahan), spesifikasi margin 4-3-3-3 cm, font TNR 12 pt, spasi 1.15, batas 10 halaman inti, dan breakdown Bab 1 s.d. Bab 4.
+  3. *Format RAB 4 Komponen:* Rincian plafon dana (Rp 6–10 Juta & Insentif Rp 2.5 Juta), batasan persentase 4 komponen (Bahan Habis Pakai maks 60%, Sewa & Jasa maks 15%, Transportasi Lokal maks 30%, Lain-lain maks 15%), kotak peringatan pos anggaran terlarang, serta template tabel Bab 4 & Lampiran 2.
+  4. *Template Lampiran Baku:* Format Surat Pernyataan Ketua Tim bermeterai Rp 10.000 (dilengkapi klausul kepatuhan Generative AI Belmawa), Biodata Ketua/Anggota/Dosen, susunan organisasi tim, dan kesediaan mitra dengan tombol salin teks ke clipboard & unduh file (.txt).
+  5. *Arsip Proposal Lolos PIMNAS:* Koleksi 5 berkas PDF utuh proposal peraih medali & didanai Belmawa asal Unila (PadiVision, NanoMarine, TelangTea, FinSmart, AgroSense) yang dapat langsung dibaca dan diunduh.
 * **Portofolio Proposal (`/#portofolio`):** Arsip proposal yang lolos seleksi dan pendanaan, filter chip tahun, skema, dan ringkasan proposal.
 * **Kabar & Berita (`/#berita`):** Grid 3 kolom responsif dengan kartu Neo-Glassmorphism, penomoran halaman (pagination), dan halaman detail artikel lengkap (`/#berita/:id`).
 * **Galeri Foto & Video (`/#galeri`):** Video kegiatan tersemat dan galeri dokumentasi dengan interaksi lightbox foto.

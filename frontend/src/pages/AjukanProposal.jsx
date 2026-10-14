@@ -557,6 +557,21 @@ export function AjukanProposal({ user }) {
 
         {step === 3 && (
           <div>
+            <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '16px', padding: '1rem 1.25rem', marginBottom: '1.25rem', display: 'flex', gap: '0.85rem', alignItems: 'flex-start' }}>
+              <span style={{ fontSize: '1.2rem', lineHeight: 1 }}>⚠️</span>
+              <div>
+                <strong style={{ fontSize: '0.85rem', color: '#991b1b', display: 'block', marginBottom: '0.2rem' }}>
+                  Aturan Wajib SIMBELMAWA (Anti-Gugur Evaluasi Tahap 1)
+                </strong>
+                <p style={{ margin: 0, fontSize: '0.78rem', color: '#b91c1c', lineHeight: 1.5 }}>
+                  Proposal diunggah <strong>TANPA COVER / SAMPUL</strong> dan <strong>TANPA LEMBAR PENGESAHAN</strong> (data disahkan digital oleh Unila). Maksimal 10 halaman isi utama (Bab 1 s.d. Daftar Pustaka). Font TNR 12 spasi 1.15, margin 4-3-3-3 cm.{' '}
+                  <a href="#pedoman" target="_blank" rel="noreferrer" style={{ fontWeight: 700, color: '#b91c1c', textDecoration: 'underline' }}>
+                    Lihat Pedoman &amp; Format Usulan Lengkap &rarr;
+                  </a>
+                </p>
+              </div>
+            </div>
+
             <div className="student-field">
               <label className="student-label">Unggah Berkas Proposal (PDF/DOCX, maks 10 MB)</label>
               <div className="apple-upload-dropzone" onClick={() => !state.uploading && fileRef.current?.click()}>

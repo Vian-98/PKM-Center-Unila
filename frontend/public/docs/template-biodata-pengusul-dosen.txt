@@ -1,0 +1,87 @@
+FORMAT LAMPIRAN 1: BIODATA KETUA, ANGGOTA, DAN DOSEN PENDAMPING
+SESUAI STANDAR RESMI SIMBELMAWA KEMDIKTISAINTEK
+
+================================================================================
+A. IDENTITAS DIRI (KETUA / ANGGOTA TIM)
+================================================================================
+1. Nama Lengkap                 : [Nama Lengkap dengan Huruf Kapital di Awal]
+2. Jenis Kelamin                : Laki-laki / Perempuan
+3. Program Studi                : [Nama Program Studi]
+4. NIM / NPM                    : [Nomor Pokok Mahasiswa]
+5. Tempat dan Tanggal Lahir     : [Kota, Tanggal Bulan Tahun]
+6. Alamat E-mail                : [Email aktif mahasiswa @unila.ac.id / gmail]
+7. Nomor Telepon / HP / WhatsApp: [08xxxxxxxxxx]
+
+================================================================================
+B. KEGIATAN KEMAHASISWAAN YANG SEDANG / PERNAH DIIKUTI
+================================================================================
++----+--------------------------+-----------------------+---------+
+| No | Jenis Kegiatan           | Status dalam Kegiatan | Tahun   |
++----+--------------------------+-----------------------+---------+
+| 1  | [Nama Organisasi/Proyek] | [Ketua/Anggota/dll]   | [Tahun] |
+| 2  | [Nama Lomba/Kepanitiaan] | [Koordinator/Peserta] | [Tahun] |
++----+--------------------------+-----------------------+---------+
+
+================================================================================
+C. PENGHARGAAN YANG PERNAH DITERIMA
+================================================================================
++----+--------------------------+----------------------------+---------+
+| No | Jenis Penghargaan        | Pihak Pemberi Penghargaan  | Tahun   |
++----+--------------------------+----------------------------+---------+
+| 1  | [Nama Juara / Prestasi]  | [Institusi / Universitas]  | [Tahun] |
++----+--------------------------+----------------------------+---------+
+
+Semua data yang saya isikan dan tercantum dalam biodata ini adalah benar dan dapat dipertanggungjawabkan secara hukum. Apabila di kemudian hari ternyata dijumpai ketidaksesuaian dengan kenyataan, saya sanggup menerima sanksi.
+
+Demikian biodata ini saya buat dengan sebenarnya untuk memenuhi salah satu persyaratan dalam pengajuan PKM [Sebutkan Skema].
+
+
+Bandar Lampung, [Tanggal, Bulan, Tahun]
+Pengusul,
+
+
+(Tanda tangan basah / digital tersertifikasi)
+
+
+( [Nama Lengkap Pengusul] )
+NPM. [NPM / NIM]
+
+
+================================================================================
+D. BIODATA DOSEN PENDAMPING
+================================================================================
+1. Nama Lengkap (dengan gelar)  : [Nama Lengkap beserta Semua Gelar Akademik]
+2. Jenis Kelamin                : Laki-laki / Perempuan
+3. Program Studi / Jurusan      : [Nama Program Studi]
+4. NIP / NIDN / NIDK            : [Nomor Induk Dosen Nasional]
+5. Tempat dan Tanggal Lahir     : [Kota, Tanggal Bulan Tahun]
+6. Alamat E-mail                : [Email resmi institusi]
+7. Nomor Telepon / HP           : [08xxxxxxxxxx]
+
+Riwayat Pendidikan:
++---------------------+-------------------+-------------------+-------------------+
+| Jenjang             | S-1               | S-2               | S-3               |
++---------------------+-------------------+-------------------+-------------------+
+| Nama Institusi      | [Nama PT]         | [Nama PT]         | [Nama PT]         |
+| Bidang Ilmu         | [Bidang Ilmu]     | [Bidang Ilmu]     | [Bidang Ilmu]     |
+| Tahun Lulus         | [Tahun]           | [Tahun]           | [Tahun]           |
++---------------------+-------------------+-------------------+-------------------+
+
+Rekam Jejak Penelitian / Pengabdian 5 Tahun Terakhir:
++----+--------------------------+----------------------------+---------+
+| No | Judul Penelitian / PKM   | Pendanaan (Sumber / Jml)   | Tahun   |
++----+--------------------------+----------------------------+---------+
+| 1  | [Judul Penelitian]       | [Kemendikbud / LPPM / dll] | [Tahun] |
++----+--------------------------+----------------------------+---------+
+
+Semua data yang saya isikan dan tercantum dalam biodata ini adalah benar dan dapat dipertanggungjawabkan secara hukum.
+
+Bandar Lampung, [Tanggal, Bulan, Tahun]
+Dosen Pendamping,
+
+
+(Tanda tangan basah / digital tersertifikasi)
+
+
+( [Nama Lengkap Dosen Pendamping beserta Gelar] )
+NIDN. [NIDN]
