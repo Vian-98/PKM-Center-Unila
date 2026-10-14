@@ -10,6 +10,9 @@
 #   4. Rebuild & restart container HANYA bila perubahan menyentuh aplikasi
 #      (backend/, frontend/, docker-compose.yml); perubahan dokumen/skrip
 #      cukup di-pull tanpa rebuild.
+#   5. Bila berkas dependensi (frontend/package*.json, backend/go.mod|sum)
+#      berubah, rebuild memakai --renew-anon-volumes agar node_modules /
+#      modul Go di dalam container ikut diperbarui.
 #
 # Variabel opsional:
 #   PKM_REPO          path repo   (default /home/ubuntu/PKM-Center-Unila)
@@ -66,8 +69,16 @@ if [ "$NEED_REBUILD" != "1" ]; then
   exit 0
 fi
 
-log "perubahan aplikasi terdeteksi; rebuild & restart container..."
-docker compose up -d --build
+# Bila berkas dependensi berubah, segarkan juga isi anonymous volume
+# (mis. volume /app/node_modules pada frontend) memakai --renew-anon-volumes,
+# agar paket baru benar-benar terpasang di container.
+if printf '%s\n' "$CHANGED" | grep -qE '^(frontend/package(-lock)?[.]json|backend/go[.](mod|sum))$'; then
+  log "perubahan dependensi terdeteksi; rebuild + segarkan volume (--renew-anon-volumes)..."
+  docker compose up -d --build -V
+else
+  log "perubahan aplikasi terdeteksi; rebuild & restart container..."
+  docker compose up -d --build
+fi
 
 log "membersihkan image lama (dangling)..."
 docker image prune -f >/dev/null 2>&1 || true

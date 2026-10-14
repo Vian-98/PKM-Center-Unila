@@ -110,6 +110,8 @@ Server pengembangan ini menarik pembaruan otomatis dari GitHub **setiap 2 menit*
 
 Cara kerja: `git fetch` ringan → bila ada commit baru di `origin/main`, jalankan `git pull --ff-only`. Rebuild (`docker compose up -d --build`) hanya dilakukan bila perubahan menyentuh **`backend/`**, **`frontend/`**, atau **`docker-compose.yml`** — perubahan dokumen/skrip cukup di-pull tanpa rebuild. Bila tidak ada perubahan, skrip keluar seketika (beban nyaris nol).
 
+Bila berkas dependensi berubah (`frontend/package.json`, `frontend/package-lock.json`, `backend/go.mod`, `backend/go.sum`), rebuild otomatis memakai `--renew-anon-volumes` agar `node_modules`/modul Go di dalam container ikut diperbarui (mencegah dependensi basi).
+
 ```bash
 # Lihat jadwal & status timer
 systemctl list-timers pkm-autodeploy.timer
