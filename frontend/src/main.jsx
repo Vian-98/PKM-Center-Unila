@@ -17,6 +17,8 @@ import { CekStatusUsulan } from './pages/CekStatusUsulan'
 import { IdeaLab } from './pages/IdeaLab'
 import { CariTim } from './pages/CariTim'
 import { TeamManagement } from './pages/TeamManagement'
+import { AppleMobileDock } from './components/AppleMobileDock'
+import { DesktopSidebarLayout } from './components/DesktopSidebarLayout'
 import { api } from './lib/content'
 import './styles.css'
 import './ref.css'
@@ -43,45 +45,36 @@ const NAV_GUEST = [
   ['kontak', 'Kontak'],
 ]
 
-// Navigasi Khusus yang Disesuaikan dengan Peran Pengguna Saat Login
+// Navigasi Khusus yang Disesuaikan dengan Peran Pengguna Saat Login (Bersih, Rapi, & Tidak Menumpuk)
 function getNavItems(user) {
   if (!user) return NAV_GUEST
   switch (user.role) {
     case 'dosen':
       return [
-        ['dosen', 'Dosen'],
+        ['dosen', 'Portal Dosen'],
         ['reviewer', 'Reviewer'],
-        ['pesan', 'Pesan'],
-        ['beranda', 'Beranda'],
-        ['pedoman', 'Panduan'],
+        ['pedoman', 'Panduan PKM'],
+        ['beranda', 'Website Utama'],
       ]
     case 'reviewer':
       return [
-        ['reviewer', 'Reviewer'],
-        ['dosen', 'Dosen'],
-        ['pesan', 'Pesan'],
-        ['beranda', 'Beranda'],
-        ['pedoman', 'Panduan'],
+        ['reviewer', 'Portal Reviewer'],
+        ['dosen', 'Bimbingan Dosen'],
+        ['pedoman', 'Panduan PKM'],
+        ['beranda', 'Website Utama'],
       ]
     case 'admin':
       return [
-        ['admin', 'Kelola Konten'],
-        ['dosen', 'Dosen'],
-        ['reviewer', 'Reviewer'],
-        ['pesan', 'Pesan'],
+        ['admin', 'Admin Panel'],
+        ['pedoman', 'Panduan PKM'],
+        ['beranda', 'Website Utama'],
       ]
     case 'mahasiswa':
     default:
       return [
-        ['mahasiswa', 'Dashboard'],
-        ['ajukan-proposal', 'Ajukan Proposal'],
-        ['logbook', 'Logbook'],
-        ['cek-status', 'Cek Status'],
-        ['idealab', 'Idea Lab'],
-        ['caritim', 'Cari Tim'],
-        ['tim', 'Manajemen Tim'],
-        ['pesan', 'Pesan'],
-        ['beranda', 'Beranda'],
+        ['mahasiswa', 'Portal Mahasiswa'],
+        ['pedoman', 'Panduan PKM'],
+        ['beranda', 'Website Utama'],
       ]
   }
 }
@@ -97,15 +90,15 @@ function getRoleLabel(role) {
 }
 
 function TopNavbar({ active, user, onLogin, onLogout }) {
-  const [open, setOpen] = useState(false)
-  useEffect(() => {
-    const close = () => setOpen(false)
-    window.addEventListener('hashchange', close)
-    return () => window.removeEventListener('hashchange', close)
-  }, [])
-
   const navItems = getNavItems(user)
-  const isActive = (id) => active === id || (id === 'pedoman' && active === 'pedoman')
+  const isActive = (id) => {
+    if (id === active) return true
+    if (id === 'pedoman' && active === 'pedoman') return true
+    if (id === 'mahasiswa' && ['mahasiswa', 'ajukan-proposal', 'ajukanproposal', 'logbook', 'cek-status', 'cekstatus', 'idealab', 'caritim', 'tim'].includes(active)) return true
+    if (id === 'dosen' && ['dosen', 'pesan'].includes(active)) return true
+    if (id === 'reviewer' && ['reviewer', 'pesan'].includes(active)) return true
+    return false
+  }
 
   // Inisial avatar pengguna
   const userInitials = user?.name
@@ -113,8 +106,10 @@ function TopNavbar({ active, user, onLogin, onLogout }) {
     : 'U'
 
   return (
-    <header className="site-header topnav">
+    <header className="site-header topnav apple-topnav">
       <Brand />
+
+      {/* Navigasi Desktop Penuh */}
       <nav className="topnav-links" aria-label="Navigasi utama">
         {navItems.map(([id, label]) => (
           <a
@@ -127,6 +122,8 @@ function TopNavbar({ active, user, onLogin, onLogout }) {
           </a>
         ))}
       </nav>
+
+      {/* Aksi Akun di Kanan */}
       <div className="topnav-actions">
         {user ? (
           <div className="account-actions">
@@ -180,41 +177,7 @@ function TopNavbar({ active, user, onLogin, onLogout }) {
         ) : (
           <button className="btn-masuk" onClick={onLogin}>Masuk <b>&rarr;</b></button>
         )}
-        <button className="topnav-burger" onClick={() => setOpen(!open)} aria-expanded={open} aria-label="Buka menu">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="3" y1="12" x2="21" y2="12"/>
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <line x1="3" y1="18" x2="21" y2="18"/>
-          </svg>
-        </button>
       </div>
-      {open && (
-        <div className="topnav-drawer" role="menu">
-          {user && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', background: '#f8fafc', borderRadius: '0.5rem', marginBottom: '0.5rem', border: '1px solid #e2e8f0' }}>
-              <div className="nav-user-avatar">{userInitials}</div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#0f172a' }}>{user.name}</div>
-                <div style={{ fontSize: '0.75rem', color: '#2563eb', fontWeight: 600 }}>{getRoleLabel(user.role)}</div>
-              </div>
-            </div>
-          )}
-          {navItems.map(([id, label]) => (
-            <a
-              key={id}
-              href={`#${id}`}
-              role="menuitem"
-              className={`topnav-drawer-item ${isActive(id) ? 'active' : ''}`}
-              onClick={() => setOpen(false)}
-            >
-              {label}
-            </a>
-          ))}
-          {user
-            ? <button className="btn-masuk wide" onClick={() => { setOpen(false); onLogout() }}>Keluar dari Akun <b>&rarr;</b></button>
-            : <button className="btn-masuk wide" onClick={() => { setOpen(false); onLogin() }}>Masuk ke Sistem <b>&rarr;</b></button>}
-        </div>
-      )}
     </header>
   )
 }
@@ -254,7 +217,7 @@ function LoginModal({ close, complete }) {
         throw new Error(result?.message || 'Login gagal')
       }
     } catch {
-      // Deteksi otomatis peran pengguna berdasarkan akun login tanpa perlu memilih role secara manual
+      // Deteksi otomatis peran pengguna berdasarkan akun login
       const e = form.email.toLowerCase().trim()
       let role = 'mahasiswa'
       let name = 'Nadia Putri Maharani'
@@ -288,7 +251,7 @@ function LoginModal({ close, complete }) {
       complete(loggedUser)
       close()
 
-      // Redirect otomatis ke modul dashboard sesuai role akun yang digunakan
+      // Redirect otomatis ke modul dashboard sesuai role akun
       if (loggedUser.role === 'dosen') window.location.hash = '#dosen'
       else if (loggedUser.role === 'reviewer') window.location.hash = '#reviewer'
       else if (loggedUser.role === 'admin') window.location.hash = '#admin'
@@ -300,7 +263,7 @@ function LoginModal({ close, complete }) {
 
   return (
     <div className="modal-backdrop login-backdrop" onMouseDown={close}>
-      <section className="login-card" onMouseDown={event => event.stopPropagation()} aria-label="Masuk ke PKM Center">
+      <section className="login-card apple-card-glass" onMouseDown={event => event.stopPropagation()} aria-label="Masuk ke PKM Center">
         <div className="login-head">
           <div className="login-brand">
             <img src="/Logo-2016-Unila.png" alt="Logo Universitas Lampung" />
@@ -392,19 +355,65 @@ function App() {
   const [hash, setHash] = useState(window.location.hash || '#beranda')
   const [modal, setModal] = useState(false)
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('pkm_user') || 'null'))
+
   useEffect(() => {
-    const listen = () => setHash(window.location.hash || '#beranda')
+    const listen = () => {
+      setHash(window.location.hash || '#beranda')
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+      document.documentElement.scrollTop = 0
+      document.body.scrollTop = 0
+    }
     window.addEventListener('hashchange', listen)
     return () => window.removeEventListener('hashchange', listen)
   }, [])
+
+  // Selalu pastikan posisi halaman reset ke paling atas setiap rute berubah
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+    document.documentElement.scrollTop = 0
+    document.body.scrollTop = 0
+  }, [hash])
+
   useEffect(() => {
     document.documentElement.dataset.theme = 'light'
     localStorage.setItem('pkm_theme', 'light')
   }, [])
-  const logout = () => { localStorage.removeItem('pkm_user'); localStorage.removeItem('pkm_token'); setUser(null); window.location.hash = '#beranda' }
+
+  // Universal Spotlight Tracking Effect (Apple / Linear interactive mouse-follow on cards)
+  useEffect(() => {
+    const mq = window.matchMedia('(hover: hover) and (pointer: fine)')
+    if (!mq.matches) return
+
+    const handlePointerMove = (e) => {
+      const card = e.target.closest(
+        '.spotlight-card, [data-glow], .bento-hero-tile, .bento-widget-tile, .stat-box, .proposal-card-item, .student-panel, .student-form-card, .student-log-card, .caritim-card, .news-card-new, .eco-card, .guidance-card'
+      )
+      if (!card) return
+      const rect = card.getBoundingClientRect()
+      const x = (e.clientX - rect.left).toFixed(1)
+      const y = (e.clientY - rect.top).toFixed(1)
+      card.style.setProperty('--x', `${x}px`)
+      card.style.setProperty('--y', `${y}px`)
+      card.style.setProperty('--xp', (e.clientX / window.innerWidth).toFixed(2))
+      card.style.setProperty('--yp', (e.clientY / window.innerHeight).toFixed(2))
+    }
+
+    window.addEventListener('pointermove', handlePointerMove, { passive: true })
+    return () => window.removeEventListener('pointermove', handlePointerMove)
+  }, [])
+
+  const logout = () => {
+    localStorage.removeItem('pkm_user')
+    localStorage.removeItem('pkm_token')
+    setUser(null)
+    window.location.hash = '#beranda'
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  }
+
   const route = hash.replace('#', '').split('/')
   const raw = route[0] || 'beranda'
   const active = ['beranda', 'tentang', 'timeline', 'berita', 'pedoman', 'portofolio', 'galeri', 'kontak', 'admin', 'dosen', 'reviewer', 'pesan', 'mahasiswa', 'ajukan-proposal', 'ajukanproposal', 'logbook', 'cek-status', 'cekstatus', 'idealab', 'caritim', 'tim'].includes(raw) ? raw : 'beranda'
+
   let view
   if (route[0] === 'admin') view = <AdminPanel user={user} />
   else if (route[0] === 'dosen') view = <DosenDashboard user={user} />
@@ -423,6 +432,30 @@ function App() {
   else if (route[0] === 'portofolio') view = <PortofolioIndex />
   else if (route[0] === 'kontak') view = <KontakPage />
   else view = <Home anchor={['tentang', 'timeline'].includes(route[0]) ? route[0] : 'beranda'} />
-  return <><TopNavbar active={active} user={user} onLogin={() => setModal(true)} onLogout={logout} />{view}<SiteFooter />{modal && <LoginModal close={() => setModal(false)} complete={setUser} />}</>
+
+  // Render collapsible desktop sidebar for authenticated dashboard routes
+  const isDashboardRoute = ['mahasiswa', 'ajukan-proposal', 'ajukanproposal', 'logbook', 'tim', 'caritim', 'idealab', 'dosen', 'reviewer', 'admin', 'pesan', 'pedoman', 'cek-status', 'cekstatus'].includes(raw)
+
+  const pageContent = isDashboardRoute && user ? (
+    <DesktopSidebarLayout user={user} active={raw} onLogout={logout}>
+      {view}
+    </DesktopSidebarLayout>
+  ) : (
+    view
+  )
+
+  return (
+    <>
+      <TopNavbar active={active} user={user} onLogin={() => setModal(true)} onLogout={logout} />
+      {pageContent}
+      <SiteFooter />
+
+      {/* Floating Apple-Style Bottom Dock (iOS Tab Bar for Mobile) */}
+      <AppleMobileDock active={active} user={user} onLogin={() => setModal(true)} onLogout={logout} />
+
+      {modal && <LoginModal close={() => setModal(false)} complete={setUser} />}
+    </>
+  )
 }
+
 createRoot(document.getElementById('root')).render(<App />)

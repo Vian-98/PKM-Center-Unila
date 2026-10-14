@@ -123,8 +123,8 @@ button { cursor: pointer; }
 .site-header {
   position: sticky;
   top: 0;
-  z-index: 40;
-  height: 4.6rem;
+  z-index: 50;
+  height: 4.5rem;
   padding: 0 1.25rem;
   display: flex;
   align-items: center;
@@ -136,7 +136,7 @@ button { cursor: pointer; }
   border-bottom: 1px solid var(--line);
 }
 @media (min-width: 768px) {
-  .site-header { height: 5.25rem; padding: 0 5.5vw; }
+  .site-header { height: 4.5rem; padding: 0 3vw; }
 }
 
 .brand {

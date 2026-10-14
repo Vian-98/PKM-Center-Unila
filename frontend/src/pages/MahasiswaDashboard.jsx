@@ -1,4 +1,9 @@
 import { useState, useEffect } from 'react'
+import {
+  Layers, Users, GraduationCap, BookOpen, Bell, ArrowRight,
+  CheckCircle2, Clock, Sparkles, FileText, ChevronRight,
+  FileEdit, UserPlus, Plus
+} from 'lucide-react'
 import { loadStore, saveStore } from '../lib/dosenReviewerData'
 import {
   authFetch, getNotifications, markNotificationsRead,
@@ -49,10 +54,7 @@ function NotificationBell() {
   return (
     <div className="student-bell-wrap">
       <button type="button" className="student-bell-btn" onClick={toggle} aria-label="Notifikasi" title="Notifikasi">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-        </svg>
+        <Bell size={18} />
         {unread > 0 && <span className="student-bell-count">{unread}</span>}
       </button>
       {open && (
@@ -83,11 +85,20 @@ function NotificationBell() {
   )
 }
 
+const getInitials = (name) => {
+  if (!name) return 'M'
+  return name.split(' ').filter(Boolean).map(n => n[0]).slice(0, 2).join('').toUpperCase()
+}
+
 export function MahasiswaDashboard({ user }) {
   const [activeTab, setActiveTab] = useState('ringkasan')
   const [data, setData] = useState(() => loadStore('pkm_mhs_dashboard', EMPTY))
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  }, [])
 
   useEffect(() => {
     let alive = true
@@ -140,33 +151,65 @@ export function MahasiswaDashboard({ user }) {
             </span>
             <div className="student-header-actions">
               <NotificationBell />
-              <a className="student-cta" href="#ajukan-proposal">Ajukan Proposal Baru &rarr;</a>
+              <a className="student-cta" href="#ajukan-proposal">
+                <span>Ajukan Proposal Baru</span>
+                <ArrowRight size={14} />
+              </a>
             </div>
           </div>
         </div>
 
         <div className="stat-cards-grid">
           <div className="stat-box">
-            <div className="stat-box-label">Tahap Usulan Saat Ini</div>
-            <div className="stat-box-value" style={{ color: '#fbbf24' }}>
-              Tahap {activeIndex + 1} <span style={{ fontSize: '0.9rem', color: '#cbd5e1' }}>/ {steps.length}</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+              <div className="stat-box-label">Tahap Usulan</div>
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0071e3' }}>
+                <Layers size={14} />
+              </div>
+            </div>
+            <div className="stat-box-value">
+              Tahap {activeIndex + 1} <span style={{ fontSize: '0.82rem', color: '#94a3b8', fontWeight: 600 }}>/ {steps.length}</span>
             </div>
             <div className="stat-box-sub">{steps[activeIndex]?.label || 'Draft Usulan'}</div>
           </div>
+
           <div className="stat-box">
-            <div className="stat-box-label">Anggota Tim</div>
-            <div className="stat-box-value">{stats.teamMemberCount || 0} <span style={{ fontSize: '0.9rem', color: '#cbd5e1' }}>Orang</span></div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+              <div className="stat-box-label">Anggota Tim</div>
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981' }}>
+                <Users size={14} />
+              </div>
+            </div>
+            <div className="stat-box-value">
+              {stats.teamMemberCount || 0} <span style={{ fontSize: '0.82rem', color: '#94a3b8', fontWeight: 600 }}>Orang</span>
+            </div>
             <div className="stat-box-sub">{team?.name || 'Belum ada tim'}</div>
           </div>
+
           <div className="stat-box">
-            <div className="stat-box-label">Dosen Pembimbing</div>
-            <div className="stat-box-value" style={{ fontSize: '1.05rem' }}>{supervisor?.name || 'Belum ditetapkan'}</div>
-            <div className="stat-box-sub">{supervisor ? statusLabel(supervisor.status || 'accepted') : 'Ajukan bimbingan pada formulir usulan'}</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+              <div className="stat-box-label">Pembimbing</div>
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#d97706' }}>
+                <GraduationCap size={14} />
+              </div>
+            </div>
+            <div className="stat-box-value" style={{ fontSize: '1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {supervisor?.name || 'Belum ada'}
+            </div>
+            <div className="stat-box-sub">{supervisor ? statusLabel(supervisor.status || 'accepted') : 'Pilih pada usulan'}</div>
           </div>
+
           <div className="stat-box">
-            <div className="stat-box-label">Catatan Logbook</div>
-            <div className="stat-box-value">{stats.logbookCount || 0} <span style={{ fontSize: '0.9rem', color: '#cbd5e1' }}>Entri</span></div>
-            <div className="stat-box-sub">{stats.feedbackCount ? `${stats.feedbackCount} catatan revisi` : 'Belum ada catatan revisi'}</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+              <div className="stat-box-label">Logbook</div>
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#faf5ff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9333ea' }}>
+                <BookOpen size={14} />
+              </div>
+            </div>
+            <div className="stat-box-value">
+              {stats.logbookCount || 0} <span style={{ fontSize: '0.82rem', color: '#94a3b8', fontWeight: 600 }}>Entri</span>
+            </div>
+            <div className="stat-box-sub">{stats.feedbackCount ? `${stats.feedbackCount} revisi` : '0 revisi'}</div>
           </div>
         </div>
       </section>
@@ -194,107 +237,299 @@ export function MahasiswaDashboard({ user }) {
 
       {activeTab === 'ringkasan' && (
         <section>
-          <h3 className="student-section-title">Progres 5 Tahap Usulan</h3>
-          <div className="student-stepper">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '1.25rem 0 0.75rem' }}>
+            <h3 className="student-section-title" style={{ margin: 0 }}>Progres 5 Tahap Usulan</h3>
+            <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>
+              Tahap {activeIndex + 1} dari {steps.length}
+            </span>
+          </div>
+          <div className="apple-stepper-timeline">
             {steps.map((step, idx) => (
-              <div key={step.key} className={`student-step ${step.status}`}>
-                <div className="student-step-index">{step.status === 'done' ? '\u2713' : idx + 1}</div>
-                <div className="student-step-body">
-                  <div className="student-step-eyebrow">Tahap {idx + 1}</div>
-                  <div className="student-step-label">{step.label}</div>
-                  <div className="student-step-status">
-                    {step.status === 'done' ? 'Selesai' : step.status === 'active' ? 'Sedang Berjalan' : 'Menunggu'}
+              <div key={step.key} className={`apple-timeline-node ${step.status}`}>
+                <div className="apple-node-indicator">
+                  {step.status === 'done' ? (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  ) : step.status === 'active' ? (
+                    <span className="apple-pulse-core" />
+                  ) : (
+                    <span>{idx + 1}</span>
+                  )}
+                </div>
+                <div className="apple-node-content">
+                  <div className="apple-node-header">
+                    <span className="apple-node-eyebrow">Tahap {idx + 1}</span>
+                    <span className={`status-pill ${step.status === 'done' ? 'completed' : step.status === 'active' ? 'in_progress' : 'pending'}`} style={{ fontSize: '0.65rem', padding: '0.1rem 0.45rem' }}>
+                      {step.status === 'done' ? 'Selesai' : step.status === 'active' ? 'Aktif' : 'Menunggu'}
+                    </span>
                   </div>
+                  <div className="apple-node-title" title={step.label}>{step.label}</div>
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="student-split" style={{ marginTop: '1.5rem' }}>
+          <div className="bento-dashboard-grid">
+            {/* Hero Tile: Proposal Usulan */}
             <div>
-              <h3 className="student-panel-title">Proposal Usulan</h3>
               {proposal ? (
-                <article className="proposal-card-item">
-                  <div className="proposal-card-item-header">
-                    <span className="tag-scheme">{proposal.schemeCode}</span>
-                    <span className={`status-pill ${statusTone(proposal.status)}`}>{statusLabel(proposal.status)}</span>
+                <article className="bento-hero-tile">
+                  <div className="bento-hero-accent-strip" />
+                  <div className="bento-hero-header">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      <span className="bento-scheme-pill">
+                        <Sparkles size={13} />
+                        {proposal.schemeCode || 'PKM'}
+                      </span>
+                      {proposal.isFunded && (
+                        <span className="bento-funded-pill">
+                          <CheckCircle2 size={13} />
+                          Didanai Belmawa
+                        </span>
+                      )}
+                      <span className="bento-id-badge">Usulan #{proposal.id || '1'}</span>
+                    </div>
+                    <span className={`status-pill ${statusTone(proposal.status)}`}>
+                      {statusLabel(proposal.status)}
+                    </span>
                   </div>
-                  <h4 className="proposal-card-title">{proposal.title}</h4>
-                  <div className="proposal-card-meta">
-                    <span>{proposal.schemeName}</span>
-                    <span>Diajukan: {formatDateID(proposal.submittedAt || proposal.createdAt)}</span>
-                    <span>{proposal.logbookCount || 0} entri logbook</span>
-                    {proposal.fieldOfStudy && <span>Bidang: {proposal.fieldOfStudy}</span>}
-                    {proposal.isFunded && <span style={{ color: '#059669', fontWeight: 700 }}>Didanai Belmawa</span>}
+
+                  <h3 className="bento-hero-title">{proposal.title}</h3>
+
+                  <div className="bento-meta-chips">
+                    <div className="bento-meta-chip" title="Skema PKM">
+                      <FileText size={14} color="#0071e3" />
+                      <span>{proposal.schemeName || 'Program Kreativitas Mahasiswa'}</span>
+                    </div>
+                    <div className="bento-meta-chip" title="Tanggal Pengajuan">
+                      <Clock size={14} color="#64748b" />
+                      <span>Diajukan: {formatDateID(proposal.submittedAt || proposal.createdAt)}</span>
+                    </div>
+                    <div className="bento-meta-chip" title="Total Logbook">
+                      <BookOpen size={14} color="#9333ea" />
+                      <span>{proposal.logbookCount || 0} entri logbook</span>
+                    </div>
+                    {proposal.fieldOfStudy && (
+                      <div className="bento-meta-chip" title="Bidang Ilmu">
+                        <GraduationCap size={14} color="#d97706" />
+                        <span>Bidang: {proposal.fieldOfStudy}</span>
+                      </div>
+                    )}
                   </div>
-                  {proposal.abstract && (
-                    <p style={{ color: '#475569', fontSize: '0.9rem', lineHeight: 1.55, margin: 0 }}>{proposal.abstract}</p>
+
+                  {proposal.abstract ? (
+                    <div className="bento-abstract-card">
+                      <div className="bento-abstract-label">
+                        <FileText size={12} />
+                        Ringkasan / Abstrak Usulan
+                      </div>
+                      <p className="bento-abstract-text">{proposal.abstract}</p>
+                    </div>
+                  ) : (
+                    <div className="bento-abstract-card">
+                      <p className="bento-abstract-text" style={{ color: '#94a3b8', fontStyle: 'italic' }}>
+                        Belum ada ringkasan abstrak. Lengkapi data usulan pada formulir.
+                      </p>
+                    </div>
                   )}
-                  <div className="card-actions-row" style={{ marginTop: '1rem' }}>
-                    <a className="btn-action primary" href="#ajukan-proposal">Edit / Lanjutkan Usulan</a>
-                    <a className="btn-action secondary" href="#logbook">Buka Logbook</a>
+
+                  <div className="bento-hero-actions">
+                    <a className="btn-action primary" href="#ajukan-proposal">
+                      <FileEdit size={15} />
+                      <span>Edit / Lanjutkan Usulan</span>
+                    </a>
+                    <a className="btn-action secondary" href="#logbook">
+                      <BookOpen size={15} />
+                      <span>Buka Logbook Digital</span>
+                    </a>
+                    <button
+                      type="button"
+                      className="bento-header-link"
+                      onClick={() => setActiveTab('status')}
+                      style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', padding: '0.4rem' }}
+                    >
+                      <span>Lihat Status Penilai</span>
+                      <ChevronRight size={14} />
+                    </button>
                   </div>
                 </article>
               ) : (
-                <div className="student-empty">
-                  <h4>Belum ada proposal</h4>
-                  <p>Mulai susun usulan PKM pertama tim Anda melalui formulir multi-step.</p>
-                  <a className="btn-action primary" href="#ajukan-proposal">Ajukan Proposal Baru</a>
+                <div className="bento-hero-tile" style={{ textAlign: 'center', padding: '2.5rem 1.5rem' }}>
+                  <div className="bento-hero-accent-strip" />
+                  <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#eff6ff', color: '#0071e3', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+                    <FileText size={28} />
+                  </div>
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0f172a', margin: '0 0 0.5rem' }}>
+                    Belum Ada Proposal Usulan
+                  </h3>
+                  <p style={{ color: '#64748b', fontSize: '0.9rem', maxWidth: 460, margin: '0 auto 1.25rem', lineHeight: 1.5 }}>
+                    Mulai susun usulan PKM pertama tim Anda melalui formulir bertahap 3-langkah yang mudah dan terpandu.
+                  </p>
+                  <a className="btn-action primary" href="#ajukan-proposal">
+                    <Plus size={16} />
+                    <span>Ajukan Proposal Baru</span>
+                  </a>
                 </div>
               )}
             </div>
 
+            {/* Satellite Bento Column */}
             <div className="student-stack">
-              <div className="student-panel">
-                <h4 className="student-panel-title">Dosen Pembimbing</h4>
-                {supervisor ? (
-                  <>
-                    <div className="student-member-name">{supervisor.name}</div>
-                    <div className="student-member-sub" style={{ marginTop: '0.3rem' }}>
-                      {supervisor.lecturerNumber || '-'} • {supervisor.studyProgram || '-'}
+              {/* Widget 1: Dosen Pembimbing */}
+              <div className="bento-widget-tile">
+                <div className="bento-widget-head">
+                  <div className="bento-widget-title-group">
+                    <div className="bento-icon-badge amber">
+                      <GraduationCap size={17} />
                     </div>
-                    <span className={`status-pill ${statusTone(supervisor.status || 'accepted')}`} style={{ marginTop: '0.6rem' }}>
+                    <h4 className="bento-widget-title">Dosen Pembimbing</h4>
+                  </div>
+                  {supervisor && (
+                    <span className={`status-pill ${statusTone(supervisor.status || 'accepted')}`} style={{ fontSize: '0.68rem', padding: '0.15rem 0.5rem' }}>
                       {statusLabel(supervisor.status || 'accepted')}
                     </span>
-                  </>
+                  )}
+                </div>
+
+                {supervisor ? (
+                  <div className="student-member-row">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
+                      <div className="student-member-avatar" style={{ background: 'linear-gradient(135deg, #d97706, #f59e0b)' }}>
+                        {getInitials(supervisor.name)}
+                      </div>
+                      <div style={{ minWidth: 0 }}>
+                        <div className="student-member-name" title={supervisor.name}>{supervisor.name}</div>
+                        <div className="student-member-sub">
+                          NIDN: {supervisor.lecturerNumber || '-'} • {supervisor.studyProgram || '-'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 ) : (
-                  <p className="student-hint">Belum ada dosen pembimbing. Pilih pada langkah 2 formulir usulan.</p>
+                  <div className="bento-empty-box amber">
+                    <div className="bento-empty-title">Belum Ada Pembimbing</div>
+                    <div className="bento-empty-desc">
+                      Pilih dosen pendamping untuk mengesahkan dan memvalidasi usulan PKM tim Anda.
+                    </div>
+                    <a className="bento-cta-btn" href="#ajukan-proposal">
+                      <Plus size={13} />
+                      <span>Pilih Dosen Pembimbing</span>
+                    </a>
+                  </div>
                 )}
               </div>
 
-              <div className="student-panel">
-                <h4 className="student-panel-title">Anggota Tim</h4>
+              {/* Widget 2: Anggota Tim */}
+              <div className="bento-widget-tile">
+                <div className="bento-widget-head">
+                  <div className="bento-widget-title-group">
+                    <div className="bento-icon-badge emerald">
+                      <Users size={17} />
+                    </div>
+                    <div>
+                      <h4 className="bento-widget-title">Anggota Tim</h4>
+                      <span style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600 }}>
+                        {team?.name || 'Tim PKM'} ({team?.members?.length || 1} orang)
+                      </span>
+                    </div>
+                  </div>
+                  <a href="#tim" className="bento-header-link" title="Kelola Anggota Tim">
+                    <span>Kelola</span>
+                    <ChevronRight size={13} />
+                  </a>
+                </div>
+
                 {team?.members?.length ? (
                   <div className="student-stack" style={{ gap: '0.5rem' }}>
                     {team.members.map(m => (
                       <div key={m.studentId} className="student-member-row">
-                        <div>
-                          <div className="student-member-name">{m.name}</div>
-                          <div className="student-member-sub">{m.studentNumber || '-'}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', minWidth: 0 }}>
+                          <div className="student-member-avatar">
+                            {getInitials(m.name)}
+                          </div>
+                          <div style={{ minWidth: 0 }}>
+                            <div className="student-member-name" title={m.name}>{m.name}</div>
+                            <div className="student-member-sub">NPM: {m.studentNumber || '-'}</div>
+                          </div>
                         </div>
-                        <span className={`status-pill ${m.memberRole === 'leader' ? 'accepted' : 'in_progress'}`}>
+                        <span className={`status-pill ${m.memberRole === 'leader' ? 'in_progress' : 'accepted'}`} style={{ fontSize: '0.68rem', padding: '0.15rem 0.5rem', flexShrink: 0 }}>
                           {m.memberRole === 'leader' ? 'Ketua' : 'Anggota'}
                         </span>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="student-hint">Belum ada anggota tim terdaftar.</p>
+                  <div className="student-member-row">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', minWidth: 0 }}>
+                      <div className="student-member-avatar">
+                        {getInitials(student.name || user?.name || 'Mahasiswa')}
+                      </div>
+                      <div>
+                        <div className="student-member-name">{student.name || user?.name || 'Mahasiswa'}</div>
+                        <div className="student-member-sub">NPM: {student.studentNumber || '-'}</div>
+                      </div>
+                    </div>
+                    <span className="status-pill in_progress" style={{ fontSize: '0.68rem', padding: '0.15rem 0.5rem' }}>
+                      Ketua
+                    </span>
+                  </div>
+                )}
+
+                {(!team?.members || team.members.length < 3) && (
+                  <div style={{ marginTop: '0.75rem', paddingTop: '0.65rem', borderTop: '0.5px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem', color: '#64748b' }}>
+                    <span>Disarankan 3–5 anggota tim</span>
+                    <a href="#caritim" className="bento-header-link">
+                      <UserPlus size={13} />
+                      <span>Cari Rekan</span>
+                    </a>
+                  </div>
                 )}
               </div>
 
-              <div className="student-panel">
-                <h4 className="student-panel-title">Capaian Terakhir</h4>
-                <div className="student-progress">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#334155', fontWeight: 700 }}>
-                    <span>Progres kegiatan</span>
-                    <span>{stats.latestProgress || 0}%</span>
+              {/* Widget 3: Capaian & Logbook */}
+              <div className="bento-widget-tile">
+                <div className="bento-widget-head">
+                  <div className="bento-widget-title-group">
+                    <div className="bento-icon-badge purple">
+                      <BookOpen size={17} />
+                    </div>
+                    <div>
+                      <h4 className="bento-widget-title">Capaian &amp; Logbook</h4>
+                      <span style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600 }}>Progres Pelaksanaan</span>
+                    </div>
                   </div>
-                  <div className="student-progress-track" style={{ marginTop: '0.4rem' }}>
-                    <div className="student-progress-fill" style={{ width: `${Math.min(100, Math.max(0, stats.latestProgress || 0))}%` }} />
+                  <span style={{ fontSize: '1rem', fontWeight: 800, color: '#0071e3' }}>
+                    {stats.latestProgress || 0}%
+                  </span>
+                </div>
+
+                <div className="student-progress">
+                  <div className="student-progress-track">
+                    <div
+                      className="student-progress-fill"
+                      style={{ width: `${Math.min(100, Math.max(0, stats.latestProgress || 0))}%` }}
+                    />
                   </div>
                 </div>
-                <a className="btn-action secondary" href="#logbook" style={{ marginTop: '0.9rem' }}>Tambah Catatan Logbook</a>
+
+                <div className="bento-mini-stats">
+                  <div className="bento-stat-pill">
+                    <span className="bento-stat-pill-label">Total Entri</span>
+                    <span className="bento-stat-pill-val">{stats.logbookCount || 0}</span>
+                  </div>
+                  <div className="bento-stat-pill">
+                    <span className="bento-stat-pill-label">Catatan Revisi</span>
+                    <span className="bento-stat-pill-val" style={{ color: stats.feedbackCount ? '#d97706' : '#059669' }}>
+                      {stats.feedbackCount || 0}
+                    </span>
+                  </div>
+                </div>
+
+                <a className="btn-action secondary" href="#logbook" style={{ width: '100%', boxSizing: 'border-box' }}>
+                  <Plus size={14} />
+                  <span>Tambah Catatan Logbook</span>
+                </a>
               </div>
             </div>
           </div>

@@ -46,6 +46,11 @@ export async function getNotifications() {
   return authFetch('/student/notifications')
 }
 
+export async function getStudents(query = '') {
+  const q = query ? `?q=${encodeURIComponent(query)}` : ''
+  return authFetch(`/student/students${q}`)
+}
+
 export async function markNotificationsRead() {
   return authFetch('/student/notifications/read', { method: 'POST' })
 }

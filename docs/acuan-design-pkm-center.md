@@ -293,3 +293,36 @@ Semua anggota tim dapat langsung menggunakan kelas utilitas Neo-Glassmorphism be
    - Blur dikurangi menjadi `blur(8px)` pada viewport kecil untuk menjaga 60fps rendering di perangkat ponsel spesifikasi menengah ke bawah.
 3. **Graceful Degradation:** Jika browser tidak mendukung `backdrop-filter`, fallback otomatis aktif dengan latar warna solid `rgba(255, 255, 255, 0.96)` sehingga keterbacaan tetap terjaga.
 
+---
+
+## 9. Apple-Style Design System & Mobile Floating Bottom Dock (Oktober 2026)
+
+> **Keputusan Resmi (Vian / Favian - UI/UX Lead):**  
+> "Menjawab kebutuhan antarmuka yang lebih ringkas, elegan, dan ergonomis, antarmuka PKM Center Unila diselaraskan dengan estetika **Apple Cupertino Design System**. Pada perangkat seluler (<900px), menu burger atas yang kaku resmi dieliminasi dan digantikan oleh **Apple Floating Bottom Dock (iOS Tab Bar)**, sedangkan pada layar desktop dashboard terhubung dengan **Animated Collapsible Sidebar** ala macOS."
+
+### 9.1 Anatomi Apple Floating Bottom Dock (`AppleMobileDock.jsx`)
+* **Posisi & Bentuk:** Mengambang (*floating pill*) di bagian bawah layar (`bottom: calc(0.75rem + env(safe-area-inset-bottom))`), dengan `border-radius: 9999px` dan lebar responsif maksimal 440px.
+* **Efek Vibrancy:** `backdrop-filter: blur(32px) saturate(210%)` berpadu dengan hairline border `0.5px solid rgba(255, 255, 255, 0.95)` dan bayangan lembut elevasi iOS.
+* **Ergonomi Ibu Jari:** Maksimal 5 tab aksi langsung sesuai peran pengguna (Guest: Beranda, Berita, Panduan, Lacak, Masuk; Mahasiswa: Dashboard, Usulan, Logbook, Tim, Lainnya).
+* **Apple Action Sheet Modal:** Tombol "Lainnya" memunculkan sheet menu bawah dengan tarikan pegangan kapsul (*sheet handle*), animasi spring fluid, dan akses ke Idea Lab, Cari Tim, Pesan, serta Logout.
+
+### 9.2 Tipografi & Kartu Gaya Apple
+* **Font Family:** `-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "DM Sans", system-ui, sans-serif`.
+* **Squircle Cards:** Sudut kartu melengkung lembut `border-radius: 20px / 22px`.
+* **Hairline Borders:** Border setipis 0.5px berbayang ambient difus (`rgba(0, 0, 0, 0.04)` s.d. `0.08)`).
+
+---
+
+## 10. Integrasi Komponen Sidebar Desktop (`/components/ui/sidebar.tsx`) & Ekosistem Shadcn
+
+### 10.1 Struktur Folder `/components/ui`
+Folder `/components/ui/` adalah standar shadcn untuk komponen atomik presentasi yang mandiri:
+* `sidebar.tsx` & `sidebar.jsx`: Komponen sidebar desktop animasi lipat (`open ? 300px : 60px`) berbasis Framer Motion dan Lucide React.
+* `demo.tsx`: Pratinjau implementasi sidebar.
+* `spotlight-card.jsx` (`GlowCard`): Kartu pelacak kursor dengan border keemasan Unila.
+* `glass-folder-cards.jsx` (`GlassFolder`): Map 3D interaktif berbasis kanvas cairan.
+
+### 10.2 Integrasi Tailwind CSS & Shadcn
+Proyek mendukung utilitas `cn(...)` di `@/lib/utils.js` (menggabungkan `clsx` dan `tailwind-merge`) serta shims `next/link` dan `next/image` di Vite, memungkinkan komponen modern berbasis React/Next/Shadcn berjalan 100% mulus tanpa kendala dependensi.
+
+

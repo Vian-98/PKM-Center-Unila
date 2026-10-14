@@ -59,26 +59,45 @@ function Ecosystem() {
   const cards = [
     {
       tag: 'DIDUKUNG AI',
+      tagClass: 'gold',
       title: 'Uji kekuatan idemu',
       copy: 'Dapatkan analisis kebaruan, dampak, dan kelayakan ide sebelum menyusun proposal.',
       link: 'Coba Idea Lab',
-      href: '#kontak',
+      href: '#idealab',
       dark: true,
-      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/></svg>,
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+        </svg>
+      ),
     },
     {
+      tag: 'KOLABORASI MULTIDISIPLIN',
+      tagClass: 'blue',
       title: 'Temukan tim multidisiplin',
       copy: 'Rekomendasi anggota dengan kompetensi yang saling melengkapi dari seluruh fakultas.',
       link: 'Cari anggota',
-      href: '#portofolio',
-      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>,
+      href: '#caritim',
+      dark: false,
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      ),
     },
     {
+      tag: 'MENTORSHIP TERARAH',
+      tagClass: 'green',
       title: 'Terhubung dengan mentor',
       copy: 'Pilih dosen pembimbing berdasarkan bidang riset dan pengalaman PKM.',
       link: 'Lihat pembimbing',
-      href: '#kontak',
-      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>,
+      href: '#caritim',
+      dark: false,
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+      ),
     },
   ]
   return (
@@ -91,13 +110,19 @@ function Ecosystem() {
           <GlowCard
             key={c.title}
             customSize
+            dark={c.dark}
             glowColor={c.dark ? 'gold' : i === 1 ? 'blue' : 'green'}
             className={`eco-card ${c.dark ? 'dark' : ''}`}
           >
-            <div className="eco-top">{c.tag && <span className="eco-tag">{c.tag}</span>}<span className="eco-icon" aria-hidden="true">{c.icon}</span></div>
+            <div className="eco-top">
+              {c.tag && <span className={`eco-tag ${c.tagClass || ''}`}>{c.tag}</span>}
+              <span className={`eco-icon ${c.tagClass || ''}`} aria-hidden="true">{c.icon}</span>
+            </div>
             <h3>{c.title}</h3>
             <p>{c.copy}</p>
-            <a href={c.href}>{c.link} <b>&rarr;</b></a>
+            <a href={c.href}>
+              {c.link} <span aria-hidden="true">&rarr;</span>
+            </a>
           </GlowCard>
         ))}
       </div>

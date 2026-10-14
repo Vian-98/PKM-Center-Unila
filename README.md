@@ -155,6 +155,16 @@ Sistem dilengkapi pendeteksian otomatis peran pengguna saat login melalui formul
 | `GET` | `/api/stats` | Agregasi statistik usulan 10 skema PKM (`v_scheme_stats`) | Publik |
 | `GET` | `/api/contact` | Informasi alamat dan kontak resmi lembaga | Publik |
 | `POST` | `/api/feedback` | Pengiriman kritik, saran, atau pesan kontak | Publik |
+| `GET` | `/api/proposals/track?q=` | Pelacakan status 5 tahap usulan publik via NPM/Nama | Publik |
+| `GET` | `/api/student/dashboard` | Ringkasan usulan, timeline progres, tim & dosen mhs login | Khusus Mhs |
+| `GET` | `/api/student/schemes` | Daftar 10 skema PKM aktif untuk pengajuan | Khusus Mhs |
+| `GET` | `/api/student/supervisors` | Direktori dosen pembimbing Unila | Khusus Mhs |
+| `GET` | `/api/student/students` | Direktori dinamis akun mahasiswa aktif untuk anggota tim | Khusus Mhs |
+| `POST` | `/api/student/proposals` | Pengajuan proposal baru (multi-step, auto-provisioning mhs) | Khusus Mhs |
+| `GET` | `/api/student/proposals/:id` | Detail lengkap usulan proposal mahasiswa | Khusus Mhs |
+| `POST` | `/api/student/upload` | Unggah berkas dokumen proposal (PDF/DOCX) | Khusus Mhs |
+| `GET/POST` | `/api/student/logbook` | Catatan harian logbook & riwayat progres tim | Khusus Mhs |
+| `GET/POST` | `/api/student/notifications` | Notifikasi in-app real-time mahasiswa | Khusus Mhs |
 | `GET/POST/PUT/DELETE` | `/api/admin/*` | Manajemen CRUD konten, timeline, pedoman, portofolio | Khusus Admin |
 | `GET` | `/api/dosen/overview` | Ringkasan statistik dan kuota bimbingan dosen | Khusus Dosen |
 | `GET` | `/api/dosen/requests` | Daftar permohonan bimbingan tim mahasiswa | Khusus Dosen |

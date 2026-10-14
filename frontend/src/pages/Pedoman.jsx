@@ -47,9 +47,9 @@ export function PedomanIndex() {
             width={320}
             appearDelay={0}
             files={[
-              { name: "Pedoman Umum 2026", meta: "PDF · SIMBELMAWA", art: "unila", href: pedoman2026?.fileUrl },
-              { name: "Format Usulan Proposal", meta: "Template Dokumen", art: "glacier" },
-              { name: "Rubrik Penilaian 2026", meta: "Kriteria Skor", art: "aurora" },
+              { name: "Pedoman Umum 2026", meta: "PDF · SIMBELMAWA", art: "unila", href: pedoman2026?.fileUrl || 'https://simbelmawa.kemdikbud.go.id/portals/buku-panduan/' },
+              { name: "Format Usulan Proposal", meta: "Template Dokumen", art: "glacier", href: '/docs/proposal-agrosense-pkm-kc.pdf' },
+              { name: "Rubrik Penilaian 2026", meta: "Kriteria Skor", art: "aurora", href: 'https://simbelmawa.kemdikbud.go.id/portals/buku-panduan/' },
             ]}
           />
           <GlassFolder
@@ -60,8 +60,8 @@ export function PedomanIndex() {
             width={320}
             appearDelay={120}
             files={[
-              { name: "Pedoman PKM 2025", meta: "PDF · SIMBELMAWA", art: "glacier", href: pedoman2025?.fileUrl },
-              { name: "Juknis Monev 2025", meta: "Pedoman Kemajuan", art: "dusk" },
+              { name: "Pedoman PKM 2025", meta: "PDF · SIMBELMAWA", art: "glacier", href: pedoman2025?.fileUrl || 'https://simbelmawa.kemdikbud.go.id/portals/buku-panduan/' },
+              { name: "Juknis Monev 2025", meta: "Pedoman Kemajuan", art: "dusk", href: '/docs/proposal-nanomarine-pkm-re.pdf' },
             ]}
           />
           <GlassFolder
@@ -74,8 +74,8 @@ export function PedomanIndex() {
             labelPlacement="top-left"
             appearDelay={240}
             files={[
-              { name: "Pedoman 2024", meta: "PDF · 12 Medali", art: "verdant", href: pedoman2024?.fileUrl },
-              { name: "Pedoman 2023", meta: "PDF · Arsip", art: "ember", href: pedoman2023?.fileUrl },
+              { name: "Pedoman 2024", meta: "PDF · 12 Medali", art: "verdant", href: pedoman2024?.fileUrl || '/docs/proposal-padivision-pkm-kc.pdf' },
+              { name: "Pedoman 2023", meta: "PDF · Arsip", art: "ember", href: pedoman2023?.fileUrl || '/docs/proposal-telangtea-pkm-k.pdf' },
             ]}
           />
         </div>
@@ -104,8 +104,8 @@ export function PedomanIndex() {
                   <h2>{item.title}</h2>
                   {item.note && <p>{item.note}</p>}
                 </div>
-                <a className="doc-download" href={item.fileUrl || '#'} target="_blank" rel="noopener noreferrer">
-                  {item.fileUrl ? <>Buka & unduh <b>↓</b></> : <>Segera tersedia</>}
+                <a className="doc-download" href={item.fileUrl || 'https://simbelmawa.kemdikbud.go.id/portals/buku-panduan/'} target="_blank" rel="noopener noreferrer">
+                  Buka &amp; Unduh Dokumen <b>↓</b>
                 </a>
               </article>
             ))}

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"pkm-center/backend/internal/models"
 )
@@ -385,6 +386,61 @@ func (h StudentHandler) GetSupervisors(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": items})
 }
 
+// GetStudents mengembalikan direktori mahasiswa aktif untuk pilihan anggota tim PKM.
+func (h StudentHandler) GetStudents(c *gin.Context) {
+	currentUserID := getUserIDFromContext(c)
+	query := h.DB.Table("users u").
+		Select(`u.id, u.full_name as name, u.email, sp.student_number as npm, sp.faculty,
+		        sp.department, sp.study_program as study_program, sp.entry_year, sp.academic_status`).
+		Joins("JOIN student_profiles sp ON sp.user_id = u.id")
+
+	if currentUserID != "" {
+		query = query.Where("u.id <> ?", currentUserID)
+	}
+
+	search := strings.TrimSpace(c.Query("q"))
+	if search != "" {
+		wild := "%" + search + "%"
+		query = query.Where("sp.student_number ILIKE ? OR u.full_name ILIKE ? OR sp.study_program ILIKE ?", wild, wild, wild)
+	}
+
+	rows, err := query.Order("sp.student_number ASC").Rows()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Gagal memuat direktori mahasiswa"})
+		return
+	}
+	defer rows.Close()
+
+	items := []gin.H{}
+	for rows.Next() {
+		var s struct {
+			ID             string `json:"id"`
+			Name           string `json:"name"`
+			Email          string `json:"email"`
+			NPM            string `json:"npm"`
+			Faculty        string `json:"faculty"`
+			Department     string `json:"department"`
+			StudyProgram   string `json:"studyProgram"`
+			EntryYear      int    `json:"entryYear"`
+			AcademicStatus string `json:"academicStatus"`
+		}
+		if h.DB.ScanRows(rows, &s) == nil {
+			items = append(items, gin.H{
+				"id":             s.ID,
+				"name":           s.Name,
+				"email":          s.Email,
+				"npm":            s.NPM,
+				"faculty":        s.Faculty,
+				"department":     s.Department,
+				"studyProgram":   s.StudyProgram,
+				"entryYear":      s.EntryYear,
+				"academicStatus": s.AcademicStatus,
+			})
+		}
+	}
+	c.JSON(http.StatusOK, gin.H{"data": items})
+}
+
 // CreateProposal menyimpan/memperbarui usulan proposal mahasiswa (multi-step),
 // termasuk dokumen dan permintaan bimbingan dosen.
 func (h StudentHandler) CreateProposal(c *gin.Context) {
@@ -406,9 +462,10 @@ func (h StudentHandler) CreateProposal(c *gin.Context) {
 		DocName              string `json:"docName"`
 		Submit               bool   `json:"submit"`
 		Members              []struct {
-			NPM   string `json:"npm"`
-			Name  string `json:"name"`
-			Prodi string `json:"prodi"`
+			NPM     string `json:"npm"`
+			Name    string `json:"name"`
+			Prodi   string `json:"prodi"`
+			Faculty string `json:"faculty"`
 		} `json:"members"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -504,20 +561,63 @@ func (h StudentHandler) CreateProposal(c *gin.Context) {
 		}
 	}
 
-	// Daftarkan anggota tim berdasarkan NPM (bila mahasiswa sudah terdaftar).
+	// Daftarkan anggota tim berdasarkan NPM (bila mahasiswa sudah terdaftar ataupun baru).
 	for _, m := range input.Members {
 		npm := strings.TrimSpace(m.NPM)
-		if npm == "" {
+		name := strings.TrimSpace(m.Name)
+		prodi := strings.TrimSpace(m.Prodi)
+		faculty := strings.TrimSpace(m.Faculty)
+		if faculty == "" {
+			faculty = "Universitas Lampung"
+		}
+		if npm == "" && name == "" {
 			continue
 		}
 		var memberUser models.User
-		if err := h.DB.Table("users u").
+		err := h.DB.Table("users u").
 			Select("u.*").
 			Joins("JOIN student_profiles sp ON sp.user_id = u.id").
 			Where("sp.student_number = ?", npm).
-			First(&memberUser).Error; err != nil {
-			continue
+			First(&memberUser).Error
+
+		if err != nil {
+			// Mahasiswa belum terdaftar di sistem: buat akun & profil mahasiswa baru secara otomatis dari data lengkap
+			if npm != "" && name != "" {
+				newID := uuidV4()
+				dummyEmail := strings.ToLower(npm) + "@student.unila.ac.id"
+				hash, _ := bcrypt.GenerateFromPassword([]byte("mhs12345"), bcrypt.DefaultCost)
+				newMhs := models.User{
+					ID:            newID,
+					Email:         dummyEmail,
+					PasswordHash:  string(hash),
+					FullName:      name,
+					AccountStatus: "active",
+					AuthProvider:  "local",
+				}
+				if createErr := h.DB.Create(&newMhs).Error; createErr == nil {
+					memberUser = newMhs
+					var mhsRole models.Role
+					if h.DB.Where("code = ?", "mahasiswa").First(&mhsRole).Error == nil {
+						h.DB.Create(&models.UserRole{UserID: newID, RoleID: mhsRole.ID})
+					}
+					h.DB.Create(&models.StudentProfile{
+						UserID:         newID,
+						StudentNumber:  npm,
+						Faculty:        faculty,
+						Department:     prodi,
+						StudyProgram:   prodi,
+						EntryYear:      time.Now().Year() - 1,
+						AcademicStatus: "active",
+						Biography:      "Anggota tim terdaftar otomatis dari formulir pengajuan usulan PKM.",
+					})
+				} else {
+					continue
+				}
+			} else {
+				continue
+			}
 		}
+
 		if memberUser.ID == userID {
 			continue
 		}
@@ -820,8 +920,7 @@ func (h StudentHandler) TrackProposal(c *gin.Context) {
 		StageName     string `json:"stageName"`
 	}
 
-	var items []TrackItem
-	rows, err := h.DB.Table("proposals p").
+	queryCond := h.DB.Table("proposals p").
 		Select(`u.full_name as student_name, sp.student_number, sp.faculty, sp.study_program,
 		        p.id as proposal_id, p.title, p.status, s.code as scheme_code, s.name as scheme_name,
 		        t.name as team_name, p.is_funded, per.year as period_year,
@@ -831,15 +930,21 @@ func (h StudentHandler) TrackProposal(c *gin.Context) {
 		Joins("LEFT JOIN student_profiles sp ON sp.user_id = t.leader_id").
 		Joins("JOIN pkm_schemes s ON s.id = p.scheme_id").
 		Joins("JOIN pkm_periods per ON per.id = p.period_id").
-		Joins("LEFT JOIN pkm_stages st ON st.id = p.current_stage_id").
-		Where("sp.student_number = ? OR u.email = ? OR u.full_name ILIKE ?", query, query, "%"+query+"%").
-		Order("p.created_at DESC").
-		Rows()
+		Joins("LEFT JOIN pkm_stages st ON st.id = p.current_stage_id")
+
+	trimmed := strings.TrimSpace(query)
+	if trimmed != "*" && !strings.EqualFold(trimmed, "all") && !strings.EqualFold(trimmed, "semua") {
+		wild := "%" + trimmed + "%"
+		queryCond = queryCond.Where("sp.student_number = ? OR u.email = ? OR u.full_name ILIKE ? OR p.title ILIKE ? OR s.code ILIKE ? OR t.name ILIKE ?", trimmed, trimmed, wild, wild, wild, wild)
+	}
+
+	rows, err := queryCond.Order("p.created_at DESC").Limit(40).Rows()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Gagal menelusuri usulan"})
 		return
 	}
 	defer rows.Close()
+	var items []TrackItem
 	for rows.Next() {
 		var it TrackItem
 		if h.DB.ScanRows(rows, &it) == nil {

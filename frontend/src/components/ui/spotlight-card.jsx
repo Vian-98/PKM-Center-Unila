@@ -37,6 +37,7 @@ export function GlowCard({
   customSize = true,
   noPadding = false,
   style = {},
+  dark = false,
 }) {
   const cardRef = useRef(null)
   const innerRef = useRef(null)
@@ -71,25 +72,39 @@ export function GlowCard({
   const { base, spread } = glowColorMap[glowColor] || glowColorMap.gold
 
   const getInlineStyles = () => {
+    const isDark = dark || className.includes('dark') || style?.backgroundColor === '#123B66' || style?.color === '#ffffff'
+    const backdropGradient = isDark
+      ? 'linear-gradient(145deg, rgba(16, 42, 67, 0.98), rgba(10, 31, 53, 0.96))'
+      : 'rgba(255, 255, 255, 0.88)'
+    const backupBorder = isDark ? 'rgba(255, 215, 0, 0.35)' : 'rgba(255, 255, 255, 0.92)'
+
     const baseStyles = {
       '--base': base,
       '--spread': spread,
-      '--radius': '18',
-      '--border': '2',
-      '--backdrop': 'rgba(255, 255, 255, 0.92)',
-      '--backup-border': 'rgba(18, 59, 102, 0.12)',
-      '--size': '260',
+      '--radius': '20',
+      '--border': '1.5',
+      '--backdrop': isDark ? '#102a43' : 'rgba(255, 255, 255, 0.88)',
+      '--backup-border': backupBorder,
+      '--size': '280',
       '--outer': '1',
-      '--border-size': 'calc(var(--border, 2) * 1px)',
-      '--spotlight-size': 'calc(var(--size, 200) * 1px)',
+      '--border-size': 'calc(var(--border, 1.5) * 1px)',
+      '--spotlight-size': 'calc(var(--size, 220) * 1px)',
       '--hue': 'calc(var(--base) + (var(--xp, 0) * var(--spread, 0)))',
-      backgroundImage: `radial-gradient(
-        var(--spotlight-size) var(--spotlight-size) at
-        var(--x, 50%)
-        var(--y, 50%),
-        hsl(var(--hue, 51) 95% 65% / 0.18), transparent 75%
-      )`,
-      backgroundColor: 'var(--backdrop, #ffffff)',
+      backgroundImage: isDark
+        ? `radial-gradient(
+            var(--spotlight-size) var(--spotlight-size) at
+            var(--x, 50%)
+            var(--y, 50%),
+            hsl(var(--hue, 51) 100% 65% / 0.28), transparent 75%
+          ), ${backdropGradient}`
+        : `radial-gradient(
+            var(--spotlight-size) var(--spotlight-size) at
+            var(--x, 50%)
+            var(--y, 50%),
+            hsl(var(--hue, 51) 95% 65% / 0.16), transparent 75%
+          ), ${backdropGradient}`,
+      backgroundColor: isDark ? '#102a43' : 'rgba(255, 255, 255, 0.88)',
+      color: isDark ? '#ffffff' : '#0f172a',
       border: 'var(--border-size) solid var(--backup-border)',
       position: 'relative',
       ...style,

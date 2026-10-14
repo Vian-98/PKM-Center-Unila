@@ -101,15 +101,20 @@ Berdasarkan pembagian kerja di `docs/pkm - Sheet1.csv`, berikut adalah peta jala
      * Lonceng notifikasi in-app (tabel `notifications`) di header portal.
   2. **Formulir Ajukan Proposal Multi-Step (`AjukanProposal.jsx`):** ✅
      * *Langkah 1:* Pilih 10 Skema PKM (`PKM-K, RE, RSH, PM, KC, AI, GFT, KI, VGK, PI`), Input Judul Usulan, Abstrak, Kata Kunci, dan Kriteria Bidang/Jurusan (`proposals.field_of_study`).
-     * *Langkah 2:* Input Anggota Tim (NPM, Nama, Jurusan) — otomatis mendaftarkan mahasiswa terdaftar ke `team_members` dengan status undangan `pending` — & Pilih Dosen Pembimbing dari direktori (`GET /api/student/supervisors`).
+     * *Langkah 2:* **Pemilihan Anggota Tim Dinamis & Cerdas:**
+       - Dropdown pemilihan anggota tim berbasis direktori akun mahasiswa aktif (`GET /api/student/students`).
+       - Opsi **`+ Mahasiswa Belum Terdaftar (Input Manual Lengkap)`** yang memunculkan input lengkap (NPM, Nama, Prodi, Fakultas) saat dipilih.
+       - Deteksi cerdas & auto-provisioning: jika mahasiswa belum terdaftar, akun mahasiswa dan profil `student_profiles` otomatis dibuatkan di backend serta langsung ditautkan ke `team_members` dengan status `pending`.
+       - Dropdown pemilihan Dosen Pembimbing terintegrasi dari direktori (`GET /api/student/supervisors`).
      * *Langkah 3:* Upload berkas PDF/DOCX nyata (multipart, `POST /api/student/upload`) ke tabel `proposal_documents` dengan penomoran versi otomatis, atau lampirkan tautan Google Drive.
   3. **Modul Logbook PKM (`LogbookPKM.jsx`):** ✅
      * Form tambah catatan harian kegiatan (tanggal, uraian progres, **persentase capaian** `logbook_entries.progress_percentage`, upload bukti foto/nota/dokumen).
      * Timeline riwayat entri lengkap dengan progress bar dan komentar dosen pembimbing (`logbook_comments`).
   4. **Widget Cek Status Usulan Publik (`CekStatusUsulan.jsx`):** ✅
+     * Antarmuka pencarian Neo-Glassmorphism transparan elegan (bebas kotak putih mengganggu).
      * Komponen pencarian cepat (`GET /api/proposals/track?q=`) untuk mengecek status 5 tahap, dosen pembimbing, dan penugasan reviewer cukup dengan NPM/nama.
 * **Catatan Teknis:** Skema `PKM-VGK` ditambahkan ke seeder `pkm_schemes` (migrasi `0001`) agar genap 10 skema sesuai daftar resmi; migrasi aditif `0003_student_portal.sql` menambah `proposals.field_of_study` dan `logbook_entries.progress_percentage`.
-* **Endpoint Baru (aktif & terverifikasi):** `GET /api/student/dashboard`, `GET /api/student/schemes`, `GET /api/student/supervisors`, `POST /api/student/proposals`, `GET /api/student/proposals/:id`, `POST /api/student/proposals/upload`, `POST /api/student/upload`, `GET|POST /api/student/logbook`, `GET /api/student/notifications`, `POST /api/student/notifications/read`, `GET /api/proposals/track`.
+* **Endpoint Baru (aktif & terverifikasi):** `GET /api/student/dashboard`, `GET /api/student/schemes`, `GET /api/student/supervisors`, `GET /api/student/students`, `POST /api/student/proposals`, `GET /api/student/proposals/:id`, `POST /api/student/proposals/upload`, `POST /api/student/upload`, `GET|POST /api/student/logbook`, `GET /api/student/notifications`, `POST /api/student/notifications/read`, `GET /api/proposals/track`.
 
 ---
 
