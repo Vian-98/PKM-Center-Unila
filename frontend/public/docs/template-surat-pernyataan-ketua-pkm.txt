@@ -1,30 +1,26 @@
 SURAT PERNYATAAN KETUA TIM PENGUSUL
-PROGRAM KREATIVITAS MAHASISWA (PKM)
+PROGRAM KREATIVITAS MAHASISWA (PKM) 2026
 KEMDIKTISAINTEK / SIMBELMAWA
 
 Yang bertanda tangan di bawah ini:
 Nama Ketua Tim              : [Nama Lengkap Ketua Tim]
 Nomor Induk Mahasiswa (NIM) : [NPM / NIM Mahasiswa]
 Program Studi               : [Nama Program Studi]
-Fakultas                    : [Nama Fakultas]
-Perguruan Tinggi            : Universitas Lampung
 Nama Dosen Pendamping       : [Nama Lengkap Dosen Pendamping beserta Gelar]
-NIP / NIDN Dosen            : [NIP / NIDN]
+Perguruan Tinggi            : Universitas Lampung
 Judul Proposal PKM          : [Tuliskan Judul Lengkap Proposal PKM Sesuai yang Didaftarkan]
-Skema Bidang PKM            : [PKM-RE / PKM-RSH / PKM-K / PKM-PM / PKM-PI / PKM-KC / PKM-KI / PKM-VGK / PKM-GFT / PKM-AI]
 
-Dengan ini menyatakan bahwa proposal PKM yang saya usulkan untuk tahun anggaran yang berjalan adalah:
-1. Asli karya mahasiswa tim pengusul dan belum pernah dibiayai oleh lembaga atau sumber dana lain.
-2. Penggunaan kecerdasan buatan / Artificial Intelligence (AI) mengikuti syarat dan ketentuan yang berlaku sesuai Panduan Penggunaan Generative AI (GenAI) Direktorat Belmawa Kemdiktisaintek.
-3. Seluruh anggota tim berkomitmen untuk menjalankan kegiatan PKM secara bersungguh-sungguh dan bertanggung jawab hingga tuntas.
+Dengan ini menyatakan bahwa proposal PKM saya dengan judul yang diusulkan untuk tahun anggaran 2026 adalah:
+1. Asli karya mahasiswa dan belum pernah dibiayai oleh lembaga atau sumber dana lain.
+2. Penggunaan kecerdasan buatan / Artificial Intelligence (AI) mengikuti syarat dan ketentuan yang berlaku sesuai Panduan Penggunaan Generative AI (GenAI) Direktorat Pembelajaran dan Kemahasiswaan (https://s.id/PanduanGenAI).
 
-Bilamana di kemudian hari ditemukan ketidaksesuaian atau pemalsuan dengan pernyataan ini, maka saya bersedia dituntut dan diproses sesuai dengan ketentuan hukum yang berlaku serta mengembalikan seluruh dana bantuan yang telah diterima ke kas negara.
+Kami berkomitmen untuk menjalankan kegiatan PKM secara sungguh-sungguh hingga selesai. Bilamana di kemudian hari ditemukan ketidaksesuaian dengan pernyataan ini, maka saya bersedia dituntut dan diproses sesuai dengan ketentuan yang berlaku dan mengembalikan seluruh biaya yang sudah diterima ke kas negara.
 
-Demikian surat pernyataan ini dibuat dengan sesungguhnya dan dengan penuh kesadaran tanpa paksaan dari pihak manapun untuk dapat dipergunakan sebagaimana mestinya.
+Demikian pernyataan ini dibuat dengan sesungguhnya dan dengan sebenar-benarnya.
 
 
 Bandar Lampung, [Tanggal, Bulan, Tahun]
-Yang Menyatakan, Ketua Tim Pengusul
+Yang menyatakan, Ketua Tim Pengusul
 
 
 [ MATERAI Rp 10.000 ]
@@ -32,4 +28,6 @@ Yang Menyatakan, Ketua Tim Pengusul
 
 
 ( [Nama Lengkap Ketua Tim Pengusul] )
-NPM. [NPM / NIM]
+NIM. [NPM / NIM]
+
+Catatan: Setelah diisi dan dibubuhi tanda tangan basah, satu halaman penuh yang memuat tanda tangan dipindai/difoto dengan rapi. Hasil pemotongan tanda tangan secara lokal menyebabkan proposal TIDAK LOLOS Seleksi Tahap 1.

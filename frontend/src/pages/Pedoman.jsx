@@ -25,32 +25,28 @@ import {
 
 // Official Plain Text Templates sourced directly from Belmawa Kemdiktisaintek Guidelines
 const SURAT_PERNYATAAN_KETUA_TEXT = `SURAT PERNYATAAN KETUA TIM PENGUSUL
-PROGRAM KREATIVITAS MAHASISWA (PKM)
+PROGRAM KREATIVITAS MAHASISWA (PKM) 2026
 KEMDIKTISAINTEK / SIMBELMAWA
 
 Yang bertanda tangan di bawah ini:
 Nama Ketua Tim              : [Nama Lengkap Ketua Tim]
 Nomor Induk Mahasiswa (NIM) : [NPM / NIM Mahasiswa]
 Program Studi               : [Nama Program Studi]
-Fakultas                    : [Nama Fakultas]
-Perguruan Tinggi            : Universitas Lampung
 Nama Dosen Pendamping       : [Nama Lengkap Dosen Pendamping beserta Gelar]
-NIP / NIDN Dosen            : [NIP / NIDN]
+Perguruan Tinggi            : Universitas Lampung
 Judul Proposal PKM          : [Tuliskan Judul Lengkap Proposal PKM Sesuai yang Didaftarkan]
-Skema Bidang PKM            : [PKM-RE / PKM-RSH / PKM-K / PKM-PM / PKM-PI / PKM-KC / PKM-KI / PKM-VGK / PKM-GFT / PKM-AI]
 
-Dengan ini menyatakan bahwa proposal PKM yang saya usulkan untuk tahun anggaran yang berjalan adalah:
-1. Asli karya mahasiswa tim pengusul dan belum pernah dibiayai oleh lembaga atau sumber dana lain.
-2. Penggunaan kecerdasan buatan / Artificial Intelligence (AI) mengikuti syarat dan ketentuan yang berlaku sesuai Panduan Penggunaan Generative AI (GenAI) Direktorat Belmawa Kemdiktisaintek.
-3. Seluruh anggota tim berkomitmen untuk menjalankan kegiatan PKM secara bersungguh-sungguh dan bertanggung jawab hingga tuntas.
+Dengan ini menyatakan bahwa proposal PKM saya dengan judul yang diusulkan untuk tahun anggaran 2026 adalah:
+1. Asli karya mahasiswa dan belum pernah dibiayai oleh lembaga atau sumber dana lain.
+2. Penggunaan kecerdasan buatan / Artificial Intelligence (AI) mengikuti syarat dan ketentuan yang berlaku sesuai Panduan Penggunaan Generative AI (GenAI) Direktorat Pembelajaran dan Kemahasiswaan (https://s.id/PanduanGenAI).
 
-Bilamana di kemudian hari ditemukan ketidaksesuaian atau pemalsuan dengan pernyataan ini, maka saya bersedia dituntut dan diproses sesuai dengan ketentuan hukum yang berlaku serta mengembalikan seluruh dana bantuan yang telah diterima ke kas negara.
+Kami berkomitmen untuk menjalankan kegiatan PKM secara sungguh-sungguh hingga selesai. Bilamana di kemudian hari ditemukan ketidaksesuaian dengan pernyataan ini, maka saya bersedia dituntut dan diproses sesuai dengan ketentuan yang berlaku dan mengembalikan seluruh biaya yang sudah diterima ke kas negara.
 
-Demikian surat pernyataan ini dibuat dengan sesungguhnya dan dengan penuh kesadaran tanpa paksaan dari pihak manapun untuk dapat dipergunakan sebagaimana mestinya.
+Demikian pernyataan ini dibuat dengan sesungguhnya dan dengan sebenar-benarnya.
 
 
 Bandar Lampung, [Tanggal, Bulan, Tahun]
-Yang Menyatakan, Ketua Tim Pengusul
+Yang menyatakan, Ketua Tim Pengusul
 
 
 [ MATERAI Rp 10.000 ]
@@ -58,11 +54,22 @@ Yang Menyatakan, Ketua Tim Pengusul
 
 
 ( [Nama Lengkap Ketua Tim Pengusul] )
-NPM. [NPM / NIM]
+NIM. [NPM / NIM]
+
+Catatan: Setelah diisi dan dibubuhi tanda tangan basah, satu halaman penuh yang memuat tanda tangan dipindai/difoto dengan rapi. Hasil pemotongan tanda tangan secara lokal menyebabkan proposal TIDAK LOLOS Seleksi Tahap 1.
 `
 
-const FORMAT_RAB_TEXT = `FORMAT RENCANA ANGGARAN BIAYA (RAB) PKM
+const FORMAT_RAB_TEXT = `FORMAT RENCANA ANGGARAN BIAYA (RAB) PKM 2026
 SESUAI PEDOMAN RESMI SIMBELMAWA KEMDIKTISAINTEK
+
+================================================================================
+BESARAN PENDANAAN RESMI 2026:
+================================================================================
+- Direktorat Belmawa (8 Bidang Pendanaan) : Rp 6.000.000 - Rp 8.000.000 per judul
+- Dana Pendamping Perguruan Tinggi (WAJIB) : maksimum Rp 2.000.000
+- Dana institusi / mitra lain (jika ada)   : maksimum Rp 1.000.000
+- Komposisi belanja: minimum 80% operasional, maksimum 20% administrasi
+
 
 ================================================================================
 BAGIAN 1: REKAPITULASI RENCANA ANGGARAN BIAYA (DITEMPATKAN DI BAB 4 USULAN)
@@ -73,29 +80,26 @@ Tabel 4.1 Rekapitulasi Rencana Anggaran Biaya
 | No | Jenis Pengeluaran                   | Sumber Dana              | Besaran Dana (Rp)     |
 +----+------------------------------------+--------------------------+-----------------------+
 | 1  | Bahan habis pakai                  | Belmawa                  | Rp [Maks 60% Belmawa] |
-|    | (ATK, reagen, material riset, dll) | Perguruan Tinggi (Unila) | Rp [...]              |
-|    |                                    | Instansi Lain (jika ada) | Rp [...]              |
+|    | (ATK, reagen, material riset, dll) | Perguruan Tinggi (Unila) | Rp [Maks 2 Juta]      |
+|    |                                    | Instansi Lain (jika ada) | Rp [Maks 1 Juta]      |
 +----+------------------------------------+--------------------------+-----------------------+
 | 2  | Sewa dan jasa                      | Belmawa                  | Rp [Maks 15% Belmawa] |
-|    | (Sewa alat lab, uji sampel, cloud) | Perguruan Tinggi (Unila) | Rp [...]              |
-|    |                                    | Instansi Lain (jika ada) | Rp [...]              |
+|    | (Sewa alat lab, uji sampel, cloud) | Perguruan Tinggi (Unila) | Rp [Maks 2 Juta]      |
+|    |                                    | Instansi Lain (jika ada) | Rp [Maks 1 Juta]      |
 +----+------------------------------------+--------------------------+-----------------------+
 | 3  | Transportasi lokal                 | Belmawa                  | Rp [Maks 30% Belmawa] |
-|    | (Transport sampling, survei mitra) | Perguruan Tinggi (Unila) | Rp [...]              |
-|    |                                    | Instansi Lain (jika ada) | Rp [...]              |
+|    | (Transport sampling, survei mitra) | Perguruan Tinggi (Unila) | Rp [Maks 2 Juta]      |
+|    |                                    | Instansi Lain (jika ada) | Rp [Maks 1 Juta]      |
 +----+------------------------------------+--------------------------+-----------------------+
 | 4  | Lain-lain                          | Belmawa                  | Rp [Maks 15% Belmawa] |
-|    | (Komunikasi, publikasi, materai)   | Perguruan Tinggi (Unila) | Rp [...]              |
-|    |                                    | Instansi Lain (jika ada) | Rp [...]              |
+|    | (Komunikasi, publikasi, materai)   | Perguruan Tinggi (Unila) | Rp [Maks 2 Juta]      |
+|    |                                    | Instansi Lain (jika ada) | Rp [Maks 1 Juta]      |
 +----+------------------------------------+--------------------------+-----------------------+
-| JUMLAH KESELURUHAN                      |                          | Rp [Rp 6 - 10 Juta]   |
+| JUMLAH KESELURUHAN                      |                          | Rp [Rp 6 - 8 Juta]    |
 +----+------------------------------------+--------------------------+-----------------------+
 
-Rekapitulasi Sumber Pendanaan:
-1. Kemdiktisaintek (Belmawa) : Rp [Rp 6.000.000 - Rp 10.000.000]
-2. Perguruan Tinggi (Unila)   : Rp [...]
-3. Instansi Lain (jika ada)   : Rp [...]
-TOTAL AKUMULASI DANA          : Rp [...]
+Catatan: Angka persentase tiap jenis pengeluaran adalah nilai MAKSIMUM, namun total keempatnya 100%.
+Publikasi/ads di media sosial maksimum Rp 500.000; sewa laboratorium maksimum Rp 1.000.000 (bila diwajibkan).
 
 
 ================================================================================
@@ -136,20 +140,23 @@ BAGIAN 2: JUSTIFIKASI ANGGARAN KEGIATAN (LAMPIRAN 2 PROPOSAL)
 | No | Komponen            | Volume | Satuan | Harga Satuan(Rp) | Total Biaya (Rp) |
 +----+---------------------+--------+--------+------------------+------------------+
 | 1  | Kuota Internet/Tim  | [...]  | [bln]  | Rp [Maks 100rb]  | Rp [...]         |
-| 2  | Biaya Publikasi/Sem | [...]  | [keg]  | Rp [...]         | Rp [...]         |
+| 2  | Publikasi Medsos    | [...]  | [keg]  | Rp [Maks 500rb]  | Rp [...]         |
 | 3  | Bea Materai 10.000  | [...]  | [lbr]  | Rp 10.000        | Rp [...]         |
 +----+---------------------+--------+--------+------------------+------------------+
 | SUB TOTAL (4)                                                 | Rp [...]         |
 +----+----------------------------------------------------------+------------------+
-TOTAL ANGGARAN (1 + 2 + 3 + 4) = Rp [Rp 6.000.000 s.d. Rp 10.000.000]
+TOTAL ANGGARAN (1 + 2 + 3 + 4) = Rp [Rp 6.000.000 s.d. Rp 8.000.000]
 
 POS ANGGARAN YANG DILARANG OLEH BELMAWA:
-- Honorarium untuk tim pengusul, dosen pendamping, atau narasumber
+- Honorarium untuk tim pengusul, dosen pendamping, narasumber, atau hadiah
 - Biaya konsumsi rapat, makan siang, snack
-- Sewa laptop, komputer, kamera, atau printer milik pribadi/kampus
-- Pembelian flashdisk, harddisk eksternal, atau memori
-- Pembelian alat/investasi bernilai permanen > Rp 1.000.000 per unit
-- Kuota internet melebihi batas Rp 100.000/bulan per orang
+- Sewa komputer/laptop/printer/ponsel/kamera, tempat/ruangan/aula
+- Pembelian alat/bahan bernilai > Rp 1.000.000 per item
+- Pembelian penyimpanan data (flashdisk, harddisk eksternal, memori)
+- Kuota internet melebihi Rp 100.000 per bulan PER TIM
+- Sewa lisensi melebihi 6 bulan
+- Penyusunan/penggandaan/penjilidan laporan (kecuali diwajibkan PT)
+- Biaya seminar dan/atau publikasi hasil PKM di jurnal ilmiah
 `
 
 const BIODATA_PENGUSUL_TEXT = `LAMPIRAN 1. FORMAT BIODATA KETUA, ANGGOTA, DAN DOSEN PENDAMPING
@@ -185,13 +192,19 @@ Pengusul,
 NPM / NIDN. [...]
 `
 
-const SISTEMATIKA_USULAN_TEXT = `SISTEMATIKA PROPOSAL PROGRAM KREATIVITAS MAHASISWA (PKM)
+const SISTEMATIKA_USULAN_TEXT = `SISTEMATIKA PROPOSAL PROGRAM KREATIVITAS MAHASISWA (PKM) 2026
 SUMBER: PEDOMAN RESMI DIREKTORAT BELMAWA KEMDIKTISAINTEK
 
 ================================================================================
-ATURAN FORMAT PENULISAN WAJIB (ANTI-GUGUR ADMINISTRASI):
+KETENTUAN JUDUL:
 ================================================================================
-1. Ukuran Kertas: A4 (80 gram), orientasi Portrait.
+- Ringkas, MAKSIMAL 20 KATA, huruf kapital, hindari singkatan/akronim tidak baku.
+- Menonjolkan kata kunci kegiatan dan hasil utamanya, ditulis dalam Bahasa Indonesia.
+
+================================================================================
+ATURAN FORMAT PENULISAN WAJIB (ANTI-GUGUR SELEKSI TAHAP 1):
+================================================================================
+1. Ukuran Kertas: A4, satu kolom.
 2. Batas Margin Halaman:
    - Margin Kiri   : 4 cm
    - Margin Atas   : 3 cm
@@ -199,51 +212,54 @@ ATURAN FORMAT PENULISAN WAJIB (ANTI-GUGUR ADMINISTRASI):
    - Margin Bawah  : 3 cm
 3. Jenis dan Ukuran Huruf:
    - Font: Times New Roman, ukuran 12 pt.
-   - Spasi: 1.15 spasi.
+   - Spasi: 1,15 spasi.
    - Perataan Teks: Rata Kiri-Kanan (Justified).
 4. Penomoran Halaman:
-   - Halaman Daftar Isi: Angka Romawi kecil (i, ii...) di pojok kanan bawah.
-   - Halaman Inti (Bab 1 s.d. Daftar Pustaka): Angka Arab (1, 2, 3...) di pojok kanan atas.
-5. Batas Halaman Inti:
-   - MAKSIMAL 10 (SEPULUH) HALAMAN terhitung dari Bab 1 Pendahuluan s.d. Daftar Pustaka.
-   - Halaman lampiran tidak dihitung dalam batas 10 halaman.
+   - Halaman Daftar Isi: Angka Romawi kecil (i, ii, iii...) di sudut KANAN BAWAH.
+   - Bagian Inti (Bab 1 s.d. Daftar Pustaka) & Lampiran: Angka Arab (1, 2, 3...) di sudut KANAN ATAS.
+5. Batas Halaman Bagian Inti:
+   - 8 Bidang Pendanaan (RE, RSH, PM, PI, K, KC, KI, VGK): MAKSIMAL 10 halaman.
+   - Skema Insentif (PKM-AI & PKM-GFT): 8 s.d. 15 halaman.
+   - Lampiran tidak dihitung dalam batas halaman bagian inti.
 6. ATURAN SIMBELMAWA KRUSIAL:
-   - Berkas PDF proposal diunggah TANPA SAMPUL / COVER.
-   - Berkas PDF proposal diunggah TANPA LEMBAR PENGESAHAN.
-   - Seluruh identitas pengusul, perguruan tinggi, dan lembar pengesahan dihasilkan secara digital oleh sistem SIMBELMAWA.
+   - Berkas PDF TANPA SAMPUL/COVER dan TANPA LEMBAR PENGESAHAN.
+   - Khusus PKM-AI: juga TANPA DAFTAR ISI (langsung Judul, Penulis, Abstrak, dst.).
+   - Bila proposal memuat sampul, lembar pengesahan, ringkasan/abstrak (kecuali yang dipersyaratkan), dinyatakan TIDAK LOLOS Seleksi Tahap 1.
+   - Identitas pengusul dan pengesahan dihasilkan secara digital oleh SIMBELMAWA.
+7. Uji Periksa Similaritas: wajib dilampirkan (Turnitin/iThenticate), indeks similaritas MAKSIMAL 25% pada bagian inti.
 
 ================================================================================
-STRUKTUR BAB PROPOSAL (SKEMA PENDANAAN):
+STRUKTUR BAGIAN INTI PROPOSAL (SKEMA PENDANAAN):
 ================================================================================
-- DAFTAR ISI (i, ii)
+- DAFTAR ISI (i, ii, iii) — PKM-AI tidak memakai Daftar Isi
 - BAB 1. PENDAHULUAN
-  * Latar belakang dan justifikasi ilmiah/praktis
-  * Rumusan masalah dan urgensi gagasan
-  * Tujuan khusus dan kebaruan penelitian/kegiatan
-  * Luaran yang ditargetkan dan kontribusi nyata
+  * Latar belakang, identifikasi masalah, justifikasi ilmiah/praktis
+  * Rumusan masalah, tujuan, kebaruan, luaran, dan manfaat
 - BAB 2. TINJAUAN PUSTAKA / GAMBARAN UMUM
-  * PKM-RE/RSH : Tinjauan Pustaka & State of the Art
-  * PKM-K      : Gambaran Umum Rencana Usaha, Analisis Pasar, Break Even Point (BEP)
-  * PKM-PM/PI  : Gambaran Umum Masyarakat Sasaran / Profil Mitra Usaha
-  * PKM-KC/KI  : Tinjauan Pustaka & Tahapan Konsep Desain Solusi
-  * PKM-VGK    : Skenario Gagasan Futuristik dan Narasi Konstruktif
-- BAB 3. METODE PELAKSANAAN / METODE RISET
-  * Diagram alir tahapan kegiatan
-  * Prosedur kerja, instrumen, dan teknik pengumpulan data
-  * Analisis data dan indikator capaian terukur
+  * PKM-RE/RSH/KC/KI : Tinjauan Pustaka & State of the Art
+  * PKM-K           : Gambaran Umum Rencana Usaha, Analisis Pasar, BEP
+  * PKM-PM/PI       : Gambaran Umum Masyarakat Sasaran / Profil Mitra
+  * PKM-VGK         : Skenario Gagasan & Narasi Konstruktif
+- BAB 3. METODE / TAHAP PELAKSANAAN
+  * Tahapan kegiatan, prosedur kerja, instrumen, dan analisis data
 - BAB 4. BIAYA DAN JADWAL KEGIATAN
-  * Tabel 4.1 Rekapitulasi Rencana Anggaran Biaya (4 Komponen Belmawa)
-  * Tabel 4.2 Bar-chart Jadwal Kegiatan (Durasi 3 s.d. 5 Bulan)
+  * Tabel 4.1 Rekapitulasi Rencana Anggaran Biaya (4 Komponen)
+  * Tabel 4.2 Jadwal Kegiatan (bar chart, durasi 3 s.d. 4 bulan)
 - DAFTAR PUSTAKA
-  * Standar Harvard atau APA Style
-  * Utamakan 80% rujukan artikel jurnal ilmiah 5-10 tahun terakhir
-- LAMPIRAN-LAMPIRAN
-  * Lampiran 1. Biodata Ketua, Anggota, dan Dosen Pendamping bertandatangan
+  * Harvard style, alfabetis, baris kedua menjorok ke dalam
+- LAMPIRAN-LAMPIRAN (lihat tab Template Lampiran)
+
+================================================================================
+CONTOH LAMPIRAN WAJIB (PKM-KC / PKM-KI):
+================================================================================
+  * Lampiran 1. Biodata Ketua & Anggota serta Dosen Pendamping (tanda tangan basah)
   * Lampiran 2. Justifikasi Anggaran Kegiatan
-  * Lampiran 3. Susunan Organisasi Tim Pengusul dan Pembagian Tugas
-  * Lampiran 4. Surat Pernyataan Ketua Tim Pengusul (Bermeterai Rp 10.000)
-  * Lampiran 5. Surat Pernyataan Kesediaan Kerjasama Mitra (khusus PKM-PM / PKM-PI)
-  * Lampiran 6. Gambaran IPTEKS yang akan Diterapkan / Denah Detail Lokasi Mitra
+  * Lampiran 3. Susunan Tim Pengusul dan Pembagian Tugas
+  * Lampiran 4. Surat Pernyataan Ketua Tim Pengusul (bermeterai Rp 10.000)
+  * Lampiran 5. Gambaran Teknologi/IPTEK yang akan dikembangkan
+  * Lampiran 6. Hasil Uji Periksa Similaritas (maks. 25% bagian inti)
+Catatan PKM-PM: ditambah Surat Pernyataan Kesediaan Kerja Sama dari Mitra.
+Catatan PKM-PI: ditambah Surat Kesediaan Mitra & Denah Detail Lokasi Mitra.
 `
 
 const ARSIP_PROPOSAL_LOLOS = [
@@ -469,12 +485,12 @@ export function PedomanIndex() {
                 </p>
                 <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                   <a
-                    href="https://simbelmawa.kemdiktisaintek.go.id/portal/unduh-panduan/"
+                    href="https://simbelmawa.kemdiktisaintek.go.id/portal/unduh/panduan-pkm-2026/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="pedoman-btn-action primary"
                   >
-                    <span>Kunjungi Portal Unduh Panduan Kemdiktisaintek</span>
+                    <span>Portal Unduh Panduan PKM 2026</span>
                     <ExternalLink size={14} />
                   </a>
                   <a
@@ -575,7 +591,7 @@ export function PedomanIndex() {
                     <CheckCircle2 size={14} color="#dc2626" /> Tanpa Lembar Pengesahan Manual
                   </span>
                   <span className="pedoman-checklist-badge">
-                    <CheckCircle2 size={14} color="#dc2626" /> Maksimal 10 Halaman Inti (Bab 1 s.d. Daftar Pustaka)
+                    <CheckCircle2 size={14} color="#dc2626" /> Maksimal 10 Halaman Inti (8 Bidang) · 8-15 Hal (AI/GFT)
                   </span>
                   <span className="pedoman-checklist-badge">
                     <CheckCircle2 size={14} color="#dc2626" /> Ukuran Kertas A4 &amp; Margin 4-3-3-3 cm
@@ -596,7 +612,7 @@ export function PedomanIndex() {
                 </div>
               </GlowCard>
 
-              <GlowCard glowColor="emerald" className="pedoman-card-base">
+              <GlowCard glowColor="green" className="pedoman-card-base">
                 <div>
                   <div className="pedoman-badge-chip emerald">Tipografi &amp; Paragraf</div>
                   <h4 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: '0 0 0.35rem' }}>TNR 12 pt · 1.15 Spasi</h4>
@@ -606,7 +622,7 @@ export function PedomanIndex() {
                 </div>
               </GlowCard>
 
-              <GlowCard glowColor="amber" className="pedoman-card-base">
+              <GlowCard glowColor="gold" className="pedoman-card-base">
                 <div>
                   <div className="pedoman-badge-chip amber">Penomoran Halaman</div>
                   <h4 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: '0 0 0.35rem' }}>Dua Jenis Nomor</h4>
@@ -619,9 +635,9 @@ export function PedomanIndex() {
               <GlowCard glowColor="purple" className="pedoman-card-base">
                 <div>
                   <div className="pedoman-badge-chip purple">Batas Halaman</div>
-                  <h4 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: '0 0 0.35rem' }}>Maksimal 10 Halaman</h4>
+                  <h4 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: '0 0 0.35rem' }}>10 Hal · AI/GFT 8-15 Hal</h4>
                   <p style={{ fontSize: '0.84rem', color: '#64748b', margin: 0 }}>
-                    Isi utama (Bab 1 Pendahuluan s.d. Daftar Pustaka) maksimal 10 halaman. Lampiran tidak dihitung dalam 10 halaman.
+                    8 bidang pendanaan maksimal 10 halaman bagian inti (Bab 1 s.d. Daftar Pustaka). PKM-AI &amp; PKM-GFT 8-15 halaman. Lampiran tidak dihitung.
                   </p>
                 </div>
               </GlowCard>
@@ -673,14 +689,17 @@ export function PedomanIndex() {
               <div className="pedoman-alert-content">
                 <h4>Ketentuan Besaran Pendanaan Resmi Kemdiktisaintek</h4>
                 <p>
-                  Besaran alokasi pendanaan per judul proposal yang disetujui Direktorat Belmawa untuk <strong>PKM Pendanaan (8 Bidang)</strong> adalah antara <strong>Rp 6.000.000,- sampai dengan Rp 10.000.000,-</strong>. Khusus untuk <strong>PKM Insentif (PKM-GFT dan PKM-AI)</strong>, diberikan insentif prestasi sebesar <strong>Rp 2.500.000,-</strong> per judul proposal yang lolos seleksi nasional.
+                  Besaran alokasi pendanaan per judul proposal yang disetujui Direktorat Belmawa untuk <strong>PKM Pendanaan (8 Bidang)</strong> adalah antara <strong>Rp 6.000.000,- sampai dengan Rp 8.000.000,-</strong>. Dana pendamping dari Perguruan Tinggi <strong>wajib, maksimum Rp 2.000.000,-</strong>, ditambah institusi/mitra lain maksimum Rp 1.000.000,-. Khusus <strong>PKM Insentif</strong>, PKM-AI menerima insentif <strong>Rp 1.500.000,-</strong> per judul yang lolos.
                 </p>
                 <div className="pedoman-checklist-row">
                   <span className="pedoman-checklist-badge">
-                    <CheckCircle2 size={14} color="#d97706" /> Plafon Belmawa: Rp 6.000.000 – Rp 10.000.000
+                    <CheckCircle2 size={14} color="#d97706" /> Plafon Belmawa: Rp 6.000.000 – Rp 8.000.000
                   </span>
                   <span className="pedoman-checklist-badge">
-                    <CheckCircle2 size={14} color="#d97706" /> Insentif GFT &amp; AI: Rp 2.500.000
+                    <CheckCircle2 size={14} color="#d97706" /> Pendamping PT: Maks. Rp 2.000.000
+                  </span>
+                  <span className="pedoman-checklist-badge">
+                    <CheckCircle2 size={14} color="#d97706" /> Insentif PKM-AI: Rp 1.500.000
                   </span>
                   <span className="pedoman-checklist-badge">
                     <CheckCircle2 size={14} color="#d97706" /> 4 Komponen Belanja Wajib
@@ -707,7 +726,7 @@ export function PedomanIndex() {
                 </div>
               </GlowCard>
 
-              <GlowCard glowColor="emerald" className="pedoman-card-base">
+              <GlowCard glowColor="green" className="pedoman-card-base">
                 <div>
                   <div className="pedoman-badge-chip emerald">Komponen 2 · Maks 15%</div>
                   <h4 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', margin: '0 0 0.35rem' }}>Sewa dan Jasa</h4>
@@ -720,7 +739,7 @@ export function PedomanIndex() {
                 </div>
               </GlowCard>
 
-              <GlowCard glowColor="amber" className="pedoman-card-base">
+              <GlowCard glowColor="gold" className="pedoman-card-base">
                 <div>
                   <div className="pedoman-badge-chip amber">Komponen 3 · Maks 30%</div>
                   <h4 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', margin: '0 0 0.35rem' }}>Transportasi Lokal</h4>
@@ -738,7 +757,7 @@ export function PedomanIndex() {
                   <div className="pedoman-badge-chip purple">Komponen 4 · Maks 15%</div>
                   <h4 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', margin: '0 0 0.35rem' }}>Lain-Lain</h4>
                   <p style={{ fontSize: '0.84rem', color: '#64748b', lineHeight: 1.5, margin: 0 }}>
-                    Komunikasi paket data (maksimal Rp 100.000/bln/orang), bea materai Rp 10.000, pendaftaran seminar ilmiah, dan publikasi jurnal.
+                    Komunikasi/kuota internet (maks. Rp 100.000/bln per tim), publikasi/ads media sosial (maks. Rp 500.000), dan bea materai Rp 10.000.
                   </p>
                 </div>
                 <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid #f1f5f9', fontSize: '0.75rem', fontWeight: 700, color: '#9333ea' }}>
@@ -758,12 +777,15 @@ export function PedomanIndex() {
                   Memasukkan pos pengeluaran terlarang di bawah ini akan menyebabkan pengurangan poin penilaian substansi anggaran atau penolakan proposal saat evaluasi:
                 </p>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '0.5rem', marginTop: '0.5rem' }}>
-                  <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>❌ Honorarium tim pengusul, dosen pendamping, atau narasumber</div>
+                  <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>❌ Honorarium tim, dosen pendamping, narasumber, atau hadiah</div>
                   <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>❌ Konsumsi rapat, snack, jamuan makan-minum</div>
-                  <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>❌ Sewa komputer/laptop, printer, scanner, kamera milik sendiri/kampus</div>
-                  <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>❌ Pembelian flashdisk, harddisk eksternal, atau kartu memori</div>
-                  <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>❌ Pembelian alat/aset modal permanen bernilai &gt; Rp 1.000.000,- per unit</div>
-                  <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>❌ Kuota internet/pulsa melebihi batas Rp 100.000,-/bulan per orang</div>
+                  <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>❌ Sewa komputer/laptop/printer/ponsel/kamera, ruangan/aula</div>
+                  <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>❌ Pembelian penyimpanan data (flashdisk, harddisk, memori)</div>
+                  <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>❌ Pembelian alat/bahan &gt; Rp 1.000.000,- per item</div>
+                  <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>❌ Kuota internet melebihi Rp 100.000,-/bulan per tim</div>
+                  <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>❌ Sewa lisensi melebihi 6 bulan</div>
+                  <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>❌ Penyusunan/penggandaan/penjilidan laporan (kecuali diwajibkan PT)</div>
+                  <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>❌ Biaya seminar dan/atau publikasi hasil PKM di jurnal ilmiah</div>
                 </div>
               </div>
             </div>
@@ -896,7 +918,7 @@ export function PedomanIndex() {
                 </div>
               </GlowCard>
 
-              <GlowCard glowColor="emerald" className="pedoman-card-base">
+              <GlowCard glowColor="green" className="pedoman-card-base">
                 <div>
                   <div className="pedoman-badge-chip emerald">Lampiran 3</div>
                   <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', margin: '0 0 0.35rem' }}>Susunan Organisasi Tim &amp; Pembagian Tugas</h4>
@@ -917,7 +939,7 @@ export function PedomanIndex() {
                 </div>
               </GlowCard>
 
-              <GlowCard glowColor="amber" className="pedoman-card-base">
+              <GlowCard glowColor="gold" className="pedoman-card-base">
                 <div>
                   <div className="pedoman-badge-chip amber">Lampiran 5</div>
                   <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', margin: '0 0 0.35rem' }}>Surat Pernyataan Kesediaan Mitra</h4>

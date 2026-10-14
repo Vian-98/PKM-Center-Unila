@@ -360,7 +360,7 @@ export const initialProposalFeedback = [
     authorName: 'Dr. Hendri Reviewer (Reviewer)',
     authorRole: 'reviewer',
     feedbackType: 'revision',
-    comment: 'Rencana Anggaran Biaya: Komponen sewa cloud server selama 6 bulan perlu diperjelas justifikasinya agar tidak melebihi pagu Belmawa maksimal Rp 10.000.000.',
+    comment: 'Rencana Anggaran Biaya: Komponen sewa cloud server selama 6 bulan perlu diperjelas justifikasinya agar tidak melebihi pagu Belmawa maksimal Rp 8.000.000.',
     requiresRevision: true,
     createdAt: '2026-10-10T11:20:00Z',
     status: 'resolved',

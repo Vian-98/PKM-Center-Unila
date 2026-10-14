@@ -93,11 +93,16 @@ func (h TimelineHandler) findTimeline(c *gin.Context) (models.Timeline, bool) {
 type PedomanHandler struct{ DB *gorm.DB }
 
 type pedomanInput struct {
-	Year    int    `json:"year" binding:"required"`
-	Title   string `json:"title" binding:"required,max=200"`
-	FileURL string `json:"fileUrl"`
-	Source  string `json:"source" binding:"max=100"`
-	Note    string `json:"note"`
+	Year        int    `json:"year" binding:"required"`
+	Scheme      string `json:"scheme" binding:"max=40"`
+	Title       string `json:"title" binding:"required,max=200"`
+	Category    string `json:"category" binding:"max=60"`
+	FileURL     string `json:"fileUrl"`
+	LocalDocURL string `json:"localDocUrl"`
+	Source      string `json:"source" binding:"max=100"`
+	Funding     string `json:"funding" binding:"max=100"`
+	TeamSize    string `json:"teamSize" binding:"max=100"`
+	Note        string `json:"note"`
 }
 
 func (h PedomanHandler) List(c *gin.Context) {
@@ -115,7 +120,7 @@ func (h PedomanHandler) Create(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Data pedoman belum valid"})
 		return
 	}
-	item := models.Pedoman{Year: input.Year, Title: input.Title, FileURL: input.FileURL, Source: input.Source, Note: input.Note}
+	item := models.Pedoman{Year: input.Year, Scheme: input.Scheme, Title: input.Title, Category: input.Category, FileURL: input.FileURL, LocalDocURL: input.LocalDocURL, Source: input.Source, Funding: input.Funding, TeamSize: input.TeamSize, Note: input.Note}
 	if err := h.DB.Create(&item).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Gagal menyimpan pedoman"})
 		return
@@ -133,7 +138,9 @@ func (h PedomanHandler) Update(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Data pedoman belum valid"})
 		return
 	}
-	item.Year, item.Title, item.FileURL, item.Source, item.Note = input.Year, input.Title, input.FileURL, input.Source, input.Note
+	item.Year, item.Scheme, item.Title, item.Category = input.Year, input.Scheme, input.Title, input.Category
+	item.FileURL, item.LocalDocURL, item.Source = input.FileURL, input.LocalDocURL, input.Source
+	item.Funding, item.TeamSize, item.Note = input.Funding, input.TeamSize, input.Note
 	if err := h.DB.Save(&item).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Gagal memperbarui pedoman"})
 		return

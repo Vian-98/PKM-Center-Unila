@@ -44,7 +44,14 @@ Repository ini memiliki dokumentasi arsitektur, desain, basis data, dan riwayat 
 
 ---
 
-### 4. Berkas Data Rujukan (Datasets)
+### 4. Sinkronisasi Konten & Catatan Rilis
+| Dokumen | Keterangan & Cakupan | PIC / Tanggal |
+| :--- | :--- | :--- |
+| 🔄 [**Sinkronisasi Konten Pedoman PKM 2026**](docs/sinkronisasi-konten-pedoman-pkm-2026-2026-10-14.md) | Penyelarasan halaman `#pedoman` dengan buku panduan resmi SIMBELMAWA 2026: koreksi plafon dana (Rp 6–8 Juta), insentif PKM-AI (Rp 1,5 Juta), batas halaman (AI/GFT 8–15 hal), penambahan PKM-KI, 17 dokumen + tautan PDF langsung, pembaruan template, serta perbaikan crash `fallbackTimeline`. | Vian <br> *14 Okt 2026* |
+
+---
+
+### 5. Berkas Data Rujukan (Datasets)
 * [`docs/pkm - Sheet1.csv`](docs/pkm%20-%20Sheet1.csv): Matriks pembagian kerja resmi 4 anggota tim pengembang.
 * [`docs/PKM UNILA 2026  - Sheet1.csv`](docs/PKM%20UNILA%202026%20%20-%20Sheet1.csv): Rekapitulasi nyata 321 usulan proposal mahasiswa Unila tahun 2026 lintas 8 fakultas.
 * [`docs/UNTUK Nurkhawarizmi (1).xlsx`](docs/UNTUK%20Nurkhawarizmi%20%281%29.xlsx): Direktori master dosen & tendik Fakultas Teknik (FT) Universitas Lampung lengkap dengan NIP 18 digit.
@@ -56,10 +63,10 @@ Repository ini memiliki dokumentasi arsitektur, desain, basis data, dan riwayat 
 ### A. Portal Publik (Guest)
 * **Beranda (`/#beranda`):** Hero section dinamis, statistik riil usulan 321 proposal PKM Unila 2026, 3 kartu Ekosistem interaktif berbingkai cahaya (`GlowCard`), timeline tahapan, kabar terkini, dan banner unduh panduan.
 * **Pedoman & Format Usulan PKM (`/#pedoman`):** Hub rujukan resmi SIMBELMAWA Kemdiktisaintek dengan 5 tab interaktif:
-  1. *Buku Panduan Resmi:* Showcase map berkas 3D interaktif (`GlassFolder`) + direktori filter 13 buku panduan resmi (Umum & 10 Skema) dengan tautan langsung ke portal SIMBELMAWA.
-  2. *Format & Sistematika Usulan:* Peringatan Anti-Gugur Evaluasi Tahap 1 (wajib tanpa cover & tanpa lembar pengesahan), spesifikasi margin 4-3-3-3 cm, font TNR 12 pt, spasi 1.15, batas 10 halaman inti, dan breakdown Bab 1 s.d. Bab 4.
-  3. *Format RAB 4 Komponen:* Rincian plafon dana (Rp 6–10 Juta & Insentif Rp 2.5 Juta), batasan persentase 4 komponen (Bahan Habis Pakai maks 60%, Sewa & Jasa maks 15%, Transportasi Lokal maks 30%, Lain-lain maks 15%), kotak peringatan pos anggaran terlarang, serta template tabel Bab 4 & Lampiran 2.
-  4. *Template Lampiran Baku:* Format Surat Pernyataan Ketua Tim bermeterai Rp 10.000 (dilengkapi klausul kepatuhan Generative AI Belmawa), Biodata Ketua/Anggota/Dosen, susunan organisasi tim, dan kesediaan mitra dengan tombol salin teks ke clipboard & unduh file (.txt).
+  1. *Buku Panduan Resmi:* Showcase map berkas 3D interaktif (`GlassFolder`) + direktori filter 17 dokumen panduan resmi tahun 2026 (Umum, Versi Lengkap, Surat Tawaran, 8 skema pendanaan termasuk **PKM-KI**, 2 insentif, dan Panduan Teknis) plus arsip 2025–2023, dengan tautan langsung ke berkas PDF resmi per skema.
+  2. *Format & Sistematika Usulan:* Peringatan Anti-Gugur Evaluasi Tahap 1 (wajib tanpa cover & tanpa lembar pengesahan), spesifikasi margin 4-3-3-3 cm, font TNR 12 pt, spasi 1.15, judul maks 20 kata, uji similaritas maks 25%, batas halaman inti (8 bidang maks 10 hal; PKM-AI & PKM-GFT 8–15 hal), dan breakdown Bab 1 s.d. Bab 4.
+  3. *Format RAB 4 Komponen:* Rincian plafon dana (**Rp 6–8 Juta**, dana pendamping PT wajib maks Rp 2 Juta, insentif PKM-AI Rp 1,5 Juta), batasan persentase 4 komponen (Bahan Habis Pakai maks 60%, Sewa & Jasa maks 15%, Transportasi Lokal maks 30%, Lain-lain maks 15%), kotak peringatan pos anggaran terlarang, serta template tabel Bab 4 & Lampiran 2.
+  4. *Template Lampiran Baku:* Format Surat Pernyataan Ketua Tim bermeterai Rp 10.000 (klausul kepatuhan Generative AI Belmawa + tautan `s.id/PanduanGenAI`), Biodata Ketua/Anggota/Dosen, susunan organisasi tim, dan kesediaan mitra dengan tombol salin teks ke clipboard & unduh file (.txt).
   5. *Arsip Proposal Lolos PIMNAS:* Koleksi 5 berkas PDF utuh proposal peraih medali & didanai Belmawa asal Unila (PadiVision, NanoMarine, TelangTea, FinSmart, AgroSense) yang dapat langsung dibaca dan diunduh.
 * **Portofolio Proposal (`/#portofolio`):** Arsip proposal yang lolos seleksi dan pendanaan, filter chip tahun, skema, dan ringkasan proposal.
 * **Kabar & Berita (`/#berita`):** Grid 3 kolom responsif dengan kartu Neo-Glassmorphism, penomoran halaman (pagination), dan halaman detail artikel lengkap (`/#berita/:id`).

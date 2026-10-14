@@ -361,18 +361,53 @@ func seedInfo(db *gorm.DB) {
 		}
 	}
 
-	// --- PEDOMAN PKM per tahun (tautan ke katalog resmi SIMBELMAWA) ---
+	// --- PEDOMAN PKM per tahun (tautan resmi SIMBELMAWA Kemdiktisaintek) ---
+	base2026 := "https://simbelmawa.kemdiktisaintek.go.id/portal/wp-content/uploads/2026/03"
+	pdf2026 := func(name string) string { return base2026 + "/" + name }
+
+	// Bersihkan baris placeholder lama (belum bermigrasi ke skema baru) agar tidak
+	// menghasilkan duplikat dengan daftar resmi 2026 di bawah.
+	legacyTitles := []string{
+		"Buku Panduan PKM 2026", "Buku Panduan PKM 2025",
+		"Buku Panduan PKM 2024", "Buku Panduan PKM 2023",
+	}
+	db.Where("(scheme = '' OR scheme IS NULL) AND title IN ?", legacyTitles).Delete(&models.Pedoman{})
+
 	pedoman := []models.Pedoman{
-		{Year: 2026, Title: "Buku Panduan PKM 2026", Source: "SIMBELMAWA", FileURL: "https://simbelmawa.kemdikbud.go.id/portals/buku-panduan/", Note: "Pedoman resmi pengusulan Program Kreativitas Mahasiswa tahun 2026."},
-		{Year: 2025, Title: "Buku Panduan PKM 2025", Source: "SIMBELMAWA", FileURL: "https://simbelmawa.kemdikbud.go.id/portals/buku-panduan/", Note: "Pedoman resmi pengusulan Program Kreativitas Mahasiswa tahun 2025."},
-		{Year: 2024, Title: "Buku Panduan PKM 2024", Source: "SIMBELMAWA", FileURL: "https://simbelmawa.kemdikbud.go.id/portals/buku-panduan/", Note: "Pedoman resmi pengusulan Program Kreativitas Mahasiswa tahun 2024."},
-		{Year: 2023, Title: "Buku Panduan PKM 2023", Source: "SIMBELMAWA", FileURL: "https://simbelmawa.kemdikbud.go.id/portals/buku-panduan/", Note: "Arsip pedoman pengusulan PKM tahun 2023."},
+		{Year: 2026, Scheme: "UMUM", Category: "Pedoman Umum", Title: "Buku Panduan Umum PKM 2026", Source: "Ditjen Diktisaintek · SIMBELMAWA", FileURL: pdf2026("PKM-Panduan-Umum-2026_fix.pdf"), LocalDocURL: "/docs/panduan-format-sistematika-proposal-belmawa.txt", Funding: "Rp 6.000.000 — Rp 8.000.000", TeamSize: "3 — 5 Mahasiswa", Note: "Pedoman induk resmi PKM 2026: kriteria, karakteristik 10 bidang, ketentuan GenAI, uji similaritas, penilaian, pendanaan, dan PIMNAS."},
+		{Year: 2026, Scheme: "UMUM", Category: "Pedoman Umum", Title: "Panduan PKM 2026 (Versi Lengkap)", Source: "Ditjen Diktisaintek · SIMBELMAWA", FileURL: pdf2026("PANDUAN-PKM-2026_versi_full.pdf"), LocalDocURL: "/docs/panduan-format-sistematika-proposal-belmawa.txt", Funding: "Rp 6.000.000 — Rp 8.000.000", TeamSize: "3 — 5 Mahasiswa", Note: "Kompilasi lengkap Panduan PKM 2026 untuk seluruh bidang (skema pendanaan & insentif) dalam satu berkas PDF resmi."},
+		{Year: 2026, Scheme: "UMUM", Category: "Pengumuman", Title: "Surat Tawaran PKM 2026", Source: "Ditjen Diktisaintek · No. 5/DST/B2/R/DT.01.00/2026", FileURL: pdf2026("PKM-2026-Tawaran-PKM-2026-hn.pdf"), LocalDocURL: "/docs/panduan-format-sistematika-proposal-belmawa.txt", Funding: "—", TeamSize: "3 — 5 Mahasiswa", Note: "Surat tawaran resmi PKM 2026: bidang yang dapat diikuti, persyaratan pengusul, lini masa penyelenggaraan, dan tautan pendaftaran."},
+		{Year: 2026, Scheme: "PKM-RE", Category: "Pendanaan", Title: "Panduan PKM Riset Eksakta (PKM-RE) 2026", Source: "SIMBELMAWA · Riset Laboratorium & Alam", FileURL: pdf2026("PKM-RE-2026_fix.pdf"), LocalDocURL: "/docs/proposal-nanomarine-pkm-re.pdf", Funding: "Rp 6.000.000 — Rp 8.000.000", TeamSize: "3 — 5 Mahasiswa", Note: "Riset eksakta: mengungkap hubungan sebab-akibat pada bidang sains, teknologi, kesehatan, dan keteknikan."},
+		{Year: 2026, Scheme: "PKM-RSH", Category: "Pendanaan", Title: "Panduan PKM Riset Sosial Humaniora (PKM-RSH) 2026", Source: "SIMBELMAWA · Sosial & Humaniora", FileURL: pdf2026("PKM-RSH-2026_fix.pdf"), LocalDocURL: "/docs/proposal-finsmart-pkm-pm.pdf", Funding: "Rp 6.000.000 — Rp 8.000.000", TeamSize: "3 — 5 Mahasiswa", Note: "Mengkaji dinamika sosial, budaya, seni, hukum, psikologi, ekonomi, kearifan lokal, dan perilaku masyarakat kontemporer."},
+		{Year: 2026, Scheme: "PKM-PM", Category: "Pendanaan", Title: "Panduan PKM Pengabdian kepada Masyarakat (PKM-PM) 2026", Source: "SIMBELMAWA · Pemberdayaan Mitra", FileURL: pdf2026("PKM-PM-2026_fix.pdf"), LocalDocURL: "/docs/proposal-finsmart-pkm-pm.pdf", Funding: "Rp 6.000.000 — Rp 8.000.000", TeamSize: "3 — 5 Mahasiswa", Note: "Pemberdayaan mitra non-profit (karang taruna, panti asuhan, kelompok tani, desa) melalui transfer inovasi dan pemecahan masalah sosial."},
+		{Year: 2026, Scheme: "PKM-PI", Category: "Pendanaan", Title: "Panduan PKM Penerapan Iptek (PKM-PI) 2026", Source: "SIMBELMAWA · Mitra Usaha Profit", FileURL: pdf2026("PKM-PI-2026_fix.pdf"), LocalDocURL: "/docs/proposal-agrosense-pkm-kc.pdf", Funding: "Rp 6.000.000 — Rp 8.000.000", TeamSize: "3 — 5 Mahasiswa", Note: "Penerapan teknologi atau manajemen mutu untuk meningkatkan produktivitas mitra usaha berskala mikro hingga menengah (UMKM)."},
+		{Year: 2026, Scheme: "PKM-K", Category: "Pendanaan", Title: "Panduan PKM Kewirausahaan (PKM-K) 2026", Source: "SIMBELMAWA · Bisnis & Produk Komersial", FileURL: pdf2026("PKM-K-2026_fix.pdf"), LocalDocURL: "/docs/proposal-telangtea-pkm-k.pdf", Funding: "Rp 6.000.000 — Rp 8.000.000", TeamSize: "3 — 5 Mahasiswa", Note: "Menumbuhkan jiwa wirausaha berbasis komoditas iptek yang berorientasi laba, analisis pasar, serta keberlanjutan usaha rintisan (startup)."},
+		{Year: 2026, Scheme: "PKM-KC", Category: "Pendanaan", Title: "Panduan PKM Karsa Cipta (PKM-KC) 2026", Source: "SIMBELMAWA · Prototipe & Rekayasa Sistem", FileURL: pdf2026("PKM-KC-2026_fix.pdf"), LocalDocURL: "/docs/proposal-padivision-pkm-kc.pdf", Funding: "Rp 6.000.000 — Rp 8.000.000", TeamSize: "3 — 5 Mahasiswa", Note: "Kreasi konstruktif berbasis nalar ilmiah menghasilkan sistem purwarupa fisik fungsional siap uji (hardware, software, IoT, AI)."},
+		{Year: 2026, Scheme: "PKM-KI", Category: "Pendanaan", Title: "Panduan PKM Karya Inovatif (PKM-KI) 2026", Source: "SIMBELMAWA · Karya Kreatif & Kekayaan Intelektual", FileURL: pdf2026("PKM-KI-2026_fix.pdf"), LocalDocURL: "/docs/proposal-padivision-pkm-kc.pdf", Funding: "Rp 6.000.000 — Rp 8.000.000", TeamSize: "3 — 5 Mahasiswa", Note: "Karya kreatif dengan nilai kebaruan serta potensi kekayaan intelektual dan komersialisasi."},
+		{Year: 2026, Scheme: "PKM-VGK", Category: "Pendanaan", Title: "Panduan PKM Video Gagasan Konstruktif (PKM-VGK) 2026", Source: "SIMBELMAWA · Media Digital & Gagasan", FileURL: pdf2026("PKM-VGK-2026_fix.pdf"), LocalDocURL: "/docs/panduan-format-sistematika-proposal-belmawa.txt", Funding: "Rp 6.000.000 — Rp 8.000.000", TeamSize: "3 — 5 Mahasiswa", Note: "Mengomunikasikan isu pembangunan dan SDGs dalam video kreatif dengan konsep gagasan konstruktif yang berdampak."},
+		{Year: 2026, Scheme: "PKM-AI", Category: "Insentif", Title: "Panduan PKM Artikel Ilmiah (PKM-AI) 2026", Source: "SIMBELMAWA · Publikasi Ilmiah", FileURL: pdf2026("PKM-AI-2026_fix.pdf"), LocalDocURL: "/docs/panduan-format-sistematika-proposal-belmawa.txt", Funding: "Insentif Rp 1.500.000", TeamSize: "3 — 5 Mahasiswa", Note: "Artikel ilmiah berbasis kegiatan akademik yang telah selesai dilaksanakan (KKN, magang, tugas akhir, atau riset mandiri)."},
+		{Year: 2026, Scheme: "PKM-GFT", Category: "Insentif", Title: "Panduan PKM Gagasan Futuristik Tertulis (PKM-GFT) 2026", Source: "SIMBELMAWA · Karya Tulis Visioner", FileURL: pdf2026("PKM-GFT-2026_fix.pdf"), LocalDocURL: "/docs/panduan-format-sistematika-proposal-belmawa.txt", Funding: "Insentif", TeamSize: "3 — 5 Mahasiswa", Note: "Gagasan visioner futuristik berskala besar untuk menyelesaikan persoalan strategis bangsa dalam jangka panjang."},
+		{Year: 2026, Scheme: "TEKNIS", Category: "Panduan Teknis", Title: "Buku Pintar Panduan Teknis Akun SIMBELMAWA", Source: "SIMBELMAWA Kemdiktisaintek", FileURL: "https://simbelmawa.kemdiktisaintek.go.id/portal/panduan-teknis-simbelmawa/", LocalDocURL: "/docs/panduan-format-sistematika-proposal-belmawa.txt", Funding: "Akses Sistem", TeamSize: "Ketua / Dosen / Operator", Note: "Petunjuk teknis pengisian akun ketua pengusul, verifikasi dosen pendamping, pendaftaran anggota, hingga validasi perguruan tinggi."},
+		{Year: 2025, Scheme: "UMUM", Category: "Pedoman Umum", Title: "Buku Panduan Umum PKM 2025", Source: "Ditjen Diktisaintek · SIMBELMAWA", FileURL: "https://simbelmawa.kemdiktisaintek.go.id/portal/unduh-panduan/", LocalDocURL: "/docs/panduan-format-sistematika-proposal-belmawa.txt", Funding: "Rp 6.000.000 — Rp 10.000.000", TeamSize: "3 — 5 Mahasiswa", Note: "Panduan tata kelola, format usulan, kriteria penilaian, dan jadwal pelaksanaan PKM Pendanaan & Insentif tahun 2025."},
+		{Year: 2024, Scheme: "UMUM", Category: "Pedoman Umum", Title: "Buku Panduan Umum PKM 2024", Source: "Ditjen Diktisaintek · SIMBELMAWA", FileURL: "https://simbelmawa.kemdiktisaintek.go.id/portal/panduan-pkm-2024/", LocalDocURL: "/docs/panduan-format-sistematika-proposal-belmawa.txt", Funding: "Rp 6.000.000 — Rp 10.000.000", TeamSize: "3 — 5 Mahasiswa", Note: "Dokumen acuan penetapan 10 skema PKM, ketentuan RAB 4 komponen, dan petunjuk penulisan tanpa cover proposal."},
+		{Year: 2023, Scheme: "UMUM", Category: "Pedoman Umum", Title: "Buku Panduan Umum PKM 2023", Source: "Ditjen Diktisaintek · SIMBELMAWA", FileURL: "https://simbelmawa.kemdikbud.go.id/portals/buku-panduan/", LocalDocURL: "/docs/panduan-format-sistematika-proposal-belmawa.txt", Funding: "Arsip", TeamSize: "3 — 5 Mahasiswa", Note: "Arsip pedoman pengusulan PKM tahun 2023."},
 	}
 	for _, p := range pedoman {
 		var existing models.Pedoman
-		if db.Where("year = ? AND title = ?", p.Year, p.Title).First(&existing).Error == gorm.ErrRecordNotFound {
+		err := db.Where("year = ? AND title = ?", p.Year, p.Title).First(&existing).Error
+		if err == gorm.ErrRecordNotFound {
 			db.Create(&p)
+			continue
 		}
+		if err != nil {
+			continue
+		}
+		// Non-destruktif: sinkronkan kolom deskriptif agar sesuai pedoman resmi terbaru.
+		db.Model(&existing).Updates(map[string]any{
+			"scheme": p.Scheme, "category": p.Category, "file_url": p.FileURL,
+			"local_doc_url": p.LocalDocURL, "source": p.Source, "funding": p.Funding,
+			"team_size": p.TeamSize, "note": p.Note,
+		})
 	}
 
 	// --- PORTOFOLIO: arsip proposal lolos pendanaan ---

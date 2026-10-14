@@ -1,5 +1,14 @@
-FORMAT RENCANA ANGGARAN BIAYA (RAB) PKM
+FORMAT RENCANA ANGGARAN BIAYA (RAB) PKM 2026
 SESUAI PEDOMAN RESMI SIMBELMAWA KEMDIKTISAINTEK
+
+================================================================================
+BESARAN PENDANAAN RESMI 2026:
+================================================================================
+- Direktorat Belmawa (8 Bidang Pendanaan) : Rp 6.000.000 - Rp 8.000.000 per judul
+- Dana Pendamping Perguruan Tinggi (WAJIB) : maksimum Rp 2.000.000
+- Dana institusi / mitra lain (jika ada)   : maksimum Rp 1.000.000
+- Komposisi belanja: minimum 80% operasional, maksimum 20% administrasi
+
 
 ================================================================================
 BAGIAN 1: REKAPITULASI RENCANA ANGGARAN BIAYA (DITEMPATKAN DI BAB 4 USULAN)
@@ -10,29 +19,26 @@ Tabel 4.1 Rekapitulasi Rencana Anggaran Biaya
 | No | Jenis Pengeluaran                   | Sumber Dana              | Besaran Dana (Rp)     |
 +----+------------------------------------+--------------------------+-----------------------+
 | 1  | Bahan habis pakai                  | Belmawa                  | Rp [Maks 60% Belmawa] |
-|    | (ATK, reagen, material riset, dll) | Perguruan Tinggi (Unila) | Rp [...]              |
-|    |                                    | Instansi Lain (jika ada) | Rp [...]              |
+|    | (ATK, reagen, material riset, dll) | Perguruan Tinggi (Unila) | Rp [Maks 2 Juta]      |
+|    |                                    | Instansi Lain (jika ada) | Rp [Maks 1 Juta]      |
 +----+------------------------------------+--------------------------+-----------------------+
 | 2  | Sewa dan jasa                      | Belmawa                  | Rp [Maks 15% Belmawa] |
-|    | (Sewa alat lab, uji sampel, cloud) | Perguruan Tinggi (Unila) | Rp [...]              |
-|    |                                    | Instansi Lain (jika ada) | Rp [...]              |
+|    | (Sewa alat lab, uji sampel, cloud) | Perguruan Tinggi (Unila) | Rp [Maks 2 Juta]      |
+|    |                                    | Instansi Lain (jika ada) | Rp [Maks 1 Juta]      |
 +----+------------------------------------+--------------------------+-----------------------+
 | 3  | Transportasi lokal                 | Belmawa                  | Rp [Maks 30% Belmawa] |
-|    | (Transport sampling, survei mitra) | Perguruan Tinggi (Unila) | Rp [...]              |
-|    |                                    | Instansi Lain (jika ada) | Rp [...]              |
+|    | (Transport sampling, survei mitra) | Perguruan Tinggi (Unila) | Rp [Maks 2 Juta]      |
+|    |                                    | Instansi Lain (jika ada) | Rp [Maks 1 Juta]      |
 +----+------------------------------------+--------------------------+-----------------------+
 | 4  | Lain-lain                          | Belmawa                  | Rp [Maks 15% Belmawa] |
-|    | (Komunikasi, publikasi, materai)   | Perguruan Tinggi (Unila) | Rp [...]              |
-|    |                                    | Instansi Lain (jika ada) | Rp [...]              |
+|    | (Komunikasi, publikasi, materai)   | Perguruan Tinggi (Unila) | Rp [Maks 2 Juta]      |
+|    |                                    | Instansi Lain (jika ada) | Rp [Maks 1 Juta]      |
 +----+------------------------------------+--------------------------+-----------------------+
-| JUMLAH KESELURUHAN                      |                          | Rp [Rp 6 - 10 Juta]   |
+| JUMLAH KESELURUHAN                      |                          | Rp [Rp 6 - 8 Juta]    |
 +----+------------------------------------+--------------------------+-----------------------+
 
-Rekapitulasi Sumber Pendanaan:
-1. Kemdiktisaintek (Belmawa) : Rp [Rp 6.000.000 - Rp 10.000.000]
-2. Perguruan Tinggi (Unila)   : Rp [...]
-3. Instansi Lain (jika ada)   : Rp [...]
-TOTAL AKUMULASI DANA          : Rp [...]
+Catatan: Angka persentase tiap jenis pengeluaran adalah nilai MAKSIMUM, namun total keempatnya 100%.
+Publikasi/ads di media sosial maksimum Rp 500.000; sewa laboratorium maksimum Rp 1.000.000 (bila diwajibkan).
 
 
 ================================================================================
@@ -63,8 +69,7 @@ BAGIAN 2: JUSTIFIKASI ANGGARAN KEGIATAN (LAMPIRAN 2 PROPOSAL)
 +----+---------------------+--------+--------+------------------+------------------+
 | No | Komponen            | Volume | Satuan | Harga Satuan(Rp) | Total Biaya (Rp) |
 +----+---------------------+--------+--------+------------------+------------------+
-| 1  | Transport Lapangan  | [...]  | [hari] | Rp [...]         | Rp [...]         |
-| 2  | Kunjungan ke Mitra  | [...]  | [kali] | Rp [...]         | Rp [...]         |
+| 1  | Transport Survei    | [...]  | [kali] | Rp [...]         | Rp [...]         |
 +----+---------------------+--------+--------+------------------+------------------+
 | SUB TOTAL (3)                                                 | Rp [...]         |
 +----+----------------------------------------------------------+------------------+
@@ -73,21 +78,21 @@ BAGIAN 2: JUSTIFIKASI ANGGARAN KEGIATAN (LAMPIRAN 2 PROPOSAL)
 +----+---------------------+--------+--------+------------------+------------------+
 | No | Komponen            | Volume | Satuan | Harga Satuan(Rp) | Total Biaya (Rp) |
 +----+---------------------+--------+--------+------------------+------------------+
-| 1  | Kuota Internet Tim  | 3      | Bulan  | Rp 100.000       | Rp 300.000       |
-| 2  | Bea Publikasi / Web | 1      | Paket  | Rp [...]         | Rp [...]         |
-| 3  | E-Materai Rp 10.000 | 2      | Lembar | Rp 12.000        | Rp 24.000        |
+| 1  | Kuota Internet/Tim  | [...]  | [bln]  | Rp [Maks 100rb]  | Rp [...]         |
+| 2  | Publikasi Medsos    | [...]  | [keg]  | Rp [Maks 500rb]  | Rp [...]         |
+| 3  | Bea Materai 10.000  | [...]  | [lbr]  | Rp 10.000        | Rp [...]         |
 +----+---------------------+--------+--------+------------------+------------------+
 | SUB TOTAL (4)                                                 | Rp [...]         |
 +----+----------------------------------------------------------+------------------+
-| TOTAL KESELURUHAN (SUB 1 + 2 + 3 + 4)                         | Rp [...]         |
-+----+----------------------------------------------------------+------------------+
+TOTAL ANGGARAN (1 + 2 + 3 + 4) = Rp [Rp 6.000.000 s.d. Rp 8.000.000]
 
-================================================================================
-CATATAN KRUSIAL BELMAWA (PENGELUARAN YANG DILARANG KERAS / BIKIN GUGUR MONEV):
-================================================================================
-1. DILARANG menganggarkan honorarium untuk tim pengusul, dosen pendamping, maupun narasumber.
-2. DILARANG membeli aset peralatan keras permanen dengan harga > Rp 1.000.000/unit.
-3. DILARANG menyewa perangkat umum seperti laptop, komputer, ponsel, kamera, atau printer.
-4. DILARANG membeli media penyimpanan (Flashdisk, Harddisk eksternal).
-5. DILARANG menganggarkan konsumsi rapat tim pengusul.
-6. Pembelian kuota internet tim dibatasi maksimal Rp 100.000/bulan/tim.
+POS ANGGARAN YANG DILARANG OLEH BELMAWA:
+- Honorarium untuk tim pengusul, dosen pendamping, narasumber, atau hadiah
+- Biaya konsumsi rapat, makan siang, snack
+- Sewa komputer/laptop/printer/ponsel/kamera, tempat/ruangan/aula
+- Pembelian alat/bahan bernilai > Rp 1.000.000 per item
+- Pembelian penyimpanan data (flashdisk, harddisk eksternal, memori)
+- Kuota internet melebihi Rp 100.000 per bulan PER TIM
+- Sewa lisensi melebihi 6 bulan
+- Penyusunan/penggandaan/penjilidan laporan (kecuali diwajibkan PT)
+- Biaya seminar dan/atau publikasi hasil PKM di jurnal ilmiah

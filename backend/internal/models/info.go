@@ -18,14 +18,19 @@ type Timeline struct {
 
 // Pedoman PKM per tahun. Padanan skema v2: guidelines (source & note sudah ada).
 type Pedoman struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
-	Year      int       `json:"year" gorm:"index;not null"`
-	Title     string    `json:"title" gorm:"not null"`
-	FileURL   string    `json:"fileUrl"` // tautan PDF eksternal
-	Source    string    `json:"source"`  // asal dokumen, mis. "SIMBELMAWA"
-	Note      string    `json:"note"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	ID          uint      `json:"id" gorm:"primaryKey"`
+	Year        int       `json:"year" gorm:"index;not null"`
+	Scheme      string    `json:"scheme" gorm:"index"` // UMUM, TEKNIS, PKM-RE, ...
+	Title       string    `json:"title" gorm:"not null"`
+	Category    string    `json:"category"` // Pedoman Umum, Pendanaan, Insentif, ...
+	FileURL     string    `json:"fileUrl"`
+	LocalDocURL string    `json:"localDocUrl"`
+	Source      string    `json:"source"`
+	Funding     string    `json:"funding"`
+	TeamSize    string    `json:"teamSize"`
+	Note        string    `json:"note"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
 // Portfolio: arsip proposal yang lolos pendanaan per tahun. Padanan skema v2:

@@ -1247,6 +1247,9 @@ footer {
   gap: 2.5rem 2rem;
   width: 100%;
 }
+@media (max-width: 767px) {
+  .doc-folder-showcase { padding: 0; }
+}
 .doc-folder-hint {
   margin-top: 2rem;
   font-size: 0.85rem;

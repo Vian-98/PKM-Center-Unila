@@ -1,86 +1,68 @@
-PANDUAN SISTEMATIKA & TATA CARA PENULISAN PROPOSAL PKM
-SUMBER RESMI: DIREKTORAT BELMAWA KEMDIKTISAINTEK (SIMBELMAWA)
+SISTEMATIKA PROPOSAL PROGRAM KREATIVITAS MAHASISWA (PKM) 2026
+SUMBER: PEDOMAN RESMI DIREKTORAT BELMAWA KEMDIKTISAINTEK
 
 ================================================================================
-1. ATURAN FATAL TAHAP 1 (PENYEBAB UTAMA GUGUR ADMINISTRASI):
+KETENTUAN JUDUL:
 ================================================================================
-- DILARANG MENYERTAKAN HALAMAN SAMPUL (COVER) DAN LEMBAR PENGESAHAN KE DALAM BERKAS PDF!
-- Mengapa? Isian data identitas, judul, ketua, anggota, dan pengesahan dosen serta
-  pimpinan perguruan tinggi dientrikan langsung secara digital pada portal SIMBELMAWA.
-- Berkas PDF yang diunggah HANYA BERISI:
-  1. Halaman Daftar Isi
-  2. Bagian Inti Proposal (Bab 1 s.d. Daftar Pustaka) - MAKSIMAL 10 HALAMAN
-  3. Lampiran-Lampiran Standar (Lampiran 1 s.d. 6)
+- Ringkas, MAKSIMAL 20 KATA, huruf kapital, hindari singkatan/akronim tidak baku.
+- Menonjolkan kata kunci kegiatan dan hasil utamanya, ditulis dalam Bahasa Indonesia.
 
 ================================================================================
-2. TATA LETAK & FORMAT PENGETIKAN:
+ATURAN FORMAT PENULISAN WAJIB (ANTI-GUGUR SELEKSI TAHAP 1):
 ================================================================================
-- Ukuran Kertas: A4 (80 gram)
-- Margin Halaman:
-  * Kiri   : 4 cm
-  * Kanan  : 3 cm
-  * Atas   : 3 cm
-  * Bawah  : 3 cm
-- Jenis Huruf (Font): Times New Roman, ukuran 12 pt
-- Jarak Baris (Spasi): 1,15 spasi, rata kiri-kanan (Justify)
-- Tata Cara Penomoran Halaman:
-  * Halaman Daftar Isi: Menggunakan angka Romawi kecil (i, ii, iii...) di SUDUT KANAN BAWAH.
-  * Halaman Inti (Bab 1 s.d. Daftar Pustaka): Menggunakan angka Arab (1, 2, 3...) di SUDUT KANAN ATAS,
-    dimulai dari angka 1 pada Bab 1 Pendahuluan.
-  * Halaman Lampiran: Melanjutkan nomor angka Arab dari halaman inti sebelumnya di SUDUT KANAN ATAS.
-
-================================================================================
-3. SISTEMATIKA BAB INTI PROPOSAL:
-================================================================================
-
-A. SKEMA PKM RISET (PKM-RE & PKM-RSH):
-   - BAB 1: PENDAHULUAN
-     (Latar belakang, urgensi riset, rumusan masalah, tujuan khusus, kebaruan/novelty, luaran, manfaat)
-   - BAB 2: TINJAUAN PUSTAKA
-     (Landasan teori, roadmap penelitian, telaah pustaka relevan 5-10 tahun terakhir)
-   - BAB 3: METODE PENELITIAN
-     (Desain riset, variabel, tahapan percobaan, alat/bahan, teknik analisis data, indikator capaian)
-   - BAB 4: BIAYA DAN JADWAL KEGIATAN
-     (Rekapitulasi RAB 4 komponen & Jadwal Bar Chart kegiatan 3-5 bulan)
-   - DAFTAR PUSTAKA (Harvard Style, alfabetis)
-
-B. SKEMA PKM KEWIRAUSAHAAN (PKM-K):
-   - BAB 1: PENDAHULUAN
-     (Latar belakang masalah, motivasi usaha, keunikan produk, luaran, manfaat)
-   - BAB 2: GAMBARAN UMUM RENCANA USAHA
-     (Analisis pasar, segmentasi & target konsumen, analisis SWOT, kelayakan ekonomi/BEP/B/C ratio)
-   - BAB 3: METODE PELAKSANAAN
-     (Pra-produksi, produksi produk, strategi pemasaran, evaluasi usaha dan keberlanjutan)
-   - BAB 4: BIAYA DAN JADWAL KEGIATAN
-   - DAFTAR PUSTAKA
-
-C. SKEMA PKM KARSA CIPTA (PKM-KC) & KARYA INOVATIF (PKM-KI):
-   - BAB 1: PENDAHULUAN
-     (Urgensi solusi teknologi, rumusan masalah teknis, batasan sistem, luaran prototipe/alat)
-   - BAB 2: TINJAUAN PUSTAKA
-     (State of the art teknologi serupa, landasan rancang bangun, spesifikasi kebutuhan)
-   - BAB 3: TAHAP PELAKSANAAN
-     (Diagram blok sistem, arsitektur perangkat keras/lunak, alur pengujian fungsionalitas)
-   - BAB 4: BIAYA DAN JADWAL KEGIATAN
-   - DAFTAR PUSTAKA
-
-D. SKEMA PKM PENGABDIAN (PKM-PM) & PENERAPAN IPTEK (PKM-PI):
-   - BAB 1: PENDAHULUAN
-     (Identitas mitra non-profit/profit, permasalahan prioritas mitra, luaran solusi)
-   - BAB 2: GAMBARAN UMUM MASYARAKAT MITRA / SASARAN
-     (Profil sosial/ekonomi mitra, lokasi geografis, kesiapan menerima inovasi)
-   - BAB 3: METODE PELAKSANAAN
-     (Langkah transfer teknologi, pelatihan, pendampingan berkala, evaluasi dampak)
-   - BAB 4: BIAYA DAN JADWAL KEGIATAN
-   - DAFTAR PUSTAKA
+1. Ukuran Kertas: A4, satu kolom.
+2. Batas Margin Halaman:
+   - Margin Kiri   : 4 cm
+   - Margin Atas   : 3 cm
+   - Margin Kanan  : 3 cm
+   - Margin Bawah  : 3 cm
+3. Jenis dan Ukuran Huruf:
+   - Font: Times New Roman, ukuran 12 pt.
+   - Spasi: 1,15 spasi.
+   - Perataan Teks: Rata Kiri-Kanan (Justified).
+4. Penomoran Halaman:
+   - Halaman Daftar Isi: Angka Romawi kecil (i, ii, iii...) di sudut KANAN BAWAH.
+   - Bagian Inti (Bab 1 s.d. Daftar Pustaka) & Lampiran: Angka Arab (1, 2, 3...) di sudut KANAN ATAS.
+5. Batas Halaman Bagian Inti:
+   - 8 Bidang Pendanaan (RE, RSH, PM, PI, K, KC, KI, VGK): MAKSIMAL 10 halaman.
+   - Skema Insentif (PKM-AI & PKM-GFT): 8 s.d. 15 halaman.
+   - Lampiran tidak dihitung dalam batas halaman bagian inti.
+6. ATURAN SIMBELMAWA KRUSIAL:
+   - Berkas PDF TANPA SAMPUL/COVER dan TANPA LEMBAR PENGESAHAN.
+   - Khusus PKM-AI: juga TANPA DAFTAR ISI (langsung Judul, Penulis, Abstrak, dst.).
+   - Bila proposal memuat sampul, lembar pengesahan, ringkasan/abstrak (kecuali yang dipersyaratkan), dinyatakan TIDAK LOLOS Seleksi Tahap 1.
+   - Identitas pengusul dan pengesahan dihasilkan secara digital oleh SIMBELMAWA.
+7. Uji Periksa Similaritas: wajib dilampirkan (Turnitin/iThenticate), indeks similaritas MAKSIMAL 25% pada bagian inti.
 
 ================================================================================
-4. URUTAN LAMPIRAN STANDAR:
+STRUKTUR BAGIAN INTI PROPOSAL (SKEMA PENDANAAN):
 ================================================================================
-- Lampiran 1: Biodata Ketua, Anggota, dan Dosen Pendamping (wajib ditandatangani)
-- Lampiran 2: Justifikasi Anggaran Kegiatan (RAB terperinci 4 komponen)
-- Lampiran 3: Susunan Organisasi Tim Pengusul dan Pembagian Tugas
-- Lampiran 4: Surat Pernyataan Ketua Tim Pengusul (Bermaterai Rp 10.000)
-- Lampiran 5: Gambaran Produk / Teknologi / Denah Peta Lokasi Mitra
-- Lampiran 6: Surat Pernyataan Kesediaan Kerja Sama dari Mitra (khusus PKM-PM dan PKM-PI)
-- Lampiran 7: Hasil Uji Periksa Similaritas (Turnitin maksimal 25% bagian inti)
+- DAFTAR ISI (i, ii, iii) — PKM-AI tidak memakai Daftar Isi
+- BAB 1. PENDAHULUAN
+  * Latar belakang, identifikasi masalah, justifikasi ilmiah/praktis
+  * Rumusan masalah, tujuan, kebaruan, luaran, dan manfaat
+- BAB 2. TINJAUAN PUSTAKA / GAMBARAN UMUM
+  * PKM-RE/RSH/KC/KI : Tinjauan Pustaka & State of the Art
+  * PKM-K           : Gambaran Umum Rencana Usaha, Analisis Pasar, BEP
+  * PKM-PM/PI       : Gambaran Umum Masyarakat Sasaran / Profil Mitra
+  * PKM-VGK         : Skenario Gagasan & Narasi Konstruktif
+- BAB 3. METODE / TAHAP PELAKSANAAN
+  * Tahapan kegiatan, prosedur kerja, instrumen, dan analisis data
+- BAB 4. BIAYA DAN JADWAL KEGIATAN
+  * Tabel 4.1 Rekapitulasi Rencana Anggaran Biaya (4 Komponen)
+  * Tabel 4.2 Jadwal Kegiatan (bar chart, durasi 3 s.d. 4 bulan)
+- DAFTAR PUSTAKA
+  * Harvard style, alfabetis, baris kedua menjorok ke dalam
+- LAMPIRAN-LAMPIRAN (lihat tab Template Lampiran)
+
+================================================================================
+CONTOH LAMPIRAN WAJIB (PKM-KC / PKM-KI):
+================================================================================
+  * Lampiran 1. Biodata Ketua & Anggota serta Dosen Pendamping (tanda tangan basah)
+  * Lampiran 2. Justifikasi Anggaran Kegiatan
+  * Lampiran 3. Susunan Tim Pengusul dan Pembagian Tugas
+  * Lampiran 4. Surat Pernyataan Ketua Tim Pengusul (bermeterai Rp 10.000)
+  * Lampiran 5. Gambaran Teknologi/IPTEK yang akan dikembangkan
+  * Lampiran 6. Hasil Uji Periksa Similaritas (maks. 25% bagian inti)
+Catatan PKM-PM: ditambah Surat Pernyataan Kesediaan Kerja Sama dari Mitra.
+Catatan PKM-PI: ditambah Surat Kesediaan Mitra & Denah Detail Lokasi Mitra.
