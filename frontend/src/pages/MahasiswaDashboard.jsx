@@ -131,148 +131,139 @@ export function MahasiswaDashboard({ user }) {
   const steps = data.stepper || EMPTY.stepper
   const agenda = data.agenda || []
   const stages = data.stages || []
-  const activeIndex = Math.max(0, steps.findIndex(s => s.status === 'active'))
+  const doneCount = steps.filter(s => s.status === 'done').length
+  const activeStepIdx = steps.findIndex(s => s.status === 'active')
+  const currentIdx = activeStepIdx !== -1 ? activeStepIdx : (doneCount < steps.length ? doneCount : steps.length - 1)
+  const currentStageName = activeStepIdx !== -1
+    ? (steps[activeStepIdx]?.label || 'Draft Usulan')
+    : (doneCount > 0 ? `${steps[doneCount - 1]?.label || 'Lolos Belmawa'} (Lolos)` : 'Draft Usulan')
+  const progressPercent = steps.length > 0 ? Math.round(((doneCount + (activeStepIdx !== -1 ? 0.5 : 0)) / steps.length) * 100) : 20
 
   return (
     <div className="module-container">
-      <section className="student-hero-banner">
-        <div className="student-hero-top">
-          <div>
-            <div className="student-hero-badge">
-              <span className="student-hero-live-dot" />
-              PORTAL MAHASISWA • UNIVERSITAS LAMPUNG
-            </div>
-            <h1 className="student-hero-title">Dashboard Mahasiswa</h1>
-            <p className="student-hero-subtitle">
-              Pantau progres usulan proposal PKM, kelola logbook kegiatan, dan lengkapi berkas usulan dalam satu portal terpadu.
-            </p>
+      {/* Sleek, Modern Portal Header (Apple / Linear SaaS layout) */}
+      <header className="student-portal-header">
+        <div className="student-header-info">
+          <div className="student-portal-badge">
+            <span className="live-pulse-dot" />
+            <span>PORTAL MAHASISWA • UNIVERSITAS LAMPUNG</span>
           </div>
+          <h1 className="student-portal-title">Dashboard Usulan</h1>
+          <p className="student-portal-subtitle">
+            Pantau progres usulan proposal PKM, kelola logbook kegiatan riset, dan koordinasikan tim dalam satu sistem terpadu.
+          </p>
+        </div>
 
-          <div className="student-hero-profile-box">
-            <div className="student-hero-avatar-wrap">
-              <div className="student-hero-avatar">
-                {getInitials(student.name || user?.name || 'Nadia Mahasiswa')}
-              </div>
-              <span className="student-hero-avatar-dot" title="Akun Aktif" />
+        <div className="student-portal-header-actions">
+          <NotificationBell />
+          <a className="btn-portal-create" href="#ajukan-proposal">
+            <Plus size={16} />
+            <span>Ajukan Proposal Baru</span>
+          </a>
+        </div>
+      </header>
+
+      {/* 4-Column Symmetrical Spotlight Stat Cards Grid (Light Frosted Glass) */}
+      <div className="student-metric-grid">
+        {/* Card 1: Tahap Usulan */}
+        <GlowCard glowColor="blue" dark={false} className="student-metric-glow-card">
+          <div className="metric-card-top">
+            <span className="metric-card-label">Tahap Usulan</span>
+            <div className="metric-icon-badge blue">
+              <Layers size={18} />
             </div>
-            <div className="student-hero-profile-info">
-              <span className="student-hero-profile-name">{student.name || user?.name || 'Nadia Mahasiswa'}</span>
-              <span className="student-hero-profile-sub">
-                NPM: {student.studentNumber || '2117051001'} • {student.studyProgram || student.faculty || 'Fakultas Teknik'}
+          </div>
+          <div className="metric-card-body">
+            <div className="metric-card-val">
+              Tahap {activeStepIdx !== -1 ? activeStepIdx + 1 : doneCount}
+              <span className="metric-card-subval">/ {steps.length}</span>
+            </div>
+            <div className="metric-card-hint" title={currentStageName}>
+              <span className="metric-status-dot blue" />
+              <span className="truncate">{currentStageName}</span>
+            </div>
+          </div>
+          <div className="metric-card-progress" title={`Progres Tahap ${progressPercent}%`}>
+            <div
+              className="metric-card-progress-bar blue"
+              style={{ width: `${Math.max(15, progressPercent)}%` }}
+            />
+          </div>
+        </GlowCard>
+
+        {/* Card 2: Anggota Tim */}
+        <GlowCard glowColor="green" dark={false} className="student-metric-glow-card">
+          <div className="metric-card-top">
+            <span className="metric-card-label">Anggota Tim</span>
+            <div className="metric-icon-badge green">
+              <Users size={18} />
+            </div>
+          </div>
+          <div className="metric-card-body">
+            <div className="metric-card-val">
+              {stats.teamMemberCount || 1}
+              <span className="metric-card-subval">Mahasiswa</span>
+            </div>
+            <div className="metric-card-hint" title={team?.name || 'Tim PKM Unila'}>
+              <span className="metric-status-dot green" />
+              <span className="truncate">{team?.name || 'Tim PKM Unila'}</span>
+            </div>
+          </div>
+          <a href="#tim" className="metric-card-link">
+            <span>Kelola Tim Usulan</span>
+            <ArrowRight size={13} />
+          </a>
+        </GlowCard>
+
+        {/* Card 3: Pembimbing */}
+        <GlowCard glowColor="gold" dark={false} className="student-metric-glow-card">
+          <div className="metric-card-top">
+            <span className="metric-card-label">Pembimbing</span>
+            <div className="metric-icon-badge gold">
+              <GraduationCap size={18} />
+            </div>
+          </div>
+          <div className="metric-card-body">
+            <div className="metric-card-val" title={supervisor?.name || 'Belum Ada'}>
+              <span className="truncate" style={{ fontSize: '1.12rem' }}>
+                {supervisor?.name || 'Belum Ada'}
               </span>
             </div>
-            <div className="student-hero-actions">
-              <NotificationBell />
-              <a className="student-hero-cta" href="#ajukan-proposal">
-                <Plus size={15} />
-                <span>Ajukan Proposal Baru</span>
-              </a>
+            <div className="metric-card-hint" title={supervisor ? (supervisor.studyProgram || 'Disetujui Dosen') : 'Pilih pada usulan'}>
+              <span className={`metric-status-dot ${supervisor ? 'gold' : 'blue'}`} />
+              <span className="truncate">{supervisor ? (supervisor.studyProgram || 'Disetujui') : 'Pilih pada usulan'}</span>
             </div>
           </div>
-        </div>
+          <a href="#ajukan-proposal" className="metric-card-link">
+            <span>{supervisor ? 'Detail Pembimbing' : 'Pilih Pembimbing'}</span>
+            <ArrowRight size={13} />
+          </a>
+        </GlowCard>
 
-        {/* 4-Column Symmetrical Spotlight Stat Cards Grid */}
-        <div className="student-stat-cards-grid">
-          {/* Card 1: Tahap Usulan */}
-          <GlowCard glowColor="blue" dark={true} className="student-stat-glow-card">
-            <div>
-              <div className="stat-card-head">
-                <span className="stat-card-label">Tahap Usulan</span>
-                <div className="stat-card-icon-badge blue">
-                  <Layers size={17} />
-                </div>
-              </div>
-              <div className="stat-card-value">
-                Tahap {activeIndex + 1}
-                <span className="stat-card-denom">/ {steps.length}</span>
-              </div>
-              <div className="stat-card-sub" title={steps[activeIndex]?.label || 'Draft Usulan'}>
-                <span className="stat-card-dot blue" />
-                <span>{steps[activeIndex]?.label || 'Draft Usulan'}</span>
-              </div>
+        {/* Card 4: Logbook Digital */}
+        <GlowCard glowColor="purple" dark={false} className="student-metric-glow-card">
+          <div className="metric-card-top">
+            <span className="metric-card-label">Logbook Digital</span>
+            <div className="metric-icon-badge purple">
+              <BookOpen size={18} />
             </div>
-            <div className="stat-card-progress-track" title={`Tahap ${activeIndex + 1} dari ${steps.length}`}>
-              <div
-                className="stat-card-progress-bar"
-                style={{ width: `${Math.max(20, ((activeIndex + 1) / steps.length) * 100)}%` }}
-              />
+          </div>
+          <div className="metric-card-body">
+            <div className="metric-card-val">
+              {stats.logbookCount || 0}
+              <span className="metric-card-subval">Entri</span>
             </div>
-          </GlowCard>
-
-          {/* Card 2: Anggota Tim */}
-          <GlowCard glowColor="green" dark={true} className="student-stat-glow-card">
-            <div>
-              <div className="stat-card-head">
-                <span className="stat-card-label">Anggota Tim</span>
-                <div className="stat-card-icon-badge green">
-                  <Users size={17} />
-                </div>
-              </div>
-              <div className="stat-card-value">
-                {stats.teamMemberCount || 1}
-                <span className="stat-card-denom">Mahasiswa</span>
-              </div>
-              <div className="stat-card-sub" title={team?.name || 'Tim PKM Unila'}>
-                <span className="stat-card-dot green" />
-                <span>{team?.name || 'Tim PKM Unila'}</span>
-              </div>
+            <div className="metric-card-hint">
+              <span className="metric-status-dot purple" />
+              <span className="truncate">{stats.feedbackCount ? `${stats.feedbackCount} Catatan Revisi` : 'Kemajuan Terverifikasi'}</span>
             </div>
-            <a href="#tim" className="stat-card-footer-link">
-              <span>Kelola Tim Usulan</span>
-              <ArrowRight size={12} />
-            </a>
-          </GlowCard>
-
-          {/* Card 3: Pembimbing */}
-          <GlowCard glowColor="gold" dark={true} className="student-stat-glow-card">
-            <div>
-              <div className="stat-card-head">
-                <span className="stat-card-label">Pembimbing</span>
-                <div className="stat-card-icon-badge gold">
-                  <GraduationCap size={17} />
-                </div>
-              </div>
-              <div className="stat-card-value" title={supervisor?.name || 'Belum ada pembimbing'}>
-                <span style={{ fontSize: '1.15rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
-                  {supervisor?.name || 'Belum Ada'}
-                </span>
-              </div>
-              <div className="stat-card-sub" title={supervisor ? (supervisor.studyProgram || 'Disetujui Dosen') : 'Pilih pada usulan'}>
-                <span className={`stat-card-dot ${supervisor ? 'gold' : 'blue'}`} />
-                <span>{supervisor ? (supervisor.studyProgram || 'Disetujui') : 'Pilih pada usulan'}</span>
-              </div>
-            </div>
-            <a href="#ajukan-proposal" className="stat-card-footer-link">
-              <span>{supervisor ? 'Detail Pembimbing' : 'Pilih Pembimbing'}</span>
-              <ArrowRight size={12} />
-            </a>
-          </GlowCard>
-
-          {/* Card 4: Logbook Digital */}
-          <GlowCard glowColor="purple" dark={true} className="student-stat-glow-card">
-            <div>
-              <div className="stat-card-head">
-                <span className="stat-card-label">Logbook Digital</span>
-                <div className="stat-card-icon-badge purple">
-                  <BookOpen size={17} />
-                </div>
-              </div>
-              <div className="stat-card-value">
-                {stats.logbookCount || 0}
-                <span className="stat-card-denom">Entri</span>
-              </div>
-              <div className="stat-card-sub">
-                <span className="stat-card-dot purple" />
-                <span>{stats.feedbackCount ? `${stats.feedbackCount} Catatan Revisi` : 'Kemajuan Terverifikasi'}</span>
-              </div>
-            </div>
-            <a href="#logbook" className="stat-card-footer-link">
-              <span>Buka Catatan Logbook</span>
-              <ArrowRight size={12} />
-            </a>
-          </GlowCard>
-        </div>
-      </section>
+          </div>
+          <a href="#logbook" className="metric-card-link">
+            <span>Buka Catatan Logbook</span>
+            <ArrowRight size={13} />
+          </a>
+        </GlowCard>
+      </div>
 
       <nav className="modern-tabs" aria-label="Navigasi Portal Mahasiswa">
         <button className={`tab-btn ${activeTab === 'ringkasan' ? 'active' : ''}`} onClick={() => setActiveTab('ringkasan')}>
@@ -297,44 +288,62 @@ export function MahasiswaDashboard({ user }) {
 
       {activeTab === 'ringkasan' && (
         <section>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '1.25rem 0 0.75rem' }}>
-            <h3 className="student-section-title" style={{ margin: 0 }}>Progres 5 Tahap Usulan</h3>
-            <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>
-              Tahap {activeIndex + 1} dari {steps.length}
-            </span>
-          </div>
-          <div className="apple-stepper-timeline">
-            {steps.map((step, idx) => (
-              <div key={step.key} className={`apple-timeline-node ${step.status}`}>
-                <div className="apple-node-indicator">
-                  {step.status === 'done' ? (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  ) : step.status === 'active' ? (
-                    <span className="apple-pulse-core" />
-                  ) : (
-                    <span>{idx + 1}</span>
-                  )}
-                </div>
-                <div className="apple-node-content">
-                  <div className="apple-node-header">
-                    <span className="apple-node-eyebrow">Tahap {idx + 1}</span>
-                    <span className={`status-pill ${step.status === 'done' ? 'completed' : step.status === 'active' ? 'in_progress' : 'pending'}`} style={{ fontSize: '0.65rem', padding: '0.1rem 0.45rem' }}>
-                      {step.status === 'done' ? 'Selesai' : step.status === 'active' ? 'Aktif' : 'Menunggu'}
-                    </span>
-                  </div>
-                  <div className="apple-node-title" title={step.label}>{step.label}</div>
-                </div>
+          {/* Alur 5 Tahap Usulan (Modern Connected Journey Stepper) */}
+          <GlowCard glowColor="blue" dark={false} className="student-stepper-glow-card">
+            <div className="stepper-card-header">
+              <div>
+                <h3 className="stepper-card-title">Alur 5 Tahap Usulan PKM</h3>
+                <p className="stepper-card-subtitle">Pantau kemajuan usulan proposal tim mulai dari penyusunan draft hingga seleksi PIMNAS</p>
               </div>
-            ))}
-          </div>
+              <span className="stepper-progress-pill">
+                Tahap {activeStepIdx !== -1 ? `${activeStepIdx + 1} dari ${steps.length}` : `${doneCount} Selesai`}: <strong>{currentStageName}</strong>
+              </span>
+            </div>
+
+            <div className="modern-stepper-track-wrap">
+              <div className="modern-stepper-line-bg" />
+              <div
+                className="modern-stepper-line-fill"
+                style={{
+                  width: `${Math.min(100, Math.max(0, (doneCount / Math.max(1, steps.length - 1)) * 100))}%`
+                }}
+              />
+              <div className="modern-stepper-nodes">
+                {steps.map((step, idx) => {
+                  const isDone = step.status === 'done'
+                  const isActive = step.status === 'active'
+                  return (
+                    <div key={step.key} className={`modern-step-node ${step.status}`}>
+                      <div className="modern-step-circle">
+                        {isDone ? (
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        ) : isActive ? (
+                          <span className="modern-step-pulse" />
+                        ) : (
+                          <span>{idx + 1}</span>
+                        )}
+                      </div>
+                      <div className="modern-step-info">
+                        <span className="modern-step-num">Tahap {idx + 1}</span>
+                        <div className="modern-step-title" title={step.label}>{step.label}</div>
+                        <span className={`status-pill ${isDone ? 'completed' : isActive ? 'in_progress' : 'pending'}`}>
+                          {isDone ? 'Selesai' : isActive ? 'Sedang Berjalan' : 'Menunggu'}
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </GlowCard>
 
           <div className="bento-dashboard-grid">
             {/* Hero Tile: Proposal Usulan */}
             <div>
               {proposal ? (
-                <article className="bento-hero-tile">
+                <GlowCard glowColor="blue" dark={false} className="bento-hero-tile">
                   <div className="bento-hero-accent-strip" />
                   <div className="bento-hero-header">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
@@ -413,9 +422,9 @@ export function MahasiswaDashboard({ user }) {
                       <ChevronRight size={14} />
                     </button>
                   </div>
-                </article>
+                </GlowCard>
               ) : (
-                <div className="bento-hero-tile" style={{ textAlign: 'center', padding: '2.5rem 1.5rem' }}>
+                <GlowCard glowColor="blue" dark={false} className="bento-hero-tile" style={{ textAlign: 'center', padding: '2.5rem 1.5rem' }}>
                   <div className="bento-hero-accent-strip" />
                   <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#eff6ff', color: '#0071e3', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
                     <FileText size={28} />
@@ -430,14 +439,14 @@ export function MahasiswaDashboard({ user }) {
                     <Plus size={16} />
                     <span>Ajukan Proposal Baru</span>
                   </a>
-                </div>
+                </GlowCard>
               )}
             </div>
 
             {/* Satellite Bento Column */}
             <div className="student-stack">
               {/* Widget 1: Dosen Pembimbing */}
-              <div className="bento-widget-tile">
+              <GlowCard glowColor="gold" dark={false} className="bento-widget-tile">
                 <div className="bento-widget-head">
                   <div className="bento-widget-title-group">
                     <div className="bento-icon-badge amber">
@@ -478,10 +487,10 @@ export function MahasiswaDashboard({ user }) {
                     </a>
                   </div>
                 )}
-              </div>
+              </GlowCard>
 
               {/* Widget 2: Anggota Tim */}
-              <div className="bento-widget-tile">
+              <GlowCard glowColor="green" dark={false} className="bento-widget-tile">
                 <div className="bento-widget-head">
                   <div className="bento-widget-title-group">
                     <div className="bento-icon-badge emerald">
@@ -545,10 +554,10 @@ export function MahasiswaDashboard({ user }) {
                     </a>
                   </div>
                 )}
-              </div>
+              </GlowCard>
 
               {/* Widget 3: Capaian & Logbook */}
-              <div className="bento-widget-tile">
+              <GlowCard glowColor="purple" dark={false} className="bento-widget-tile">
                 <div className="bento-widget-head">
                   <div className="bento-widget-title-group">
                     <div className="bento-icon-badge purple">
@@ -590,7 +599,7 @@ export function MahasiswaDashboard({ user }) {
                   <Plus size={14} />
                   <span>Tambah Catatan Logbook</span>
                 </a>
-              </div>
+              </GlowCard>
             </div>
           </div>
         </section>
