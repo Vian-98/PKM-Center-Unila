@@ -5,6 +5,7 @@ import {
   FileEdit, UserPlus, Plus
 } from 'lucide-react'
 import { loadStore, saveStore } from '../lib/dosenReviewerData'
+import { GlowCard } from '../components/ui/spotlight-card'
 import {
   authFetch, getNotifications, markNotificationsRead,
   statusLabel, statusTone, formatDateID, formatDateTimeID,
@@ -134,83 +135,142 @@ export function MahasiswaDashboard({ user }) {
 
   return (
     <div className="module-container">
-      <section className="module-header">
-        <div className="module-header-top">
+      <section className="student-hero-banner">
+        <div className="student-hero-top">
           <div>
-            <div className="module-badge">PORTAL MAHASISWA — UNIVERSITAS LAMPUNG</div>
-            <h1 className="module-title">Dashboard Mahasiswa</h1>
-            <p className="module-subtitle">
+            <div className="student-hero-badge">
+              <span className="student-hero-live-dot" />
+              PORTAL MAHASISWA • UNIVERSITAS LAMPUNG
+            </div>
+            <h1 className="student-hero-title">Dashboard Mahasiswa</h1>
+            <p className="student-hero-subtitle">
               Pantau progres usulan proposal PKM, kelola logbook kegiatan, dan lengkapi berkas usulan dalam satu portal terpadu.
             </p>
           </div>
-          <div className="student-header-meta">
-            <span className="student-eyebrow">Pengusul Aktif</span>
-            <span className="student-name">{student.name || user?.name || 'Mahasiswa'}</span>
-            <span className="student-sub">
-              NPM: {student.studentNumber || '-'} • {student.faculty || 'Universitas Lampung'}
-            </span>
-            <div className="student-header-actions">
+
+          <div className="student-hero-profile-box">
+            <div className="student-hero-avatar-wrap">
+              <div className="student-hero-avatar">
+                {getInitials(student.name || user?.name || 'Nadia Mahasiswa')}
+              </div>
+              <span className="student-hero-avatar-dot" title="Akun Aktif" />
+            </div>
+            <div className="student-hero-profile-info">
+              <span className="student-hero-profile-name">{student.name || user?.name || 'Nadia Mahasiswa'}</span>
+              <span className="student-hero-profile-sub">
+                NPM: {student.studentNumber || '2117051001'} • {student.studyProgram || student.faculty || 'Fakultas Teknik'}
+              </span>
+            </div>
+            <div className="student-hero-actions">
               <NotificationBell />
-              <a className="student-cta" href="#ajukan-proposal">
+              <a className="student-hero-cta" href="#ajukan-proposal">
+                <Plus size={15} />
                 <span>Ajukan Proposal Baru</span>
-                <ArrowRight size={14} />
               </a>
             </div>
           </div>
         </div>
 
-        <div className="stat-cards-grid">
-          <div className="stat-box">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
-              <div className="stat-box-label">Tahap Usulan</div>
-              <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0071e3' }}>
-                <Layers size={14} />
+        {/* 4-Column Symmetrical Spotlight Stat Cards Grid */}
+        <div className="student-stat-cards-grid">
+          {/* Card 1: Tahap Usulan */}
+          <GlowCard glowColor="blue" dark={true} className="student-stat-glow-card">
+            <div>
+              <div className="stat-card-head">
+                <span className="stat-card-label">Tahap Usulan</span>
+                <div className="stat-card-icon-badge blue">
+                  <Layers size={17} />
+                </div>
+              </div>
+              <div className="stat-card-value">
+                Tahap {activeIndex + 1}
+                <span className="stat-card-denom">/ {steps.length}</span>
+              </div>
+              <div className="stat-card-sub" title={steps[activeIndex]?.label || 'Draft Usulan'}>
+                <span className="stat-card-dot blue" />
+                <span>{steps[activeIndex]?.label || 'Draft Usulan'}</span>
               </div>
             </div>
-            <div className="stat-box-value">
-              Tahap {activeIndex + 1} <span style={{ fontSize: '0.82rem', color: '#94a3b8', fontWeight: 600 }}>/ {steps.length}</span>
+            <div className="stat-card-progress-track" title={`Tahap ${activeIndex + 1} dari ${steps.length}`}>
+              <div
+                className="stat-card-progress-bar"
+                style={{ width: `${Math.max(20, ((activeIndex + 1) / steps.length) * 100)}%` }}
+              />
             </div>
-            <div className="stat-box-sub">{steps[activeIndex]?.label || 'Draft Usulan'}</div>
-          </div>
+          </GlowCard>
 
-          <div className="stat-box">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
-              <div className="stat-box-label">Anggota Tim</div>
-              <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981' }}>
-                <Users size={14} />
+          {/* Card 2: Anggota Tim */}
+          <GlowCard glowColor="green" dark={true} className="student-stat-glow-card">
+            <div>
+              <div className="stat-card-head">
+                <span className="stat-card-label">Anggota Tim</span>
+                <div className="stat-card-icon-badge green">
+                  <Users size={17} />
+                </div>
+              </div>
+              <div className="stat-card-value">
+                {stats.teamMemberCount || 1}
+                <span className="stat-card-denom">Mahasiswa</span>
+              </div>
+              <div className="stat-card-sub" title={team?.name || 'Tim PKM Unila'}>
+                <span className="stat-card-dot green" />
+                <span>{team?.name || 'Tim PKM Unila'}</span>
               </div>
             </div>
-            <div className="stat-box-value">
-              {stats.teamMemberCount || 0} <span style={{ fontSize: '0.82rem', color: '#94a3b8', fontWeight: 600 }}>Orang</span>
-            </div>
-            <div className="stat-box-sub">{team?.name || 'Belum ada tim'}</div>
-          </div>
+            <a href="#tim" className="stat-card-footer-link">
+              <span>Kelola Tim Usulan</span>
+              <ArrowRight size={12} />
+            </a>
+          </GlowCard>
 
-          <div className="stat-box">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
-              <div className="stat-box-label">Pembimbing</div>
-              <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#d97706' }}>
-                <GraduationCap size={14} />
+          {/* Card 3: Pembimbing */}
+          <GlowCard glowColor="gold" dark={true} className="student-stat-glow-card">
+            <div>
+              <div className="stat-card-head">
+                <span className="stat-card-label">Pembimbing</span>
+                <div className="stat-card-icon-badge gold">
+                  <GraduationCap size={17} />
+                </div>
+              </div>
+              <div className="stat-card-value" title={supervisor?.name || 'Belum ada pembimbing'}>
+                <span style={{ fontSize: '1.15rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
+                  {supervisor?.name || 'Belum Ada'}
+                </span>
+              </div>
+              <div className="stat-card-sub" title={supervisor ? (supervisor.studyProgram || 'Disetujui Dosen') : 'Pilih pada usulan'}>
+                <span className={`stat-card-dot ${supervisor ? 'gold' : 'blue'}`} />
+                <span>{supervisor ? (supervisor.studyProgram || 'Disetujui') : 'Pilih pada usulan'}</span>
               </div>
             </div>
-            <div className="stat-box-value" style={{ fontSize: '1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {supervisor?.name || 'Belum ada'}
-            </div>
-            <div className="stat-box-sub">{supervisor ? statusLabel(supervisor.status || 'accepted') : 'Pilih pada usulan'}</div>
-          </div>
+            <a href="#ajukan-proposal" className="stat-card-footer-link">
+              <span>{supervisor ? 'Detail Pembimbing' : 'Pilih Pembimbing'}</span>
+              <ArrowRight size={12} />
+            </a>
+          </GlowCard>
 
-          <div className="stat-box">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
-              <div className="stat-box-label">Logbook</div>
-              <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#faf5ff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9333ea' }}>
-                <BookOpen size={14} />
+          {/* Card 4: Logbook Digital */}
+          <GlowCard glowColor="purple" dark={true} className="student-stat-glow-card">
+            <div>
+              <div className="stat-card-head">
+                <span className="stat-card-label">Logbook Digital</span>
+                <div className="stat-card-icon-badge purple">
+                  <BookOpen size={17} />
+                </div>
+              </div>
+              <div className="stat-card-value">
+                {stats.logbookCount || 0}
+                <span className="stat-card-denom">Entri</span>
+              </div>
+              <div className="stat-card-sub">
+                <span className="stat-card-dot purple" />
+                <span>{stats.feedbackCount ? `${stats.feedbackCount} Catatan Revisi` : 'Kemajuan Terverifikasi'}</span>
               </div>
             </div>
-            <div className="stat-box-value">
-              {stats.logbookCount || 0} <span style={{ fontSize: '0.82rem', color: '#94a3b8', fontWeight: 600 }}>Entri</span>
-            </div>
-            <div className="stat-box-sub">{stats.feedbackCount ? `${stats.feedbackCount} revisi` : '0 revisi'}</div>
-          </div>
+            <a href="#logbook" className="stat-card-footer-link">
+              <span>Buka Catatan Logbook</span>
+              <ArrowRight size={12} />
+            </a>
+          </GlowCard>
         </div>
       </section>
 
