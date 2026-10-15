@@ -19,6 +19,7 @@ import { CariTim } from './pages/CariTim'
 import { TeamManagement } from './pages/TeamManagement'
 import { AppleMobileDock } from './components/AppleMobileDock'
 import { DesktopSidebarLayout } from './components/DesktopSidebarLayout'
+import { ProfilePage } from './pages/ProfilePage'
 import { api } from './lib/content'
 import './styles.css'
 import './ref.css'
@@ -51,21 +52,22 @@ function getNavItems(user) {
   switch (user.role) {
     case 'dosen':
       return [
-        ['dosen', 'Portal Dosen'],
-        ['reviewer', 'Reviewer'],
+        ['dosen', 'Dashboard Bimbingan'],
+        ['pesan', 'Pesan & Catatan'],
         ['pedoman', 'Panduan PKM'],
         ['beranda', 'Website Utama'],
       ]
     case 'reviewer':
       return [
-        ['reviewer', 'Portal Reviewer'],
-        ['dosen', 'Bimbingan Dosen'],
+        ['reviewer', 'Antrean Penilaian'],
+        ['pesan', 'Pesan & Feedback'],
         ['pedoman', 'Panduan PKM'],
         ['beranda', 'Website Utama'],
       ]
     case 'admin':
       return [
         ['admin', 'Admin Panel'],
+        ['pesan', 'Pusat Komunikasi'],
         ['pedoman', 'Panduan PKM'],
         ['beranda', 'Website Utama'],
       ]
@@ -73,6 +75,7 @@ function getNavItems(user) {
     default:
       return [
         ['mahasiswa', 'Portal Mahasiswa'],
+        ['pesan', 'Pesan & Konsultasi'],
         ['pedoman', 'Panduan PKM'],
         ['beranda', 'Website Utama'],
       ]
@@ -82,21 +85,21 @@ function getNavItems(user) {
 function getRoleLabel(role) {
   switch (role) {
     case 'dosen': return 'Dosen Pembimbing'
-    case 'reviewer': return 'Reviewer'
+    case 'reviewer': return 'Reviewer PKM'
     case 'admin': return 'Administrator'
     case 'mahasiswa': return 'Mahasiswa'
     default: return 'Pengguna'
   }
 }
 
-function TopNavbar({ active, user, onLogin, onLogout }) {
+function TopNavbar({ active, user, isDashboard, onLogin, onLogout, onSwitchRole, onOpenProfile }) {
   const navItems = getNavItems(user)
   const isActive = (id) => {
     if (id === active) return true
     if (id === 'pedoman' && active === 'pedoman') return true
     if (id === 'mahasiswa' && ['mahasiswa', 'ajukan-proposal', 'ajukanproposal', 'logbook', 'cek-status', 'cekstatus', 'idealab', 'caritim', 'tim'].includes(active)) return true
-    if (id === 'dosen' && ['dosen', 'pesan'].includes(active)) return true
-    if (id === 'reviewer' && ['reviewer', 'pesan'].includes(active)) return true
+    if (id === 'dosen' && ['dosen'].includes(active)) return true
+    if (id === 'reviewer' && ['reviewer'].includes(active)) return true
     return false
   }
 
@@ -105,61 +108,87 @@ function TopNavbar({ active, user, onLogin, onLogout }) {
     ? user.name.split(' ').filter(Boolean).map(n => n[0]).slice(0, 2).join('').toUpperCase()
     : 'U'
 
+  // Periksa apakah pengguna memiliki hak akses multi-peran (misal Dosen yang juga Reviewer)
+  const canSwitchRole = Boolean(
+    onSwitchRole &&
+    user &&
+    ((user.roles && user.roles.length > 1) || user.role === 'admin')
+  )
+  const nextTargetRole = user?.role === 'dosen' ? 'reviewer' : 'dosen'
+
   return (
     <header className="site-header topnav apple-topnav">
       <Brand />
 
-      {/* Navigasi Desktop Penuh */}
-      <nav className="topnav-links" aria-label="Navigasi utama">
-        {navItems.map(([id, label]) => (
-          <a
-            key={id}
-            href={`#${id}`}
-            className={`topnav-link ${isActive(id) ? 'active' : ''}`}
-            aria-current={isActive(id) ? 'page' : undefined}
-          >
-            {label}
-          </a>
-        ))}
-      </nav>
+      {/* Navigasi Desktop Penuh: Hanya muncul di Halaman Publik Non-Dashboard (Di Dashboard, navigasi terpusat di Sidebar) */}
+      {!isDashboard ? (
+        <nav className="topnav-links" aria-label="Navigasi utama">
+          {navItems.map(([id, label]) => (
+            <a
+              key={id}
+              href={`#${id}`}
+              className={`topnav-link ${isActive(id) ? 'active' : ''}`}
+              aria-current={isActive(id) ? 'page' : undefined}
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
+      ) : (
+        <div className="dashboard-topnav-badge-wrap" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <span style={{
+            fontSize: '0.74rem',
+            fontWeight: 700,
+            color: '#0071e3',
+            background: 'rgba(0, 113, 227, 0.08)',
+            border: '1px solid rgba(0, 113, 227, 0.2)',
+            padding: '0.25rem 0.75rem',
+            borderRadius: '9999px',
+            letterSpacing: '0.04em',
+            textTransform: 'uppercase'
+          }}>
+            {user?.role === 'dosen' ? 'Portal Dosen Pembimbing' : user?.role === 'reviewer' ? 'Portal Reviewer PKM' : user?.role === 'admin' ? 'Portal Administrator' : 'Portal Mahasiswa PKM'}
+          </span>
+        </div>
+      )}
 
       {/* Aksi Akun di Kanan */}
       <div className="topnav-actions">
         {user ? (
           <div className="account-actions">
-            <div className="nav-user-chip" title={`${user.name} (${getRoleLabel(user.role)})`}>
+            {/* Chip Profil Pengguna Interaktif (Dapat Diklik untuk Membuka & Mengedit Profil) */}
+            <button
+              type="button"
+              className="nav-user-chip"
+              onClick={onOpenProfile}
+              title={`Klik untuk melihat & mengedit profil akun (${user.name})`}
+              aria-label="Buka Profil Pengguna"
+            >
               <div className="nav-user-avatar">{userInitials}</div>
               <div className="nav-user-meta">
                 <span className="nav-user-name">{user.name}</span>
                 <span className="nav-user-role-badge">{getRoleLabel(user.role)}</span>
               </div>
-            </div>
-            {(user.role === 'dosen' || user.role === 'reviewer') && (
-              <a
-                href={active === 'dosen' ? '#reviewer' : '#dosen'}
-                className="nav-switch-btn"
-                style={{
-                  textDecoration: 'none',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.35rem',
-                  padding: '0.35rem 0.75rem',
-                  background: '#f0fdf4',
-                  border: '1px solid #bbf7d0',
-                  borderRadius: '9999px',
-                  color: '#15803d',
-                  fontSize: '0.78rem',
-                  fontWeight: 700,
-                  transition: 'all 0.15s ease',
-                }}
-                title={active === 'dosen' ? 'Beralih ke Dashboard Reviewer' : 'Beralih ke Dashboard Dosen'}
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2.5" style={{ marginLeft: '0.1rem', flexShrink: 0 }}>
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </button>
+
+            {/* Tombol Switch Role - Hanya muncul bagi pengguna dengan multi-peran */}
+            {canSwitchRole && (
+              <button
+                type="button"
+                onClick={() => onSwitchRole(nextTargetRole)}
+                className={`nav-switch-role-btn ${user.role === 'dosen' ? 'to-reviewer' : 'to-dosen'}`}
+                title={user.role === 'dosen' ? 'Beralih ke peran Reviewer' : 'Beralih ke peran Dosen Pembimbing'}
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M7 16V4m0 0L3 8m4-4l4 4m6 4v12m0 0l4-4m-4 4l-4-4"/>
                 </svg>
-                <span>{active === 'dosen' ? 'Buka Reviewer' : 'Buka Dosen'}</span>
-              </a>
+                <span>Ganti ke <strong>{user.role === 'dosen' ? 'Reviewer' : 'Dosen'}</strong></span>
+              </button>
             )}
+
             <button
               type="button"
               className="nav-logout-btn"
@@ -183,10 +212,11 @@ function TopNavbar({ active, user, onLogin, onLogout }) {
 }
 
 const DEMO_ACCOUNTS = [
-  { label: 'Dosen Pembimbing', email: 'dosen@pkm.unila.ac.id', pass: 'dosen123' },
-  { label: 'Reviewer', email: 'reviewer@pkm.unila.ac.id', pass: 'reviewer123' },
-  { label: 'Mahasiswa', email: 'mahasiswa@pkm.unila.ac.id', pass: 'mahasiswa123' },
-  { label: 'Admin Kampus', email: 'admin@pkm.unila.ac.id', pass: 'admin123' },
+  { label: 'Dosen Pembimbing (Saja)', email: 'dosen@pkm.unila.ac.id', pass: 'dosen123', desc: 'Hanya Bimbingan (Bukan Reviewer)' },
+  { label: 'Dosen & Reviewer (Multi-Peran)', email: 'dosen.reviewer@pkm.unila.ac.id', pass: 'dosen123', desc: 'Bisa Switch Role Dosen ⇄ Reviewer' },
+  { label: 'Reviewer (Khusus)', email: 'reviewer@pkm.unila.ac.id', pass: 'reviewer123', desc: 'Penilai Proposal PKM' },
+  { label: 'Mahasiswa', email: 'mahasiswa@pkm.unila.ac.id', pass: 'mahasiswa123', desc: 'Pengusul Proposal' },
+  { label: 'Admin Kampus', email: 'admin@pkm.unila.ac.id', pass: 'admin123', desc: 'Pengelola PKM Center' },
 ]
 
 function LoginModal({ close, complete }) {
@@ -217,23 +247,32 @@ function LoginModal({ close, complete }) {
         throw new Error(result?.message || 'Login gagal')
       }
     } catch {
-      // Deteksi otomatis peran pengguna berdasarkan akun login
+      // Deteksi otomatis peran pengguna berdasarkan akun login (fallback offline)
       const e = form.email.toLowerCase().trim()
       let role = 'mahasiswa'
       let name = 'Nadia Putri Maharani'
+      let roles = ['mahasiswa']
 
-      if (e.includes('dosen') || e.includes('budi') || /^19\d{8,}/.test(e)) {
+      if (e.includes('dosen.reviewer') || e.includes('sri') || (e.includes('dosen') && e.includes('reviewer'))) {
         role = 'dosen'
-        name = 'Dr. Budi Dosen, S.T., M.T.'
+        name = 'Dr. Ir. Sri Mulyani, M.T.'
+        roles = ['dosen', 'reviewer']
+      } else if (e.includes('dosen') || e.includes('budi') || /^19\d{8,}/.test(e)) {
+        role = 'dosen'
+        name = 'Dr. Budi Santoso, S.T., M.T.'
+        roles = ['dosen']
       } else if (e.includes('reviewer') || e.includes('hendri') || e.startsWith('rev')) {
         role = 'reviewer'
         name = 'Dr. Hendri Reviewer, M.Kom.'
+        roles = ['reviewer']
       } else if (e.includes('admin')) {
         role = 'admin'
         name = 'Admin PKM Center'
+        roles = ['admin', 'dosen', 'reviewer']
       } else {
         role = 'mahasiswa'
         name = 'Nadia Putri Maharani'
+        roles = ['mahasiswa']
       }
 
       loggedUser = {
@@ -241,11 +280,16 @@ function LoginModal({ close, complete }) {
         name,
         email: form.email,
         role,
+        roles,
       }
       localStorage.setItem('pkm_token', `token-${role}`)
     }
 
     if (loggedUser) {
+      // Pastikan atribut roles selalu tersedia
+      if (!loggedUser.roles) {
+        loggedUser.roles = [loggedUser.role]
+      }
       localStorage.setItem('pkm_user', JSON.stringify(loggedUser))
       if (!remember) sessionStorage.setItem('pkm_session_only', '1')
       complete(loggedUser)
@@ -274,7 +318,7 @@ function LoginModal({ close, complete }) {
         </div>
         <p className="login-eyebrow">PORTAL DIGITAL</p>
         <h2>Masuk ke Akun PKM</h2>
-        <p className="login-sub">Sistem otomatis mendeteksi peran akun Anda (Mahasiswa, Dosen, Reviewer, atau Admin).</p>
+        <p className="login-sub">Sistem mendeteksi peran akun secara otomatis. Dosen dan Reviewer adalah peran berbeda yang dapat dialihkan jika akun memiliki hak akses ganda.</p>
 
         <form onSubmit={login}>
           <label>NPM / NIP / Email Akun
@@ -305,27 +349,31 @@ function LoginModal({ close, complete }) {
 
         <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid #e2e8f0' }}>
           <p style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 700, margin: '0 0 0.5rem 0', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            Isi Cepat Akun Demo (Klik untuk mengisi):
+            Pilih Cepat Akun Demo:
           </p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.45rem' }}>
             {DEMO_ACCOUNTS.map(acc => (
               <button
                 key={acc.label}
                 type="button"
                 onClick={() => setForm({ email: acc.email, password: acc.pass })}
                 style={{
+                  textAlign: 'left',
                   fontSize: '0.75rem',
-                  padding: '0.35rem 0.65rem',
-                  borderRadius: '0.4rem',
-                  border: '1px solid #cbd5e1',
-                  background: form.email === acc.email ? '#0b2149' : '#f8fafc',
-                  color: form.email === acc.email ? '#ffffff' : '#334155',
+                  padding: '0.45rem 0.65rem',
+                  borderRadius: '0.5rem',
+                  border: `1px solid ${form.email === acc.email ? '#2563eb' : '#cbd5e1'}`,
+                  background: form.email === acc.email ? '#eff6ff' : '#f8fafc',
+                  color: form.email === acc.email ? '#1e40af' : '#334155',
                   cursor: 'pointer',
-                  fontWeight: 600,
                   transition: 'all 0.15s ease',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.15rem'
                 }}
               >
-                {acc.label}
+                <strong style={{ fontSize: '0.78rem' }}>{acc.label}</strong>
+                <span style={{ fontSize: '0.68rem', color: '#64748b' }}>{acc.desc}</span>
               </button>
             ))}
           </div>
@@ -354,7 +402,29 @@ function SiteFooter() {
 function App() {
   const [hash, setHash] = useState(window.location.hash || '#beranda')
   const [modal, setModal] = useState(false)
-  const [user, setUser] = useState(JSON.parse(localStorage.getItem('pkm_user') || 'null'))
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('pkm_user')
+      if (!saved) return null
+      const parsed = JSON.parse(saved)
+      if (!parsed.roles) {
+        if (parsed.role === 'dosen') {
+          parsed.roles = (parsed.email?.includes('dosen.reviewer') || parsed.email?.includes('sri'))
+            ? ['dosen', 'reviewer']
+            : ['dosen']
+        } else if (parsed.role === 'reviewer') {
+          parsed.roles = ['reviewer']
+        } else if (parsed.role === 'admin') {
+          parsed.roles = ['admin', 'dosen', 'reviewer']
+        } else {
+          parsed.roles = [parsed.role || 'mahasiswa']
+        }
+      }
+      return parsed
+    } catch {
+      return null
+    }
+  })
 
   useEffect(() => {
     const listen = () => {
@@ -410,15 +480,52 @@ function App() {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
   }
 
+  // Fungsi beralih peran aktif pengguna (Switch Role)
+  const switchRole = async (targetRole) => {
+    if (!user || user.role === targetRole) return
+    const token = localStorage.getItem('pkm_token')
+    const updatedUser = { ...user, role: targetRole }
+
+    try {
+      if (token && !token.startsWith('token-')) {
+        const response = await fetch(`${api}/auth/switch-role`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ role: targetRole }),
+        })
+        const result = await response.json()
+        if (response.ok && result?.token) {
+          localStorage.setItem('pkm_token', result.token)
+          if (result.user?.role) updatedUser.role = result.user.role
+          if (result.user?.roles) updatedUser.roles = result.user.roles
+        }
+      }
+    } catch (err) {
+      console.warn('Sinkronisasi switch-role online tidak tersedia, beralih secara lokal:', err)
+    }
+
+    localStorage.setItem('pkm_user', JSON.stringify(updatedUser))
+    setUser(updatedUser)
+
+    if (targetRole === 'dosen') window.location.hash = '#dosen'
+    else if (targetRole === 'reviewer') window.location.hash = '#reviewer'
+    else if (targetRole === 'admin') window.location.hash = '#admin'
+    else window.location.hash = '#beranda'
+  }
+
   const route = hash.replace('#', '').split('/')
   const raw = route[0] || 'beranda'
-  const active = ['beranda', 'tentang', 'timeline', 'berita', 'pedoman', 'portofolio', 'galeri', 'kontak', 'admin', 'dosen', 'reviewer', 'pesan', 'mahasiswa', 'ajukan-proposal', 'ajukanproposal', 'logbook', 'cek-status', 'cekstatus', 'idealab', 'caritim', 'tim'].includes(raw) ? raw : 'beranda'
+  const active = ['beranda', 'tentang', 'timeline', 'berita', 'pedoman', 'portofolio', 'galeri', 'kontak', 'admin', 'dosen', 'reviewer', 'pesan', 'mahasiswa', 'ajukan-proposal', 'ajukanproposal', 'logbook', 'cek-status', 'cekstatus', 'idealab', 'caritim', 'tim', 'profil'].includes(raw) ? raw : 'beranda'
 
   let view
   if (route[0] === 'admin') view = <AdminPanel user={user} />
-  else if (route[0] === 'dosen') view = <DosenDashboard user={user} />
-  else if (route[0] === 'reviewer') view = <ReviewerDashboard user={user} />
-  else if (route[0] === 'pesan') view = <PesanFeedback user={user} />
+  else if (route[0] === 'dosen') view = <DosenDashboard user={user} onSwitchRole={switchRole} />
+  else if (route[0] === 'reviewer') view = <ReviewerDashboard user={user} onSwitchRole={switchRole} />
+  else if (route[0] === 'pesan') view = <PesanFeedback user={user} onLogin={() => setModal(true)} onSwitchUser={setUser} />
+  else if (route[0] === 'profil') view = <ProfilePage user={user} onUpdateUser={setUser} onSwitchRole={switchRole} onLogout={logout} />
   else if (route[0] === 'mahasiswa') view = <MahasiswaDashboard user={user} />
   else if (route[0] === 'ajukan-proposal' || route[0] === 'ajukanproposal') view = <AjukanProposal user={user} />
   else if (route[0] === 'logbook') view = <LogbookPKM user={user} />
@@ -434,10 +541,14 @@ function App() {
   else view = <Home anchor={['tentang', 'timeline'].includes(route[0]) ? route[0] : 'beranda'} />
 
   // Render collapsible desktop sidebar for authenticated dashboard routes
-  const isDashboardRoute = ['mahasiswa', 'ajukan-proposal', 'ajukanproposal', 'logbook', 'tim', 'caritim', 'idealab', 'dosen', 'reviewer', 'admin', 'pesan', 'pedoman', 'cek-status', 'cekstatus'].includes(raw)
+  const isDashboardRoute = ['mahasiswa', 'ajukan-proposal', 'ajukanproposal', 'logbook', 'tim', 'caritim', 'idealab', 'dosen', 'reviewer', 'admin', 'pesan', 'pedoman', 'cek-status', 'cekstatus', 'profil'].includes(raw)
+
+  const handleOpenProfile = () => {
+    window.location.hash = '#profil'
+  }
 
   const pageContent = isDashboardRoute && user ? (
-    <DesktopSidebarLayout user={user} active={raw} onLogout={logout}>
+    <DesktopSidebarLayout user={user} active={raw} onLogout={logout} onSwitchRole={switchRole} onOpenProfile={handleOpenProfile}>
       {view}
     </DesktopSidebarLayout>
   ) : (
@@ -446,16 +557,35 @@ function App() {
 
   return (
     <>
-      <TopNavbar active={active} user={user} onLogin={() => setModal(true)} onLogout={logout} />
+      <TopNavbar
+        active={active}
+        user={user}
+        isDashboard={isDashboardRoute && Boolean(user)}
+        onLogin={() => setModal(true)}
+        onLogout={logout}
+        onSwitchRole={switchRole}
+        onOpenProfile={handleOpenProfile}
+      />
       {pageContent}
-      <SiteFooter />
+      {!['pesan'].includes(raw) && <SiteFooter />}
 
       {/* Floating Apple-Style Bottom Dock (iOS Tab Bar for Mobile) */}
-      <AppleMobileDock active={active} user={user} onLogin={() => setModal(true)} onLogout={logout} />
+      <AppleMobileDock
+        active={active}
+        user={user}
+        onLogin={() => setModal(true)}
+        onLogout={logout}
+        onSwitchRole={switchRole}
+        onOpenProfile={handleOpenProfile}
+      />
 
       {modal && <LoginModal close={() => setModal(false)} complete={setUser} />}
     </>
   )
 }
 
-createRoot(document.getElementById('root')).render(<App />)
+const container = document.getElementById('root')
+if (!container._reactRoot) {
+  container._reactRoot = createRoot(container)
+}
+container._reactRoot.render(<App />)

@@ -17,9 +17,10 @@ import {
   Sparkles,
   MoreHorizontal,
   X,
+  ArrowLeftRight,
 } from 'lucide-react'
 
-export function AppleMobileDock({ active, user, onLogin, onLogout }) {
+export function AppleMobileDock({ active, user, onLogin, onLogout, onSwitchRole, onOpenProfile }) {
   const [sheetOpen, setSheetOpen] = useState(false)
 
   // Configure role-based dock items (maximum 5 items for perfect thumb reach)
@@ -38,17 +39,17 @@ export function AppleMobileDock({ active, user, onLogin, onLogout }) {
       case 'dosen':
         return [
           { id: 'dosen', label: 'Bimbingan', icon: <GraduationCap size={19} strokeWidth={2} />, href: '#dosen' },
-          { id: 'reviewer', label: 'Reviewer', icon: <Scale size={19} strokeWidth={2} />, href: '#reviewer' },
           { id: 'pesan', label: 'Pesan', icon: <MessageSquare size={19} strokeWidth={2} />, href: '#pesan' },
           { id: 'pedoman', label: 'Panduan', icon: <BookOpen size={19} strokeWidth={2} />, href: '#pedoman' },
+          { id: 'beranda', label: 'Beranda', icon: <Home size={19} strokeWidth={2} />, href: '#beranda' },
           { id: 'more', label: 'Lainnya', icon: <MoreHorizontal size={19} strokeWidth={2} />, onClick: () => setSheetOpen(true) },
         ]
       case 'reviewer':
         return [
           { id: 'reviewer', label: 'Penilaian', icon: <Scale size={19} strokeWidth={2} />, href: '#reviewer' },
-          { id: 'dosen', label: 'Dosen', icon: <GraduationCap size={19} strokeWidth={2} />, href: '#dosen' },
           { id: 'pesan', label: 'Pesan', icon: <MessageSquare size={19} strokeWidth={2} />, href: '#pesan' },
           { id: 'pedoman', label: 'Panduan', icon: <BookOpen size={19} strokeWidth={2} />, href: '#pedoman' },
+          { id: 'beranda', label: 'Beranda', icon: <Home size={19} strokeWidth={2} />, href: '#beranda' },
           { id: 'more', label: 'Lainnya', icon: <MoreHorizontal size={19} strokeWidth={2} />, onClick: () => setSheetOpen(true) },
         ]
       case 'admin':
@@ -125,6 +126,20 @@ export function AppleMobileDock({ active, user, onLogin, onLogout }) {
             </div>
 
             <div className="apple-sheet-grid">
+              {user && onOpenProfile && (
+                <button
+                  type="button"
+                  className="apple-sheet-item"
+                  style={{ border: 'none', background: 'transparent', width: '100%', cursor: 'pointer' }}
+                  onClick={() => {
+                    setSheetOpen(false)
+                    onOpenProfile()
+                  }}
+                >
+                  <div className="apple-sheet-icon" style={{ background: '#eff6ff', color: '#2563eb' }}><User size={20} /></div>
+                  <span>Profil Saya</span>
+                </button>
+              )}
               {user?.role === 'mahasiswa' && (
                 <>
                   <a href="#idealab" className="apple-sheet-item" onClick={() => { setSheetOpen(false); window.scrollTo({ top: 0, left: 0, behavior: 'instant' }) }}>
@@ -153,6 +168,23 @@ export function AppleMobileDock({ active, user, onLogin, onLogout }) {
                 <div className="apple-sheet-icon" style={{ background: '#f1f5f9', color: '#475569' }}><BookOpen size={20} /></div>
                 <span>Buku Pedoman</span>
               </a>
+              {/* Pilihan Switch Role di Action Sheet Mobile */}
+              {user?.roles && user.roles.length > 1 && onSwitchRole && (
+                <button
+                  type="button"
+                  className="apple-sheet-item"
+                  style={{ border: 'none', background: 'transparent', width: '100%', cursor: 'pointer' }}
+                  onClick={() => {
+                    setSheetOpen(false)
+                    onSwitchRole(user.role === 'dosen' ? 'reviewer' : 'dosen')
+                  }}
+                >
+                  <div className="apple-sheet-icon" style={{ background: user.role === 'dosen' ? '#f5f3ff' : '#eff6ff', color: user.role === 'dosen' ? '#7c3aed' : '#2563eb' }}>
+                    <ArrowLeftRight size={20} />
+                  </div>
+                  <span>Ganti ke {user.role === 'dosen' ? 'Reviewer' : 'Dosen'}</span>
+                </button>
+              )}
               <a href="#galeri" className="apple-sheet-item" onClick={() => { setSheetOpen(false); window.scrollTo({ top: 0, left: 0, behavior: 'instant' }) }}>
                 <div className="apple-sheet-icon" style={{ background: '#f1f5f9', color: '#475569' }}><Newspaper size={20} /></div>
                 <span>Galeri Kegiatan</span>

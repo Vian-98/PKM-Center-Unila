@@ -279,66 +279,341 @@ export const defaultReviewCriteria = [
   { id: 5, name: 'Kewajaran Anggaran (RAB) & Jadwal Kegiatan', description: 'Rincian anggaran realistis sesuai standar biaya masukan dan jadwal kegiatan yang terstruktur.', maxScore: 100, weight: 0.10 },
 ]
 
-// Data awal Pesan & Feedback (bebas emoji)
-export const initialConversations = [
+// ==========================================================
+// DIREKTORI PENGGUNA RESMI SISTEM PKM (Real Multi-User Directory)
+// Menjamin setiap akun terhubung ke pihak yang sesuai konteksnya
+// ==========================================================
+export const SYSTEM_USERS = {
+  'user-dosen-budi': {
+    id: 'user-dosen-budi',
+    name: 'Dr. Budi Santoso, S.T., M.T.',
+    email: 'dosen@pkm.unila.ac.id',
+    role: 'dosen',
+    roleLabel: 'Dosen Pembimbing PKM',
+    faculty: 'Fakultas Teknik',
+    dept: 'Teknik Elektro',
+    avatar: 'BS',
+    status: 'Aktif Bimbingan',
+  },
+  'user-dosen-sri': {
+    id: 'user-dosen-sri',
+    name: 'Dr. Ir. Sri Mulyani, M.T.',
+    email: 'dosen.reviewer@pkm.unila.ac.id',
+    role: 'dosen',
+    roleLabel: 'Dosen & Reviewer PKM',
+    faculty: 'Fakultas Pertanian',
+    dept: 'Teknologi Hasil Pertanian',
+    avatar: 'SM',
+    status: 'Aktif Bimbingan & Review',
+  },
+  'user-rev-hendri': {
+    id: 'user-rev-hendri',
+    name: 'Dr. Hendri Reviewer, M.Kom.',
+    email: 'reviewer@pkm.unila.ac.id',
+    role: 'reviewer',
+    roleLabel: 'Reviewer Internal PKM',
+    faculty: 'FMIPA',
+    dept: 'Ilmu Komputer',
+    avatar: 'HR',
+    status: 'Reviewer Aktif',
+  },
+  'user-mhs-nadia': {
+    id: 'user-mhs-nadia',
+    name: 'Nadia Putri Maharani',
+    email: 'mahasiswa@pkm.unila.ac.id',
+    role: 'mahasiswa',
+    roleLabel: 'Mahasiswa (Ketua Tim AgroSense — PKM-KC)',
+    faculty: 'Fakultas Pertanian',
+    dept: 'Agroteknologi',
+    avatar: 'NP',
+    status: 'Pengusul Proposal',
+  },
+  'user-mhs-bima': {
+    id: 'user-mhs-bima',
+    name: 'Bima Satria',
+    email: 'bima.satria@student.unila.ac.id',
+    role: 'mahasiswa',
+    roleLabel: 'Mahasiswa (Ketua Tim PadiVision — PKM-KC)',
+    faculty: 'Fakultas Pertanian',
+    dept: 'Ilmu Tanah & IoT',
+    avatar: 'BS',
+    status: 'Pengusul Proposal',
+  },
+  'user-mhs-rian': {
+    id: 'user-mhs-rian',
+    name: 'Rian Saputra',
+    email: 'rian.saputra@student.unila.ac.id',
+    role: 'mahasiswa',
+    roleLabel: 'Mahasiswa (Ketua Tim BioEnergi — PKM-RE)',
+    faculty: 'FMIPA',
+    dept: 'Kimia Terapan',
+    avatar: 'RS',
+    status: 'Pengusul Proposal',
+  },
+  'user-mhs-ahmad': {
+    id: 'user-mhs-ahmad',
+    name: 'Ahmad Fauzi',
+    email: 'ahmad.fauzi@student.unila.ac.id',
+    role: 'mahasiswa',
+    roleLabel: 'Mahasiswa (Ketua Tim SmartTrash — PKM-PI)',
+    faculty: 'Fakultas Teknik',
+    dept: 'Teknik Mesin & Otomasi',
+    avatar: 'AF',
+    status: 'Pengusul Proposal',
+  },
+  'user-admin': {
+    id: 'user-admin',
+    name: 'Tim Pengelola PKM Center Unila',
+    email: 'admin@pkm.unila.ac.id',
+    role: 'admin',
+    roleLabel: 'Admin Kampus (Helpdesk PKM)',
+    faculty: 'LPPM Unila',
+    dept: 'Pusat Kreativitas Mahasiswa',
+    avatar: 'TP',
+    status: 'Administrator',
+  },
+}
+
+// Fungsi resolusi ID Kanonikal Pengguna yang Login
+export function resolveCurrentUserId(user) {
+  if (!user) return null
+  const email = (user.email || '').toLowerCase().trim()
+  const name = (user.name || user.nama || '').toLowerCase().trim()
+  const role = (user.role || '').toLowerCase().trim()
+
+  if (email.includes('dosen.reviewer') || name.includes('sri')) return 'user-dosen-sri'
+  if (role === 'reviewer' || email.includes('reviewer') || name.includes('hendri') || email.startsWith('rev')) return 'user-rev-hendri'
+  if (email.includes('bima') || name.includes('bima')) return 'user-mhs-bima'
+  if (email.includes('rian') || name.includes('rian')) return 'user-mhs-rian'
+  if (email.includes('ahmad') || name.includes('ahmad')) return 'user-mhs-ahmad'
+  if (role === 'mahasiswa' || email.includes('mahasiswa') || name.includes('nadia')) return 'user-mhs-nadia'
+  if (role === 'admin' || email.includes('admin')) return 'user-admin'
+  if (role === 'dosen' || email.includes('dosen') || name.includes('budi') || /^19\d{8,}/.test(email)) return 'user-dosen-budi'
+  return user.id || `user-${email.replace(/[^a-zA-Z0-9]/g, '-')}`
+}
+
+// Menentukan Daftar Kontak Relevan Berdasarkan Siapa yang Login
+export function getContactsForUser(currentUserId) {
+  if (!currentUserId) return []
+  switch (currentUserId) {
+    case 'user-dosen-budi':
+      return [
+        SYSTEM_USERS['user-mhs-nadia'],
+        SYSTEM_USERS['user-mhs-rian'],
+        SYSTEM_USERS['user-mhs-ahmad'],
+        SYSTEM_USERS['user-rev-hendri'],
+        SYSTEM_USERS['user-admin'],
+      ]
+    case 'user-dosen-sri':
+      return [
+        SYSTEM_USERS['user-mhs-bima'],
+        SYSTEM_USERS['user-mhs-nadia'],
+        SYSTEM_USERS['user-dosen-budi'],
+        SYSTEM_USERS['user-rev-hendri'],
+        SYSTEM_USERS['user-admin'],
+      ]
+    case 'user-rev-hendri':
+      return [
+        SYSTEM_USERS['user-mhs-bima'],
+        SYSTEM_USERS['user-mhs-nadia'],
+        SYSTEM_USERS['user-dosen-budi'],
+        SYSTEM_USERS['user-dosen-sri'],
+        SYSTEM_USERS['user-admin'],
+      ]
+    case 'user-mhs-nadia':
+      return [
+        SYSTEM_USERS['user-dosen-budi'],
+        SYSTEM_USERS['user-rev-hendri'],
+        SYSTEM_USERS['user-mhs-rian'],
+        SYSTEM_USERS['user-mhs-ahmad'],
+        SYSTEM_USERS['user-admin'],
+      ]
+    case 'user-mhs-bima':
+      return [
+        SYSTEM_USERS['user-dosen-sri'],
+        SYSTEM_USERS['user-rev-hendri'],
+        SYSTEM_USERS['user-mhs-nadia'],
+        SYSTEM_USERS['user-admin'],
+      ]
+    case 'user-mhs-rian':
+      return [
+        SYSTEM_USERS['user-dosen-budi'],
+        SYSTEM_USERS['user-mhs-nadia'],
+        SYSTEM_USERS['user-admin'],
+      ]
+    case 'user-admin':
+      return [
+        SYSTEM_USERS['user-dosen-budi'],
+        SYSTEM_USERS['user-rev-hendri'],
+        SYSTEM_USERS['user-dosen-sri'],
+        SYSTEM_USERS['user-mhs-nadia'],
+        SYSTEM_USERS['user-mhs-bima'],
+      ]
+    default:
+      return []
+  }
+}
+
+// Master Percakapan Bersama (Real Inter-Account Communication Database)
+export const initialMasterMessages = [
+  // 1. Nadia (Mahasiswa) ⇄ Dr. Budi (Dosen Pembimbing)
   {
-    contactId: 'user-nadia',
-    contactName: 'Nadia Putri Maharani',
-    contactEmail: 'mahasiswa@pkm.unila.ac.id',
-    contactRole: 'Mahasiswa (Ketua Tim AgroSense)',
-    lastMessage: 'Baik Bapak, siap kami revisi tabel kalibrasi sensornya dan segera kami unggah.',
-    lastSentAt: '2026-10-12T13:45:00Z',
-    unreadCount: 0,
+    id: 'msg-nb-1',
+    senderId: 'user-mhs-nadia',
+    receiverId: 'user-dosen-budi',
+    message: 'Selamat pagi Bapak Dr. Budi, izin berkonsultasi terkait bab 3 metodologi riset sensor kelembaban tanah tim AgroSense.',
+    createdAt: '2026-10-12T08:30:00Z',
   },
   {
-    contactId: 'user-rian',
-    contactName: 'Rian Saputra',
-    contactEmail: 'rian.saputra@student.unila.ac.id',
-    contactRole: 'Mahasiswa (Ketua Tim BioEnergi)',
-    lastMessage: 'Mohon izin Bapak Dr. Budi, apakah surat permohonan bimbingan kami sudah dapat ditinjau?',
-    lastSentAt: '2026-10-11T16:20:00Z',
-    unreadCount: 1,
+    id: 'msg-nb-2',
+    senderId: 'user-dosen-budi',
+    receiverId: 'user-mhs-nadia',
+    message: 'Pagi Nadia. Ya silakan, bagian mana yang masih ada kendala teknis dalam pengujian kalibrasi?',
+    createdAt: '2026-10-12T08:45:00Z',
   },
   {
-    contactId: 'user-hendri',
-    contactName: 'Dr. Hendri Reviewer',
-    contactEmail: 'reviewer@pkm.unila.ac.id',
-    contactRole: 'Reviewer Internal PKM',
-    lastMessage: 'Catatan penilaian untuk usulan klaster Teknik Elektro sudah selesai kami rekap di sistem.',
-    lastSentAt: '2026-10-10T11:00:00Z',
-    unreadCount: 0,
+    id: 'msg-nb-3',
+    senderId: 'user-mhs-nadia',
+    receiverId: 'user-dosen-budi',
+    message: 'Untuk kalibrasi sensor kelembaban kapasitif tanah, apakah perlu kami cantumkan data kurva regresi linier di naskah proposal?',
+    createdAt: '2026-10-12T09:00:00Z',
   },
   {
-    contactId: 'user-admin',
-    contactName: 'Tim Pengelola PKM Center Unila',
-    contactEmail: 'admin@pkm.unila.ac.id',
-    contactRole: 'Admin Kampus',
-    lastMessage: 'Pengingat batas akhir input scoring reviewer tahap 1 adalah tanggal 18 Oktober 2026.',
-    lastSentAt: '2026-10-09T08:00:00Z',
-    unreadCount: 0,
+    id: 'msg-nb-4',
+    senderId: 'user-dosen-budi',
+    receiverId: 'user-mhs-nadia',
+    message: 'Sangat disarankan Nadia. Cantumkan grafik regresi R-squared agar reviewer melihat kepastian akurasi alat kalian.',
+    createdAt: '2026-10-12T10:15:00Z',
+  },
+  {
+    id: 'msg-nb-5',
+    senderId: 'user-mhs-nadia',
+    receiverId: 'user-dosen-budi',
+    message: 'Baik Bapak, siap kami revisi tabel kalibrasi sensornya dan segera kami unggah ke sistem.',
+    createdAt: '2026-10-12T13:45:00Z',
+  },
+
+  // 2. Dr. Budi (Dosen) ⇄ Dr. Hendri (Reviewer)
+  {
+    id: 'msg-bh-1',
+    senderId: 'user-dosen-budi',
+    receiverId: 'user-rev-hendri',
+    message: 'Halo Pak Hendri, apakah ada catatan khusus untuk format penilaian luaran prototipe skema KC tahun ini?',
+    createdAt: '2026-10-10T10:30:00Z',
+  },
+  {
+    id: 'msg-bh-2',
+    senderId: 'user-rev-hendri',
+    receiverId: 'user-dosen-budi',
+    message: 'Catatan penilaian untuk usulan klaster Teknik Elektro sudah selesai kami rekap di sistem. Fokuskan pada kesiapan TRL minimal level 3 ya Pak.',
+    createdAt: '2026-10-10T11:00:00Z',
+  },
+  {
+    id: 'msg-bh-3',
+    senderId: 'user-dosen-budi',
+    receiverId: 'user-rev-hendri',
+    message: 'Baik Pak Hendri, tim mahasiswa asuhan kami sudah melengkapi hasil uji laboratorium awal.',
+    createdAt: '2026-10-10T11:15:00Z',
+  },
+
+  // 3. Bima Satria (Mahasiswa PadiVision) ⇄ Dr. Hendri (Reviewer)
+  {
+    id: 'msg-bmh-1',
+    senderId: 'user-mhs-bima',
+    receiverId: 'user-rev-hendri',
+    message: 'Selamat sore Bapak Dr. Hendri, kami dari tim PadiVision izin bertanya mengenai catatan review perizinan terbang drone di sawah mitra.',
+    createdAt: '2026-10-13T14:10:00Z',
+  },
+  {
+    id: 'msg-bmh-2',
+    senderId: 'user-rev-hendri',
+    receiverId: 'user-mhs-bima',
+    message: 'Sore Bima. Pastikan surat izin dari ketua gapoktan dan sertifikasi pilot drone dasar dilampirkan pada lampiran proposal.',
+    createdAt: '2026-10-13T15:20:00Z',
+  },
+  {
+    id: 'msg-bmh-3',
+    senderId: 'user-mhs-bima',
+    receiverId: 'user-rev-hendri',
+    message: 'Baik Bapak, surat izin gapoktan sudah bermaterai dan sertifikat APDI anggota tim kami lampirkan di berkas revisi.',
+    createdAt: '2026-10-13T16:00:00Z',
+  },
+
+  // 4. Nadia (Mahasiswa) ⇄ Dr. Hendri (Reviewer)
+  {
+    id: 'msg-nh-1',
+    senderId: 'user-mhs-nadia',
+    receiverId: 'user-rev-hendri',
+    message: 'Selamat siang Bapak Hendri, izin menanyakan masukan reviewer terkait rincian anggaran sewa server cloud 6 bulan.',
+    createdAt: '2026-10-11T10:00:00Z',
+  },
+  {
+    id: 'msg-nh-2',
+    senderId: 'user-rev-hendri',
+    receiverId: 'user-mhs-nadia',
+    message: 'Siang Nadia. Cukup cantumkan biaya server bulanan sesuai kebutuhan deployment testing (maks 4 bulan pelaksanaan PKM) agar tidak terkena evaluasi efisiensi biaya Belmawa.',
+    createdAt: '2026-10-11T11:30:00Z',
+  },
+
+  // 5. Rian Saputra (Mahasiswa BioEnergi) ⇄ Dr. Budi (Dosen)
+  {
+    id: 'msg-rb-1',
+    senderId: 'user-mhs-rian',
+    receiverId: 'user-dosen-budi',
+    message: 'Assalamu’alaikum Bapak Dr. Budi, izin memperkenalkan diri kami tim Bio-Briket dari Kimia FMIPA.',
+    createdAt: '2026-10-11T14:15:00Z',
+  },
+  {
+    id: 'msg-rb-2',
+    senderId: 'user-dosen-budi',
+    receiverId: 'user-mhs-rian',
+    message: 'Waalaikumsalam Rian. Ya silakan, apakah draf proposal PKM-RE sudah siap ditinjau?',
+    createdAt: '2026-10-11T15:00:00Z',
+  },
+  {
+    id: 'msg-rb-3',
+    senderId: 'user-mhs-rian',
+    receiverId: 'user-dosen-budi',
+    message: 'Mohon izin Bapak Dr. Budi, surat permohonan bimbingan dan draf bab 1 sudah kami unggah ke sistem.',
+    createdAt: '2026-10-11T16:20:00Z',
+  },
+
+  // 6. Pengumuman / Pesan Layanan dari Admin Kampus
+  {
+    id: 'msg-adm-1',
+    senderId: 'user-admin',
+    receiverId: 'user-dosen-budi',
+    message: 'Pengingat bagi Bapak Dosen Pembimbing untuk memvalidasi logbook pekan ke-4 mahasiswa bimbingan sebelum tanggal 18 Oktober 2026.',
+    createdAt: '2026-10-09T08:00:00Z',
+  },
+  {
+    id: 'msg-adm-2',
+    senderId: 'user-admin',
+    receiverId: 'user-rev-hendri',
+    message: 'Pengingat batas akhir pengisian scoring reviewer tahap internal kampus adalah tanggal 18 Oktober 2026.',
+    createdAt: '2026-10-09T08:00:00Z',
+  },
+  {
+    id: 'msg-adm-3',
+    senderId: 'user-admin',
+    receiverId: 'user-mhs-nadia',
+    message: 'Format lembar pengesahan PKM 2026 sudah diperbarui di menu Pedoman. Pastikan tanda tangan Dekan dan Cap basah terbaca jelas.',
+    createdAt: '2026-10-09T08:00:00Z',
   },
 ]
 
-export const initialChatThreads = {
-  'user-nadia': [
-    { id: 'm1', senderId: 'user-nadia', receiverId: 'user-me', message: 'Selamat pagi Bapak Dr. Budi, izin berkonsultasi terkait bab 3 metodologi riset kami.', createdAt: '2026-10-12T08:30:00Z' },
-    { id: 'm2', senderId: 'user-me', receiverId: 'user-nadia', message: 'Pagi Nadia. Ya silakan, bagian mana yang masih ada kendala teknis?', createdAt: '2026-10-12T08:45:00Z' },
-    { id: 'm3', senderId: 'user-nadia', receiverId: 'user-me', message: 'Untuk kalibrasi sensor kelembaban kapasitif tanah, apakah perlu kami cantumkan data kurva regresi linier di naskah proposal?', createdAt: '2026-10-12T09:00:00Z' },
-    { id: 'm4', senderId: 'user-me', receiverId: 'user-nadia', message: 'Sangat disarankan Nadia. Cantumkan grafik regresi R-squared agar reviewer melihat kepastian akurasi alat kalian.', createdAt: '2026-10-12T10:15:00Z' },
-    { id: 'm5', senderId: 'user-nadia', receiverId: 'user-me', message: 'Baik Bapak, siap kami revisi tabel kalibrasi sensornya dan segera kami unggah.', createdAt: '2026-10-12T13:45:00Z' },
-  ],
-  'user-rian': [
-    { id: 'm10', senderId: 'user-rian', receiverId: 'user-me', message: 'Assalamu’alaikum Bapak, izin memperkenalkan diri kami tim Bio-Briket dari Kimia FMIPA.', createdAt: '2026-10-11T14:15:00Z' },
-    { id: 'm11', senderId: 'user-rian', receiverId: 'user-me', message: 'Mohon izin Bapak Dr. Budi, apakah surat permohonan bimbingan kami sudah dapat ditinjau?', createdAt: '2026-10-11T16:20:00Z' },
-  ],
-  'user-hendri': [
-    { id: 'm20', senderId: 'user-me', receiverId: 'user-hendri', message: 'Halo Pak Hendri, apakah ada catatan khusus untuk format penilaian luaran prototipe skema KC tahun ini?', createdAt: '2026-10-10T10:30:00Z' },
-    { id: 'm21', senderId: 'user-hendri', receiverId: 'user-me', message: 'Catatan penilaian untuk usulan klaster Teknik Elektro sudah selesai kami rekap di sistem. Fokuskan pada kesiapan TRL minimal level 3.', createdAt: '2026-10-10T11:00:00Z' },
-  ],
-  'user-admin': [
-    { id: 'm30', senderId: 'user-admin', receiverId: 'user-me', message: 'Pengingat batas akhir input scoring reviewer tahap 1 adalah tanggal 18 Oktober 2026.', createdAt: '2026-10-09T08:00:00Z' },
-  ],
-}
+// Kompatibilitas mundur
+export const initialConversations = getContactsForUser('user-dosen-budi').map(c => ({
+  contactId: c.id,
+  contactName: c.name,
+  contactEmail: c.email,
+  contactRole: c.roleLabel,
+  lastMessage: 'Percakapan aktif.',
+  lastSentAt: '2026-10-12T13:45:00Z',
+  unreadCount: 0,
+}))
+
+export const initialChatThreads = {}
 
 export const initialProposalFeedback = [
   {

@@ -55,6 +55,8 @@ func main() {
 	api := r.Group("/api")
 	api.POST("/auth/login", auth.Login)
 	api.GET("/auth/me", middleware.RequireAuth(secret), auth.Me)
+	api.POST("/auth/switch-role", middleware.RequireAuth(secret), auth.SwitchRole)
+	api.PUT("/auth/profile", middleware.RequireAuth(secret), auth.UpdateProfile)
 	api.GET("/content", content.ListPublic)
 	api.GET("/content/:id", content.GetPublic)
 	api.GET("/timeline", timeline.List)
@@ -263,6 +265,7 @@ func seedUsers(db *gorm.DB) {
 		{"Bima Sakti", "bima.sakti@student.unila.ac.id", "mhs12345", "mahasiswa"},
 		{"Dr. Budi Dosen", "dosen@pkm.unila.ac.id", "dosen123", "dosen"},
 		{"Dr. Hendri Reviewer", "reviewer@pkm.unila.ac.id", "reviewer123", "reviewer"},
+		{"Dr. Ir. Sri Mulyani, M.T.", "dosen.reviewer@pkm.unila.ac.id", "dosen123", "dosen"},
 	}
 	for _, account := range accounts {
 		var user models.User
@@ -282,6 +285,16 @@ func seedUsers(db *gorm.DB) {
 			var ur models.UserRole
 			if db.Where("user_id = ? AND role_id = ?", user.ID, role.ID).First(&ur).Error == gorm.ErrRecordNotFound {
 				db.Create(&models.UserRole{UserID: user.ID, RoleID: role.ID})
+			}
+		}
+		// Akun multi-peran: Dr. Sri Mulyani juga ditugaskan sebagai Reviewer PKM
+		if account.Email == "dosen.reviewer@pkm.unila.ac.id" {
+			var revRole models.Role
+			if db.Where("code = ?", "reviewer").First(&revRole).Error == nil {
+				var ur models.UserRole
+				if db.Where("user_id = ? AND role_id = ?", user.ID, revRole.ID).First(&ur).Error == gorm.ErrRecordNotFound {
+					db.Create(&models.UserRole{UserID: user.ID, RoleID: revRole.ID})
+				}
 			}
 		}
 		switch account.Role {

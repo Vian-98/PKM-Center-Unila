@@ -10,7 +10,71 @@ import {
   initialProposalLogbooks,
 } from '../lib/dosenReviewerData'
 
-export function DosenDashboard({ user }) {
+export function DosenDashboard({ user, onSwitchRole }) {
+  // Pemeriksaan hak akses: hanya akun berstatus dosen atau admin yang dapat mengakses
+  if (user && user.role !== 'dosen' && user.role !== 'admin') {
+    const hasDosenRole = user.roles?.includes('dosen')
+    return (
+      <div className="container" style={{ padding: '4rem 1.5rem', maxWidth: '720px', margin: '0 auto', textAlign: 'center' }}>
+        <div style={{
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid #e2e8f0',
+          borderRadius: '20px',
+          padding: '2.5rem 2rem',
+          boxShadow: '0 10px 30px rgba(15, 23, 42, 0.06)'
+        }}>
+          <div style={{
+            width: '64px',
+            height: '64px',
+            borderRadius: '16px',
+            background: hasDosenRole ? '#eff6ff' : '#fef2f2',
+            color: hasDosenRole ? '#2563eb' : '#dc2626',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '1.8rem',
+            marginBottom: '1.25rem'
+          }}>
+            🎓
+          </div>
+          <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a', marginBottom: '0.6rem' }}>
+            {hasDosenRole ? 'Peran Dosen Belum Aktif' : 'Akses Dibatasi: Peran Dosen Pembimbing Diperlukan'}
+          </h2>
+          <p style={{ color: '#64748b', fontSize: '0.92rem', lineHeight: 1.6, marginBottom: '1.5rem', maxWidth: '540px', marginInline: 'auto' }}>
+            Anda saat ini teridentifikasi sebagai <strong>{user.name}</strong> dengan peran aktif <strong>{user.role === 'reviewer' ? 'Reviewer' : user.role}</strong>.
+            Halaman ini khusus untuk Dosen Pembimbing PKM dalam memantau dan membimbing mahasiswa.
+          </p>
+
+          {hasDosenRole ? (
+            <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '12px', padding: '1.2rem', marginBottom: '1.5rem' }}>
+              <p style={{ color: '#1e40af', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.85rem' }}>
+                Akun Anda memiliki hak akses Dosen Pembimbing. Beralih peran sekarang untuk mengelola bimbingan mahasiswa.
+              </p>
+              <button
+                type="button"
+                className="btn-masuk"
+                onClick={() => onSwitchRole ? onSwitchRole('dosen') : (window.location.hash = '#dosen')}
+                style={{ margin: '0 auto', display: 'inline-flex' }}
+              >
+                Beralih ke Peran Dosen Pembimbing
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <a href="#reviewer" className="btn-masuk" style={{ textDecoration: 'none' }}>
+                Ke Antrean Reviewer
+              </a>
+              <a href="#beranda" className="btn-masuk" style={{ background: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1', textDecoration: 'none' }}>
+                Ke Portal Beranda
+              </a>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   const [activeTab, setActiveTab] = useState('requests') // 'requests' | 'proposals' | 'guidance'
   
   // Persistent State agar tidak statis dan tidak hilang saat refresh

@@ -15,9 +15,11 @@ import {
   BookOpen,
   PanelLeftClose,
   PanelLeftOpen,
+  ArrowLeftRight,
+  User,
 } from 'lucide-react'
 
-export function DesktopSidebarLayout({ user, active, onLogout, children }) {
+export function DesktopSidebarLayout({ user, active, onLogout, onSwitchRole, onOpenProfile, children }) {
   const [open, setOpen] = useState(true)
 
   // Configure role-based links
@@ -34,16 +36,16 @@ export function DesktopSidebarLayout({ user, active, onLogout, children }) {
       case 'dosen':
         return [
           { label: 'Dashboard Bimbingan', href: '#dosen', icon: <GraduationCap size={18} /> },
-          { label: 'Penugasan Reviewer', href: '#reviewer', icon: <Scale size={18} /> },
           { label: 'Pusat Pesan & Catatan', href: '#pesan', icon: <MessageSquare size={18} /> },
+          { label: 'Profil Saya', href: '#profil', icon: <User size={18} /> },
           { label: 'Buku Panduan', href: '#pedoman', icon: <BookOpen size={18} /> },
           { label: 'Portal Utama', href: '#beranda', icon: <Home size={18} /> },
         ]
       case 'reviewer':
         return [
           { label: 'Antrean Penilaian', href: '#reviewer', icon: <Scale size={18} /> },
-          { label: 'Bimbingan Mahasiswa', href: '#dosen', icon: <GraduationCap size={18} /> },
-          { label: 'Pusat Pesan', href: '#pesan', icon: <MessageSquare size={18} /> },
+          { label: 'Pusat Pesan & Feedback', href: '#pesan', icon: <MessageSquare size={18} /> },
+          { label: 'Profil Saya', href: '#profil', icon: <User size={18} /> },
           { label: 'Buku Panduan', href: '#pedoman', icon: <BookOpen size={18} /> },
           { label: 'Portal Utama', href: '#beranda', icon: <Home size={18} /> },
         ]
@@ -53,6 +55,7 @@ export function DesktopSidebarLayout({ user, active, onLogout, children }) {
           { label: 'Dashboard Dosen', href: '#dosen', icon: <GraduationCap size={18} /> },
           { label: 'Dashboard Reviewer', href: '#reviewer', icon: <Scale size={18} /> },
           { label: 'Pusat Pesan', href: '#pesan', icon: <MessageSquare size={18} /> },
+          { label: 'Profil Saya', href: '#profil', icon: <User size={18} /> },
           { label: 'Portal Utama', href: '#beranda', icon: <Home size={18} /> },
         ]
       case 'mahasiswa':
@@ -66,6 +69,7 @@ export function DesktopSidebarLayout({ user, active, onLogout, children }) {
           { label: 'Idea Lab (AI)', href: '#idealab', icon: <Sparkles size={18} /> },
           { label: 'Lacak Proposal', href: '#cek-status', icon: <Search size={18} /> },
           { label: 'Pesan & Catatan', href: '#pesan', icon: <MessageSquare size={18} /> },
+          { label: 'Profil Saya', href: '#profil', icon: <User size={18} /> },
           { label: 'Panduan PKM', href: '#pedoman', icon: <BookOpen size={18} /> },
           { label: 'Website Utama', href: '#beranda', icon: <Home size={18} /> },
         ]
@@ -135,7 +139,15 @@ export function DesktopSidebarLayout({ user, active, onLogout, children }) {
 
           {user && (
             <div className="apple-sidebar-footer">
-              <div className="apple-sidebar-user" title={`${user.name} (${user.role})`}>
+              <div
+                className="apple-sidebar-user"
+                onClick={onOpenProfile}
+                style={{ cursor: onOpenProfile ? 'pointer' : 'default', transition: 'all 0.15s ease' }}
+                title={`${user.name} (${user.role}) — Klik untuk melihat & mengedit profil`}
+                role={onOpenProfile ? 'button' : undefined}
+                tabIndex={onOpenProfile ? 0 : undefined}
+                onKeyDown={e => { if ((e.key === 'Enter' || e.key === ' ') && onOpenProfile) onOpenProfile() }}
+              >
                 <div className="apple-sidebar-user-avatar">
                   {userInitials}
                 </div>
@@ -145,11 +157,45 @@ export function DesktopSidebarLayout({ user, active, onLogout, children }) {
                       {user.name}
                     </span>
                     <span style={{ fontSize: '0.68rem', fontWeight: 600, color: '#0071e3', textTransform: 'capitalize' }}>
-                      {user.role}
+                      {user.role === 'dosen' ? 'Dosen Pembimbing' : user.role === 'reviewer' ? 'Reviewer PKM' : user.role}
                     </span>
                   </div>
                 )}
               </div>
+
+              {/* Tombol switch role bila akun memiliki lebih dari satu peran */}
+              {user.roles && user.roles.length > 1 && onSwitchRole && (
+                <button
+                  type="button"
+                  onClick={() => onSwitchRole(user.role === 'dosen' ? 'reviewer' : 'dosen')}
+                  className="apple-sidebar-switch-btn"
+                  title={user.role === 'dosen' ? 'Beralih ke peran Reviewer' : 'Beralih ke peran Dosen'}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.45rem',
+                    width: '100%',
+                    padding: open ? '0.45rem 0.65rem' : '0.45rem',
+                    justifyContent: open ? 'flex-start' : 'center',
+                    background: user.role === 'dosen' ? '#f5f3ff' : '#eff6ff',
+                    color: user.role === 'dosen' ? '#6d28d9' : '#1d4ed8',
+                    border: `1px solid ${user.role === 'dosen' ? '#ddd6fe' : '#bfdbfe'}`,
+                    borderRadius: '8px',
+                    fontSize: '0.74rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    marginTop: '0.45rem',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <ArrowLeftRight size={15} style={{ flexShrink: 0 }} />
+                  {open && (
+                    <span>
+                      Ganti ke <strong>{user.role === 'dosen' ? 'Reviewer' : 'Dosen'}</strong>
+                    </span>
+                  )}
+                </button>
+              )}
 
               <button
                 type="button"

@@ -62,7 +62,34 @@ body {
 
 /* Akun User & Profil di Top Navbar */
 .account-actions { display: flex; align-items: center; gap: .65rem; }
-.nav-user-chip { display: flex; align-items: center; gap: .6rem; padding: .25rem .75rem .25rem .35rem; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.9); border-radius: 9999px; box-shadow: 0 2px 8px rgba(18, 59, 102, 0.06); }
+.nav-user-chip {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  padding: .25rem .75rem .25rem .35rem;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 9999px;
+  box-shadow: 0 2px 8px rgba(18, 59, 102, 0.06);
+  cursor: pointer;
+  transition: all .2s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: inherit;
+  outline: none;
+}
+.nav-user-chip:hover {
+  background: #ffffff;
+  border-color: #93c5fd;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.14);
+  transform: translateY(-1px);
+}
+.nav-user-chip:active {
+  transform: translateY(0);
+}
+.nav-user-chip:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
 .nav-user-avatar { width: 2.1rem; height: 2.1rem; border-radius: 50%; background: linear-gradient(135deg, #0b2149, #175b91); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 800; letter-spacing: .05em; flex: none; box-shadow: 0 2px 6px rgba(11,33,73,.2); }
 .nav-user-meta { display: flex; flex-direction: column; text-align: left; }
 .nav-user-name { font-size: .8rem; font-weight: 700; color: #0f172a; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.2; }
@@ -71,12 +98,51 @@ body {
 .nav-logout-btn { display: inline-flex; align-items: center; gap: .35rem; padding: .4rem .75rem; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 8px; color: #475569; font-size: .8rem; font-weight: 600; cursor: pointer; transition: all .15s ease; min-height: 2.2rem; }
 .nav-logout-btn:hover { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
 
+/* Switch Role Button in Topbar */
+.nav-switch-role-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  min-height: 2.1rem;
+}
+.nav-switch-role-btn.to-reviewer {
+  background: #f5f3ff;
+  border: 1px solid #ddd6fe;
+  color: #6d28d9;
+}
+.nav-switch-role-btn.to-reviewer:hover {
+  background: #ede9fe;
+  border-color: #c4b5fd;
+  transform: translateY(-1px);
+}
+.nav-switch-role-btn.to-dosen {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+}
+.nav-switch-role-btn.to-dosen:hover {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  transform: translateY(-1px);
+}
+.apple-sidebar-switch-btn:hover {
+  filter: brightness(0.97);
+  transform: translateY(-1px);
+}
+
 /* Responsive Header */
 @media (max-width: 600px) { .brand-text { display: none; } }
 @media (max-width: 1099px) {
   .nav-user-meta { display: none; }
   .nav-user-chip { padding: .2rem; }
-  .nav-switch-btn { display: none !important; }
+  .nav-switch-btn, .nav-switch-role-btn { display: none !important; }
 }
 @media (max-width: 420px) { .nav-logout-btn span { display: none; } }
 @media (min-width: 640px) { .site-header.topnav { padding: 0 5.5vw; gap: 1.25rem; } }
