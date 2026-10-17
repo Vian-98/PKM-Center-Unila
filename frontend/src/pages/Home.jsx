@@ -4,7 +4,7 @@ import { useContent, fallbackNews, useTimeline, usePedoman, formatDate, hideBrok
 
 function HeroSection() {
   return (
-    <section className="ref-hero" id="beranda">
+    <section className="ref-hero">
       <div className="ref-hero-copy">
         <p className="ref-badge">PUSAT KREATIVITAS MAHASISWA UNIVERSITAS LAMPUNG</p>
         <h1>Ide hebat dimulai dari <span className="hl-blue">langkah</span><br /><span className="hl-blue underline-gold">pertama.</span></h1>
@@ -220,8 +220,10 @@ export function Home({ anchor = 'beranda' }) {
   }, [anchor])
   return (
     <main className="ref-page">
-      <HeroSection />
-      <StatsBar />
+      <div className="ref-hero-screen" id="beranda">
+        <HeroSection />
+        <StatsBar />
+      </div>
       <Ecosystem />
       <Timeline />
       <NewsPreview />

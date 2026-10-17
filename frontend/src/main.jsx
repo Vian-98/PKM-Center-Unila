@@ -566,6 +566,9 @@ function App() {
         onSwitchRole={switchRole}
         onOpenProfile={handleOpenProfile}
       />
+
+      {pageContent}
+
       {/* Footer hanya tampil di Beranda / Portal Utama, tidak tampil di dashboard atau modul sistem internal */}
       {!isDashboardRoute && ['beranda', 'tentang', 'timeline'].includes(raw) && <SiteFooter />}
 

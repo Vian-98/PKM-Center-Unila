@@ -34,7 +34,22 @@ func main() {
 	seedV2(db)
 	secret := config.Env("JWT_SECRET", "development-secret")
 	r := gin.Default()
-	r.Use(cors.New(cors.Config{AllowOrigins: []string{config.Env("CORS_ORIGIN", "http://localhost:5173")}, AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}, AllowHeaders: []string{"Origin", "Content-Type", "Authorization"}}))
+	r.Use(cors.New(cors.Config{
+		AllowOrigins: []string{
+			config.Env("CORS_ORIGIN", "http://localhost:5173"),
+			"http://localhost:5173",
+			"http://127.0.0.1:5173",
+			"http://localhost:3000",
+			"http://127.0.0.1:3000",
+			"http://pkm.makroboi.site",
+			"https://pkm.makroboi.site",
+			"http://pkmcenter.makroboi.site",
+			"https://pkmcenter.makroboi.site",
+		},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		AllowCredentials: true,
+	}))
 	uploadDir := config.Env("UPLOAD_DIR", "uploads")
 	_ = os.MkdirAll(uploadDir, 0o755)
 	r.Static("/uploads", uploadDir)
@@ -323,7 +338,17 @@ func seedUsers(db *gorm.DB) {
 		case "dosen":
 			var lp models.LecturerProfile
 			if db.Where("user_id = ?", user.ID).First(&lp).Error == gorm.ErrRecordNotFound {
-				db.Create(&models.LecturerProfile{UserID: user.ID, LecturerNumber: "0012345678", Faculty: "Fakultas Teknik", Department: "Teknik Elektro", StudyProgram: "Teknik Elektro", AcademicPosition: "Lektor", SupervisionCapacity: 10})
+				lecturerNumber := "0012345678"
+				faculty, department, studyProgram := "Fakultas Teknik", "Teknik Elektro", "Teknik Elektro"
+				position, capacity := "Lektor", 10
+				// Akun dosen ganda (dosen + reviewer) memakai nomor induk berbeda
+				// agar tidak melanggar UNIQUE(lecturer_number).
+				if account.Email == "dosen.reviewer@pkm.unila.ac.id" {
+					lecturerNumber = "0012345679"
+					faculty, department, studyProgram = "FMIPA", "Ilmu Komputer", "Ilmu Komputer"
+					position, capacity = "Lektor Kepala", 15
+				}
+				db.Create(&models.LecturerProfile{UserID: user.ID, LecturerNumber: lecturerNumber, Faculty: faculty, Department: department, StudyProgram: studyProgram, AcademicPosition: position, SupervisionCapacity: capacity})
 			}
 		case "reviewer":
 			var lp models.LecturerProfile
