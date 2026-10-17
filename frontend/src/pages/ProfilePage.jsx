@@ -148,7 +148,7 @@ export function ProfilePage({ user, onUpdateUser, onSwitchRole, onLogout }) {
   }
 
   return (
-    <div className="module-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '1.5rem 1rem 3rem' }}>
+    <div className="module-container" style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 0 3rem' }}>
       {/* Top Header Bar & Back Button */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>

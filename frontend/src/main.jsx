@@ -557,15 +557,18 @@ function App() {
 
   return (
     <>
-      <TopNavbar
-        active={active}
-        user={user}
-        isDashboard={isDashboardRoute && Boolean(user)}
-        onLogin={() => setModal(true)}
-        onLogout={logout}
-        onSwitchRole={switchRole}
-        onOpenProfile={handleOpenProfile}
-      />
+      {/* TopNavbar Hanya Muncul untuk Halaman Publik Non-Dashboard / Tamu (Di Dashboard, layout sidebar penuh langsung nyambung ke atas) */}
+      {!(isDashboardRoute && Boolean(user)) && (
+        <TopNavbar
+          active={active}
+          user={user}
+          isDashboard={false}
+          onLogin={() => setModal(true)}
+          onLogout={logout}
+          onSwitchRole={switchRole}
+          onOpenProfile={handleOpenProfile}
+        />
+      )}
 
       {pageContent}
 

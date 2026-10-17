@@ -405,11 +405,11 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
     <div
       className={`module-container ${activeTab === 'chat' ? 'chat-page-fullscreen' : ''}`}
       style={activeTab === 'chat' ? {
-        height: 'calc(100vh - 80px)',
+        height: 'calc(100vh - 4.5rem - 3.5rem)',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
-        padding: '0.85rem 1.25rem 0.5rem',
+        padding: '0',
       } : undefined}
     >
       {/* Sleek Integrated Top Navigation Bar */}
