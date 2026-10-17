@@ -13,6 +13,19 @@ services:
       timeout: 5s
       retries: 10
 
+  9router:
+    build: ./9router-app
+    container_name: pkm_9router
+    restart: always
+    tty: true
+    stdin_open: true
+    ports:
+      - "20128:20128"
+    environment:
+      INITIAL_PASSWORD: "admin123"
+    volumes:
+      - 9router_data:/root/.9router
+
   backend:
     build: ./backend
     environment:
@@ -20,9 +33,13 @@ services:
       DATABASE_URL: postgres://pkm:pkm_dev_password@db:5432/pkmcenter?sslmode=disable
       JWT_SECRET: change-this-before-production
       CORS_ORIGIN: http://localhost:5173
+      # URL 9Router di dalam jaringan Docker (panggil nama service '9router')
+      AI_GATEWAY_URL: http://9router:20128/v1
     depends_on:
       db:
         condition: service_healthy
+      9router:
+        condition: service_started
     ports:
       - "8081:8080"
 
@@ -42,3 +59,4 @@ services:
 
 volumes:
   postgres_data:
+  9router_data: # Volume untuk menyimpan konfigurasi API Key 9Router
