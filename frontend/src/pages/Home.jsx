@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { GlowCard } from '../components/GlowCard'
 import { useContent, fallbackNews, useTimeline, usePedoman, formatDate, hideBrokenImage } from '../lib/content'
 
-function HeroSection() {
+function HeroSection({ onMulaiAjukan }) {
   return (
     <section className="ref-hero">
       <div className="ref-hero-copy">
@@ -10,7 +10,7 @@ function HeroSection() {
         <h1>Ide hebat dimulai dari <span className="hl-blue">langkah</span><br /><span className="hl-blue underline-gold">pertama.</span></h1>
         <p className="ref-sub">Wujudkan gagasan, temukan kolaborator, dan raih prestasi melalui ekosistem PKM terintegrasi berbasis AI.</p>
         <div className="ref-cta">
-          <a className="btn-primary" href="#kontak">Mulai ajukan proposal <b>&rarr;</b></a>
+          <button className="btn-primary" type="button" onClick={onMulaiAjukan}>Mulai ajukan proposal <b>&rarr;</b></button>
           <a className="link-more" href="#tentang">Pelajari PKM <b>&rsaquo;</b></a>
         </div>
         <div className="ref-social">
@@ -209,7 +209,7 @@ function PanduanBanner() {
   )
 }
 
-export function Home({ anchor = 'beranda' }) {
+export function Home({ anchor = 'beranda', user, onLogin }) {
   useEffect(() => {
     if (anchor && anchor !== 'beranda') {
       const el = document.getElementById(anchor)
@@ -218,10 +218,23 @@ export function Home({ anchor = 'beranda' }) {
       window.scrollTo({ top: 0 })
     }
   }, [anchor])
+
+  const handleMulaiAjukan = () => {
+    if (!user) {
+      onLogin()
+      return
+    }
+    if (user.role === 'mahasiswa') {
+      window.location.hash = '#ajukan-proposal'
+    } else {
+      window.location.hash = '#kontak'
+    }
+  }
+
   return (
     <main className="ref-page">
       <div className="ref-hero-screen" id="beranda">
-        <HeroSection />
+        <HeroSection onMulaiAjukan={handleMulaiAjukan} />
         <StatsBar />
       </div>
       <Ecosystem />

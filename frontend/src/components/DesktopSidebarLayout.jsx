@@ -36,7 +36,7 @@ export function DesktopSidebarLayout({ user, active, onLogout, onSwitchRole, onO
           { label: 'Dashboard Bimbingan', href: '#dosen', icon: <GraduationCap size={17} /> },
           { label: 'Pesan & Catatan', href: '#pesan', icon: <MessageSquare size={17} /> },
           { label: 'Profil Saya', href: '#profil', icon: <User size={17} /> },
-          { label: 'Buku Panduan', href: '#pedoman', icon: <BookOpen size={17} /> },
+          { label: 'Buku Panduan', href: '#pedoman/sidebar', icon: <BookOpen size={17} /> },
           { label: 'Portal Utama', href: '#beranda', icon: <Home size={17} /> },
         ]
       case 'reviewer':
@@ -44,7 +44,7 @@ export function DesktopSidebarLayout({ user, active, onLogout, onSwitchRole, onO
           { label: 'Antrean Penilaian', href: '#reviewer', icon: <Scale size={17} /> },
           { label: 'Pesan & Feedback', href: '#pesan', icon: <MessageSquare size={17} /> },
           { label: 'Profil Saya', href: '#profil', icon: <User size={17} /> },
-          { label: 'Buku Panduan', href: '#pedoman', icon: <BookOpen size={17} /> },
+          { label: 'Buku Panduan', href: '#pedoman/sidebar', icon: <BookOpen size={17} /> },
           { label: 'Portal Utama', href: '#beranda', icon: <Home size={17} /> },
         ]
       case 'admin':
@@ -68,7 +68,7 @@ export function DesktopSidebarLayout({ user, active, onLogout, onSwitchRole, onO
           { label: 'Lacak Proposal', href: '#cek-status', icon: <Search size={17} /> },
           { label: 'Pesan & Konsultasi', href: '#pesan', icon: <MessageSquare size={17} /> },
           { label: 'Profil Saya', href: '#profil', icon: <User size={17} /> },
-          { label: 'Panduan PKM', href: '#pedoman', icon: <BookOpen size={17} /> },
+          { label: 'Panduan PKM', href: '#pedoman/sidebar', icon: <BookOpen size={17} /> },
           { label: 'Website Utama', href: '#beranda', icon: <Home size={17} /> },
         ]
     }
@@ -80,11 +80,39 @@ export function DesktopSidebarLayout({ user, active, onLogout, onSwitchRole, onO
     ? user.name.split(' ').filter(Boolean).map(n => n[0]).slice(0, 2).join('').toUpperCase()
     : '?'
 
-  const canSwitch = Boolean(
-    onSwitchRole && user &&
-    ((user.roles && user.roles.length > 1) || user.role === 'admin')
-  )
-  const nextRole = user?.role === 'dosen' ? 'reviewer' : 'dosen'
+  const roles = user?.roles || []
+
+  // Tentukan target peran dan label tombol switch role secara dinamis
+  let switchTarget = null
+  let switchLabel = 'Ganti Peran'
+
+  if (user?.role === 'admin') {
+    if (roles.includes('dosen')) {
+      switchTarget = 'dosen'
+      switchLabel = 'Ganti ke Dosen'
+    } else if (roles.includes('reviewer')) {
+      switchTarget = 'reviewer'
+      switchLabel = 'Ganti ke Reviewer'
+    }
+  } else if (user?.role === 'dosen') {
+    if (roles.includes('admin')) {
+      switchTarget = 'admin'
+      switchLabel = 'Kembali ke Panel Admin'
+    } else if (roles.includes('reviewer')) {
+      switchTarget = 'reviewer'
+      switchLabel = 'Ganti ke Reviewer'
+    }
+  } else if (user?.role === 'reviewer') {
+    if (roles.includes('admin')) {
+      switchTarget = 'admin'
+      switchLabel = 'Kembali ke Panel Admin'
+    } else if (roles.includes('dosen')) {
+      switchTarget = 'dosen'
+      switchLabel = 'Ganti ke Dosen'
+    }
+  }
+
+  const canSwitch = Boolean(onSwitchRole && user && switchTarget !== null)
 
   const portalLabel = {
     dosen: 'Portal Dosen Pembimbing',
@@ -103,6 +131,7 @@ export function DesktopSidebarLayout({ user, active, onLogout, onSwitchRole, onO
   const isActive = (href) => {
     const key = href.replace('#', '')
     if (key === active) return true
+    if (key === `${active}/sidebar`) return true
     if (key === 'ajukan-proposal' && active === 'ajukanproposal') return true
     if (key === 'cek-status' && active === 'cekstatus') return true
     return false
@@ -169,10 +198,10 @@ export function DesktopSidebarLayout({ user, active, onLogout, onSwitchRole, onO
             {canSwitch && (
               <button
                 className="bo-btn-switch"
-                onClick={() => onSwitchRole(nextRole)}
+                onClick={() => onSwitchRole(switchTarget)}
               >
                 <ArrowLeftRight size={13} />
-                <span>Ganti ke <b>{nextRole === 'dosen' ? 'Dosen' : 'Reviewer'}</b></span>
+                <span>{switchLabel}</span>
               </button>
             )}
 
@@ -207,10 +236,10 @@ export function DesktopSidebarLayout({ user, active, onLogout, onSwitchRole, onO
             {canSwitch && (
               <button
                 className="bo-topbar-switch"
-                onClick={() => onSwitchRole(nextRole)}
+                onClick={() => onSwitchRole(switchTarget)}
               >
                 <ArrowLeftRight size={13} />
-                <span>Ganti ke <b>{nextRole === 'dosen' ? 'Dosen' : 'Reviewer'}</b></span>
+                <span>{switchLabel}</span>
               </button>
             )}
 

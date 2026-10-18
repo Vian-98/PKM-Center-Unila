@@ -46,40 +46,21 @@ const NAV_GUEST = [
   ['kontak', 'Kontak'],
 ]
 
-// Navigasi Khusus yang Disesuaikan dengan Peran Pengguna Saat Login (Bersih, Rapi, & Tidak Menumpuk)
+// Navigasi Setelah Login: selalu menampilkan menu publik (guest) seperti sebelum login,
+// ditambah opsi "Portal" di ujung kanan yang mengarahkan ke dashboard sesuai role pengguna.
 function getNavItems(user) {
   if (!user) return NAV_GUEST
-  switch (user.role) {
-    case 'dosen':
-      return [
-        ['dosen', 'Dashboard Bimbingan'],
-        ['pesan', 'Pesan & Catatan'],
-        ['pedoman', 'Panduan PKM'],
-        ['beranda', 'Website Utama'],
-      ]
-    case 'reviewer':
-      return [
-        ['reviewer', 'Antrean Penilaian'],
-        ['pesan', 'Pesan & Feedback'],
-        ['pedoman', 'Panduan PKM'],
-        ['beranda', 'Website Utama'],
-      ]
-    case 'admin':
-      return [
-        ['admin', 'Admin Panel'],
-        ['pesan', 'Pusat Komunikasi'],
-        ['pedoman', 'Panduan PKM'],
-        ['beranda', 'Website Utama'],
-      ]
-    case 'mahasiswa':
-    default:
-      return [
-        ['mahasiswa', 'Portal Mahasiswa'],
-        ['pesan', 'Pesan & Konsultasi'],
-        ['pedoman', 'Panduan PKM'],
-        ['beranda', 'Website Utama'],
-      ]
+
+  const portalByRole = {
+    admin: ['admin', 'Portal Administrator'],
+    dosen: ['dosen', 'Portal Dosen'],
+    reviewer: ['reviewer', 'Portal Reviewer'],
+    mahasiswa: ['mahasiswa', 'Portal Mahasiswa'],
   }
+
+  const portal = portalByRole[user.role] || ['beranda', 'Portal']
+
+  return [...NAV_GUEST, portal]
 }
 
 function getRoleLabel(role) {
@@ -109,12 +90,39 @@ function TopNavbar({ active, user, isDashboard, onLogin, onLogout, onSwitchRole,
     : 'U'
 
   // Periksa apakah pengguna memiliki hak akses multi-peran (misal Dosen yang juga Reviewer)
-  const canSwitchRole = Boolean(
-    onSwitchRole &&
-    user &&
-    ((user.roles && user.roles.length > 1) || user.role === 'admin')
-  )
-  const nextTargetRole = user?.role === 'dosen' ? 'reviewer' : 'dosen'
+  const roles = user?.roles || []
+
+  // Tentukan target peran dan label tombol switch role secara dinamis
+  let switchTarget = null
+  let switchLabel = 'Ganti Peran'
+
+  if (user?.role === 'admin') {
+    if (roles.includes('dosen')) {
+      switchTarget = 'dosen'
+      switchLabel = 'Ganti ke Dosen'
+    } else if (roles.includes('reviewer')) {
+      switchTarget = 'reviewer'
+      switchLabel = 'Ganti ke Reviewer'
+    }
+  } else if (user?.role === 'dosen') {
+    if (roles.includes('admin')) {
+      switchTarget = 'admin'
+      switchLabel = 'Kembali ke Panel Admin'
+    } else if (roles.includes('reviewer')) {
+      switchTarget = 'reviewer'
+      switchLabel = 'Ganti ke Reviewer'
+    }
+  } else if (user?.role === 'reviewer') {
+    if (roles.includes('admin')) {
+      switchTarget = 'admin'
+      switchLabel = 'Kembali ke Panel Admin'
+    } else if (roles.includes('dosen')) {
+      switchTarget = 'dosen'
+      switchLabel = 'Ganti ke Dosen'
+    }
+  }
+
+  const canSwitchRole = Boolean(onSwitchRole && user && switchTarget !== null)
 
   return (
     <header className="site-header topnav apple-topnav">
@@ -178,14 +186,14 @@ function TopNavbar({ active, user, isDashboard, onLogin, onLogout, onSwitchRole,
             {canSwitchRole && (
               <button
                 type="button"
-                onClick={() => onSwitchRole(nextTargetRole)}
-                className={`nav-switch-role-btn ${user.role === 'dosen' ? 'to-reviewer' : 'to-dosen'}`}
-                title={user.role === 'dosen' ? 'Beralih ke peran Reviewer' : 'Beralih ke peran Dosen Pembimbing'}
+                onClick={() => onSwitchRole(switchTarget)}
+                className={`nav-switch-role-btn ${switchTarget === 'dosen' ? 'to-reviewer' : 'to-dosen'}`}
+                title={switchLabel}
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M7 16V4m0 0L3 8m4-4l4 4m6 4v12m0 0l4-4m-4 4l-4-4"/>
                 </svg>
-                <span>Ganti ke <strong>{user.role === 'dosen' ? 'Reviewer' : 'Dosen'}</strong></span>
+                <span>{switchLabel}</span>
               </button>
             )}
 
@@ -500,7 +508,17 @@ function App() {
         if (response.ok && result?.token) {
           localStorage.setItem('pkm_token', result.token)
           if (result.user?.role) updatedUser.role = result.user.role
-          if (result.user?.roles) updatedUser.roles = result.user.roles
+          if (result.user?.roles) {
+            // Jangan biarkan backend mengurangi roles admin/multi-role menjadi satu role saja,
+            // agar tombol "Ganti Peran" tetap tampil saat admin beralih ke dosen/reviewer.
+            const originalHasAdmin = (user.roles || []).includes('admin')
+            const backendHasAdmin = result.user.roles.includes('admin')
+            if (originalHasAdmin && !backendHasAdmin) {
+              // Pertahankan roles asli admin (multi-role)
+            } else {
+              updatedUser.roles = result.user.roles
+            }
+          }
         }
       }
     } catch (err) {
@@ -538,16 +556,19 @@ function App() {
   else if (route[0] === 'pedoman') view = <PedomanIndex />
   else if (route[0] === 'portofolio') view = <PortofolioIndex />
   else if (route[0] === 'kontak') view = <KontakPage />
-  else view = <Home anchor={['tentang', 'timeline'].includes(route[0]) ? route[0] : 'beranda'} />
+  else view = <Home anchor={['tentang', 'timeline'].includes(route[0]) ? route[0] : 'beranda'} user={user} onLogin={() => setModal(true)} />
 
   // Render collapsible desktop sidebar for authenticated dashboard routes
-  const isDashboardRoute = ['mahasiswa', 'ajukan-proposal', 'ajukanproposal', 'logbook', 'tim', 'caritim', 'idealab', 'dosen', 'reviewer', 'admin', 'pesan', 'pedoman', 'cek-status', 'cekstatus', 'profil'].includes(raw)
+  const isDashboardRoute = ['mahasiswa', 'ajukan-proposal', 'ajukanproposal', 'logbook', 'tim', 'caritim', 'idealab', 'dosen', 'reviewer', 'admin', 'pesan', 'cek-status', 'cekstatus', 'profil'].includes(raw)
+
+  // Akses Panduan dari portal sidebar (hash #pedoman/sidebar) tetap pakai sidebar layout
+  const isPedomanSidebar = raw === 'pedoman' && route[1] === 'sidebar'
 
   const handleOpenProfile = () => {
     window.location.hash = '#profil'
   }
 
-  const pageContent = isDashboardRoute && user ? (
+  const pageContent = (isDashboardRoute || isPedomanSidebar) && user ? (
     <DesktopSidebarLayout user={user} active={raw} onLogout={logout} onSwitchRole={switchRole} onOpenProfile={handleOpenProfile}>
       {view}
     </DesktopSidebarLayout>
@@ -558,7 +579,7 @@ function App() {
   return (
     <>
       {/* TopNavbar Hanya Muncul untuk Halaman Publik Non-Dashboard / Tamu (Di Dashboard, layout sidebar penuh langsung nyambung ke atas) */}
-      {!(isDashboardRoute && Boolean(user)) && (
+      {!((isDashboardRoute || isPedomanSidebar) && Boolean(user)) && (
         <TopNavbar
           active={active}
           user={user}
