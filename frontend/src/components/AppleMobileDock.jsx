@@ -169,21 +169,47 @@ export function AppleMobileDock({ active, user, onLogin, onLogout, onSwitchRole,
                 <span>Buku Pedoman</span>
               </a>
               {/* Pilihan Switch Role di Action Sheet Mobile */}
-              {user?.roles && user.roles.length > 1 && onSwitchRole && (
-                <button
-                  type="button"
-                  className="apple-sheet-item"
-                  style={{ border: 'none', background: 'transparent', width: '100%', cursor: 'pointer' }}
-                  onClick={() => {
-                    setSheetOpen(false)
-                    onSwitchRole(user.role === 'dosen' ? 'reviewer' : 'dosen')
-                  }}
-                >
-                  <div className="apple-sheet-icon" style={{ background: user.role === 'dosen' ? '#f5f3ff' : '#eff6ff', color: user.role === 'dosen' ? '#7c3aed' : '#2563eb' }}>
-                    <ArrowLeftRight size={20} />
-                  </div>
-                  <span>Ganti ke {user.role === 'dosen' ? 'Reviewer' : 'Dosen'}</span>
-                </button>
+              {user?.roles && onSwitchRole && (
+                <>
+                  {(() => {
+                    const roles = user?.roles || []
+                    let target = null
+                    let label = ''
+
+                    if (user?.role === 'admin') {
+                      if (roles.includes('dosen')) { target = 'dosen'; label = 'Ganti ke Dosen' }
+                      else if (roles.includes('reviewer')) { target = 'reviewer'; label = 'Ganti ke Reviewer' }
+                    } else if (user?.role === 'dosen') {
+                      if (roles.includes('admin')) { target = 'admin'; label = 'Kembali ke Panel Admin' }
+                      else if (roles.includes('reviewer')) { target = 'reviewer'; label = 'Ganti ke Reviewer' }
+                    } else if (user?.role === 'reviewer') {
+                      if (roles.includes('admin')) { target = 'admin'; label = 'Kembali ke Panel Admin' }
+                      else if (roles.includes('dosen')) { target = 'dosen'; label = 'Ganti ke Dosen' }
+                    }
+
+                    if (!target) return null
+
+                    const bgColor = user.role === 'dosen' ? '#f5f3ff' : user.role === 'reviewer' ? '#eff6ff' : '#f1f5f9'
+                    const textColor = user.role === 'dosen' ? '#7c3aed' : user.role === 'reviewer' ? '#2563eb' : '#1d4ed8'
+
+                    return (
+                      <button
+                        type="button"
+                        className="apple-sheet-item"
+                        style={{ border: 'none', background: 'transparent', width: '100%', cursor: 'pointer' }}
+                        onClick={() => {
+                          setSheetOpen(false)
+                          onSwitchRole(target)
+                        }}
+                      >
+                        <div className="apple-sheet-icon" style={{ background: bgColor, color: textColor }}>
+                          <ArrowLeftRight size={20} />
+                        </div>
+                        <span>{label}</span>
+                      </button>
+                    )
+                  })()}
+                </>
               )}
               <a href="#galeri" className="apple-sheet-item" onClick={() => { setSheetOpen(false); window.scrollTo({ top: 0, left: 0, behavior: 'instant' }) }}>
                 <div className="apple-sheet-icon" style={{ background: '#f1f5f9', color: '#475569' }}><Newspaper size={20} /></div>

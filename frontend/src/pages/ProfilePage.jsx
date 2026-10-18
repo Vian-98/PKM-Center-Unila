@@ -80,11 +80,39 @@ export function ProfilePage({ user, onUpdateUser, onSwitchRole, onLogout }) {
     }
   }
 
-  const canSwitchRole = Boolean(
-    onSwitchRole &&
-    user &&
-    ((user.roles && user.roles.length > 1) || user.role === 'admin' || user.role === 'reviewer' || user.role === 'dosen')
-  )
+  const roles = user?.roles || []
+
+  // Tentukan target peran dan label tombol switch role secara dinamis
+  let switchTarget = null
+  let switchLabel = 'Ganti Peran'
+
+  if (user?.role === 'admin') {
+    if (roles.includes('dosen')) {
+      switchTarget = 'dosen'
+      switchLabel = 'Ganti ke Dosen'
+    } else if (roles.includes('reviewer')) {
+      switchTarget = 'reviewer'
+      switchLabel = 'Ganti ke Reviewer'
+    }
+  } else if (user?.role === 'dosen') {
+    if (roles.includes('admin')) {
+      switchTarget = 'admin'
+      switchLabel = 'Kembali ke Panel Admin'
+    } else if (roles.includes('reviewer')) {
+      switchTarget = 'reviewer'
+      switchLabel = 'Ganti ke Reviewer'
+    }
+  } else if (user?.role === 'reviewer') {
+    if (roles.includes('admin')) {
+      switchTarget = 'admin'
+      switchLabel = 'Kembali ke Panel Admin'
+    } else if (roles.includes('dosen')) {
+      switchTarget = 'dosen'
+      switchLabel = 'Ganti ke Dosen'
+    }
+  }
+
+  const canSwitchRole = Boolean(onSwitchRole && user && switchTarget !== null)
 
   const handleSave = async (e) => {
     e.preventDefault()
@@ -172,12 +200,12 @@ export function ProfilePage({ user, onUpdateUser, onSwitchRole, onLogout }) {
           {canSwitchRole && (
             <button
               type="button"
-              onClick={onSwitchRole}
+              onClick={() => onSwitchRole(switchTarget)}
               className="btn-action secondary"
               style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', padding: '0.55rem 0.95rem', borderRadius: '0.65rem', borderColor: '#3b82f6', color: '#1d4ed8' }}
             >
               <ArrowLeftRight size={15} />
-              <span>Ganti Peran ({user?.role === 'reviewer' ? 'Mode Dosen' : 'Mode Reviewer'})</span>
+              <span>{switchLabel}</span>
             </button>
           )}
           {onLogout && (
