@@ -282,6 +282,9 @@ func seedUsers(db *gorm.DB) {
 	accounts := []struct{ Name, Email, Password, Role string }{
 		{"Admin PKM", "admin@pkm.unila.ac.id", "admin123", "admin"},
 		{"Nadia Mahasiswa", "mahasiswa@pkm.unila.ac.id", "mahasiswa123", "mahasiswa"},
+		{"Favian Pratama (Mahasiswa 1)", "mhs1@pkm.unila.ac.id", "mahasiswa123", "mahasiswa"},
+		{"Ahmad Fauzi (Mahasiswa 2)", "mhs2@pkm.unila.ac.id", "mahasiswa123", "mahasiswa"},
+		{"Siti Nurhaliza (Mahasiswa 3)", "mhs3@pkm.unila.ac.id", "mahasiswa123", "mahasiswa"},
 		{"Favian Rifqi Pratama", "favian@student.unila.ac.id", "mhs12345", "mahasiswa"},
 		{"Ahmad Fauzi", "ahmad.fauzi@student.unila.ac.id", "mhs12345", "mahasiswa"},
 		{"Siti Nurhaliza", "siti.nurhaliza@student.unila.ac.id", "mhs12345", "mahasiswa"},
@@ -329,11 +332,11 @@ func seedUsers(db *gorm.DB) {
 				switch account.Email {
 				case "mahasiswa@pkm.unila.ac.id":
 					db.Create(&models.StudentProfile{UserID: user.ID, StudentNumber: "2117051001", Faculty: "Fakultas Teknik", Department: "Teknik Elektro", StudyProgram: "Teknik Elektro", EntryYear: 2021, GPA: 3.72, AcademicStatus: "active", Biography: "Mahasiswa aktif Universitas Lampung."})
-				case "favian@student.unila.ac.id":
+				case "mhs1@pkm.unila.ac.id", "favian@student.unila.ac.id":
 					db.Create(&models.StudentProfile{UserID: user.ID, StudentNumber: "2217051020", Faculty: "FMIPA", Department: "Ilmu Komputer", StudyProgram: "S1 Ilmu Komputer", EntryYear: 2022, GPA: 3.85, AcademicStatus: "active", Biography: "Fokus riset AI & Computer Vision."})
-				case "ahmad.fauzi@student.unila.ac.id":
+				case "mhs2@pkm.unila.ac.id", "ahmad.fauzi@student.unila.ac.id":
 					db.Create(&models.StudentProfile{UserID: user.ID, StudentNumber: "2215061034", Faculty: "Fakultas Teknik", Department: "Teknik Informatika", StudyProgram: "S1 Teknik Informatika", EntryYear: 2022, GPA: 3.68, AcademicStatus: "active", Biography: "Pengembang Web & Mobile IoT."})
-				case "siti.nurhaliza@student.unila.ac.id":
+				case "mhs3@pkm.unila.ac.id", "siti.nurhaliza@student.unila.ac.id":
 					db.Create(&models.StudentProfile{UserID: user.ID, StudentNumber: "2114131012", Faculty: "Fakultas Pertanian", Department: "Agribisnis", StudyProgram: "S1 Agribisnis", EntryYear: 2021, GPA: 3.79, AcademicStatus: "active", Biography: "Riset Sosial Humaniora & Agribisnis."})
 				case "rizky.ramadhan@student.unila.ac.id":
 					db.Create(&models.StudentProfile{UserID: user.ID, StudentNumber: "2211011045", Faculty: "FEB", Department: "Manajemen", StudyProgram: "S1 Manajemen Bisnis", EntryYear: 2022, GPA: 3.65, AcademicStatus: "active", Biography: "Peminat PKM-K dan Analisis Pasar."})

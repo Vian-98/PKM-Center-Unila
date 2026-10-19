@@ -220,10 +220,12 @@ function TopNavbar({ active, user, isDashboard, onLogin, onLogout, onSwitchRole,
 }
 
 const DEMO_ACCOUNTS = [
+  { label: 'Mahasiswa 1 (FMIPA)', email: 'mhs1@pkm.unila.ac.id', pass: 'mahasiswa123', desc: 'Favian Pratama • Ilmu Komputer (NPM 2217051001)' },
+  { label: 'Mahasiswa 2 (Teknik)', email: 'mhs2@pkm.unila.ac.id', pass: 'mahasiswa123', desc: 'Ahmad Fauzi • Teknik Informatika (NPM 2215061002)' },
+  { label: 'Mahasiswa 3 (Pertanian)', email: 'mhs3@pkm.unila.ac.id', pass: 'mahasiswa123', desc: 'Siti Nurhaliza • Agribisnis (NPM 2114131003)' },
   { label: 'Dosen Pembimbing (Saja)', email: 'dosen@pkm.unila.ac.id', pass: 'dosen123', desc: 'Hanya Bimbingan (Bukan Reviewer)' },
   { label: 'Dosen & Reviewer (Multi-Peran)', email: 'dosen.reviewer@pkm.unila.ac.id', pass: 'dosen123', desc: 'Bisa Switch Role Dosen ⇄ Reviewer' },
   { label: 'Reviewer (Khusus)', email: 'reviewer@pkm.unila.ac.id', pass: 'reviewer123', desc: 'Penilai Proposal PKM' },
-  { label: 'Mahasiswa', email: 'mahasiswa@pkm.unila.ac.id', pass: 'mahasiswa123', desc: 'Pengusul Proposal' },
   { label: 'Admin Kampus', email: 'admin@pkm.unila.ac.id', pass: 'admin123', desc: 'Pengelola PKM Center' },
 ]
 
@@ -258,7 +260,7 @@ function LoginModal({ close, complete }) {
       // Deteksi otomatis peran pengguna berdasarkan akun login (fallback offline)
       const e = form.email.toLowerCase().trim()
       let role = 'mahasiswa'
-      let name = 'Nadia Putri Maharani'
+      let name = 'Mahasiswa Unila'
       let roles = ['mahasiswa']
 
       if (e.includes('dosen.reviewer') || e.includes('sri') || (e.includes('dosen') && e.includes('reviewer'))) {
@@ -277,6 +279,18 @@ function LoginModal({ close, complete }) {
         role = 'admin'
         name = 'Admin PKM Center'
         roles = ['admin', 'dosen', 'reviewer']
+      } else if (e.includes('mhs1') || e.includes('favian')) {
+        role = 'mahasiswa'
+        name = 'Favian Pratama'
+        roles = ['mahasiswa']
+      } else if (e.includes('mhs2') || e.includes('ahmad')) {
+        role = 'mahasiswa'
+        name = 'Ahmad Fauzi'
+        roles = ['mahasiswa']
+      } else if (e.includes('mhs3') || e.includes('siti')) {
+        role = 'mahasiswa'
+        name = 'Siti Nurhaliza'
+        roles = ['mahasiswa']
       } else {
         role = 'mahasiswa'
         name = 'Nadia Putri Maharani'
