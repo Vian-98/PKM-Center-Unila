@@ -1476,10 +1476,13 @@ footer {
 @media (min-width: 768px) { .admin-tabs { padding: 2.8rem 5.5vw 0; } }
 
 .admin-feedback, .admin-stats { padding: 2rem 1.25rem 4rem; display: grid; gap: 0.8rem; }
+.admin-ai-gateway { padding: 2rem 1.25rem 4rem; max-width: 1400px; margin-inline: auto; box-sizing: border-box; }
 .form-message { margin: 0; font-size: 0.82rem; font-weight: 700; color: var(--accent); }
 @media (min-width: 768px) {
   .admin-feedback, .admin-stats { padding: 3rem 18vw 5rem; max-width: 58rem; margin-inline: auto; }
+  .admin-ai-gateway { padding: 2.5rem 5.5vw 5rem; }
 }
+
 .feedback-item.unread { border-color: color-mix(in srgb, var(--gold) 55%, var(--glass-border)); }
 .feedback-message {
   white-space: pre-wrap;

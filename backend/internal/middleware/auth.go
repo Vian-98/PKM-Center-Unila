@@ -49,3 +49,27 @@ func RequireAuth(secret string, allowedRoles ...string) gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+// OptionalAuth membaca token JWT jika disertakan, tanpa memblokir request jika tidak ada.
+func OptionalAuth(secret string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authHeader := c.GetHeader("Authorization")
+		if authHeader != "" {
+			tokenString := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
+			if tokenString != "" {
+				token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) { return []byte(secret), nil })
+				if err == nil && token != nil && token.Valid {
+					if claims, ok := token.Claims.(jwt.MapClaims); ok {
+						role, _ := claims["role"].(string)
+						userID, _ := claims["sub"].(string)
+						c.Set("user", claims)
+						c.Set("userID", userID)
+						c.Set("role", role)
+					}
+				}
+			}
+		}
+		c.Next()
+	}
+}
+

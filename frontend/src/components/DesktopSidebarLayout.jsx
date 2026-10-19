@@ -64,8 +64,9 @@ export function DesktopSidebarLayout({ user, active, onLogout, onSwitchRole, onO
           { label: 'Logbook Digital', href: '#logbook', icon: <ClipboardList size={17} /> },
           { label: 'Manajemen Tim', href: '#tim', icon: <Users size={17} /> },
           { label: 'Cari Tim & Dosen', href: '#caritim', icon: <Users size={17} /> },
-          { label: 'Idea Lab (AI)', href: '#idealab', icon: <Sparkles size={17} /> },
+          { label: 'PKMATE (AI)', href: '#idealab', icon: <Sparkles size={17} /> },
           { label: 'Lacak Proposal', href: '#cek-status', icon: <Search size={17} /> },
+
           { label: 'Pesan & Konsultasi', href: '#pesan', icon: <MessageSquare size={17} /> },
           { label: 'Profil Saya', href: '#profil', icon: <User size={17} /> },
           { label: 'Panduan PKM', href: '#pedoman/sidebar', icon: <BookOpen size={17} /> },

@@ -62,8 +62,9 @@ function Ecosystem() {
       tagClass: 'gold',
       title: 'Uji kekuatan idemu',
       copy: 'Dapatkan analisis kebaruan, dampak, dan kelayakan ide sebelum menyusun proposal.',
-      link: 'Coba Idea Lab',
+      link: 'Coba PKMATE',
       href: '#idealab',
+
       dark: true,
       icon: (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">

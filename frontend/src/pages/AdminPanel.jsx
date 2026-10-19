@@ -355,6 +355,190 @@ function ContactView() {
   )
 }
 
+/* ---------------- AI Gateway (9Router & PKMATE) ---------------- */
+
+function AIGatewayView() {
+  const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+  const token = localStorage.getItem('pkm_token')
+
+  const fetchStatus = () => {
+    setRefreshing(true)
+    fetch(`${api}/admin/ai/overview`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(res => {
+        setData(res)
+        setLoading(false)
+        setRefreshing(false)
+      })
+      .catch(() => {
+        fetch(`${api}/ai/status`)
+          .then(r => r.json())
+          .then(res => {
+            setData({
+              gatewayStatus: res.gatewayStatus,
+              gatewayCode: res.gatewayCode,
+              gatewayUrl: res.gatewayUrl,
+              activeModel: res.activeModel,
+              totalAnalyses: 0,
+              recentAnalyses: []
+            })
+            setLoading(false)
+            setRefreshing(false)
+          })
+          .catch(() => {
+            setData({ gatewayStatus: 'offline', gatewayCode: 503 })
+            setLoading(false)
+            setRefreshing(false)
+          })
+      })
+  }
+
+  useEffect(() => {
+    fetchStatus()
+  }, [])
+
+  if (loading) {
+    return (
+      <section className="admin-ai-gateway" style={{ padding: '2.5rem 5.5vw 5rem', maxWidth: '1440px', margin: '0 auto', boxSizing: 'border-box' }}>
+        <p className="section-copy">Memeriksa konektivitas dan status AI Gateway 9Router…</p>
+      </section>
+    )
+  }
+
+  const isOnline = data?.gatewayStatus === 'online'
+
+  return (
+    <section className="admin-ai-gateway" style={{ padding: '2.5rem 5.5vw 5rem', maxWidth: '1440px', margin: '0 auto', boxSizing: 'border-box' }}>
+      <div className="form-heading" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+
+        <div>
+          <h2>Monitoring AI Gateway (9Router & PKMATE)</h2>
+          <p className="section-copy">Pemantauan infrastruktur AI lokal, status koneksi 9Router, dan statistik penggunaan PKMATE.</p>
+        </div>
+        <button
+          className="button dark"
+          onClick={fetchStatus}
+          disabled={refreshing}
+          style={{ fontSize: '0.82rem', padding: '0.5rem 1rem' }}
+        >
+          {refreshing ? 'Memeriksa…' : 'Segarkan Status'} <b>↻</b>
+        </button>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.25rem', marginTop: '1rem', marginBottom: '2rem' }}>
+        {/* Card 1: Status Gateway */}
+        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+          <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Status 9Router Gateway</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <span style={{
+              width: '12px',
+              height: '12px',
+              borderRadius: '50%',
+              background: isOnline ? '#10b981' : '#ef4444',
+              boxShadow: isOnline ? '0 0 10px rgba(16, 185, 129, 0.7)' : 'none'
+            }} />
+            <span style={{ fontSize: '1.2rem', fontWeight: 700, color: isOnline ? '#059669' : '#dc2626' }}>
+              {isOnline ? 'Online & Terhubung' : 'Terputus (Offline)'}
+            </span>
+          </div>
+          <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '0.6rem' }}>
+            Endpoint: <code style={{ background: '#f1f5f9', padding: '0.15rem 0.4rem', borderRadius: '4px', color: '#0f172a' }}>{data?.gatewayUrl || 'http://9router:20128/v1'}</code>
+          </div>
+        </div>
+
+        {/* Card 2: Model Aktif */}
+        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+          <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Combo / Model Aktif</div>
+          <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#0f172a' }}>
+            {data?.activeModel || 'pkm-brainstorming'}
+          </div>
+          <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '0.6rem' }}>
+            Model Engine: <span style={{ color: '#0071e3', fontWeight: 600 }}>Claude Sonnet 4.6 / Gemini Flash</span>
+          </div>
+        </div>
+
+        {/* Card 3: Total Konsultasi */}
+        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+          <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Total Konsultasi PKMATE</div>
+          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0071e3' }}>
+            {data?.totalAnalyses ?? 0}
+          </div>
+          <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '0.2rem' }}>
+            Tersimpan di tabel <code>ai_analyses</code>
+          </div>
+        </div>
+      </div>
+
+      {/* Akses Cepat Dashboard 9Router */}
+      <div style={{ background: 'linear-gradient(135deg, #071938, #0f2e5c)', color: '#fff', borderRadius: '16px', padding: '1.25rem 1.5rem', marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+        <div>
+          <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, color: '#fff' }}>Dashboard Internal 9Router (Port 20128)</h3>
+          <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.82rem', color: '#94a3b8' }}>
+            Kelola API key, pantau token usage, atur prioritas model (Tier 1-3), atau ganti provider LLM.
+          </p>
+        </div>
+        <a
+          href="http://localhost:20128"
+          target="_blank"
+          rel="noreferrer"
+          className="button"
+          style={{ background: '#0071e3', color: '#fff', border: 'none', padding: '0.6rem 1.1rem', borderRadius: '10px', fontSize: '0.84rem', fontWeight: 600, textDecoration: 'none' }}
+        >
+          Buka 9Router UI ↗
+        </a>
+      </div>
+
+      {/* Log Analisis Terbaru */}
+      <div className="content-list">
+        <div className="form-heading">
+          <h2>Log Konsultasi AI Terakhir</h2>
+          <p className="section-copy">Daftar sesi konsultasi ide mahasiswa yang diproses oleh PKMATE.</p>
+        </div>
+        {(!data?.recentAnalyses || data.recentAnalyses.length === 0) ? (
+          <p className="section-copy">Belum ada riwayat aktivitas brainstorming.</p>
+        ) : (
+          <div style={{ overflowX: 'auto', background: '#fff', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.84rem' }}>
+              <thead>
+                <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left' }}>
+                  <th style={{ padding: '0.75rem 1rem', fontWeight: 600, color: '#475569' }}>Waktu</th>
+                  <th style={{ padding: '0.75rem 1rem', fontWeight: 600, color: '#475569' }}>Model</th>
+                  <th style={{ padding: '0.75rem 1rem', fontWeight: 600, color: '#475569' }}>Pertanyaan / Ide</th>
+                  <th style={{ padding: '0.75rem 1rem', fontWeight: 600, color: '#475569' }}>Ringkasan Hasil</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.recentAnalyses.map((item, idx) => (
+                  <tr key={item.id || idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <td style={{ padding: '0.75rem 1rem', whiteSpace: 'nowrap', color: '#64748b' }}>
+                      {item.createdAt ? new Date(item.createdAt).toLocaleString('id-ID') : '-'}
+                    </td>
+                    <td style={{ padding: '0.75rem 1rem' }}>
+                      <span style={{ background: '#e0e7ff', color: '#4338ca', padding: '0.15rem 0.45rem', borderRadius: '6px', fontSize: '0.74rem', fontWeight: 600 }}>
+                        {item.modelName || '9router'}
+                      </span>
+                    </td>
+                    <td style={{ padding: '0.75rem 1rem', maxWidth: '280px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#1e293b' }}>
+                      {item.inputText}
+                    </td>
+                    <td style={{ padding: '0.75rem 1rem', maxWidth: '320px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#475569' }}>
+                      {item.outputText?.replace(/#/g, '')}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
+
 /* ---------------- Panel utama ---------------- */
 
 const TABS = [
@@ -365,6 +549,7 @@ const TABS = [
   ['masukan', 'Masukan'],
   ['statistik', 'Statistik'],
   ['kontak', 'Kontak'],
+  ['ai-gateway', 'AI Gateway (9Router)'],
 ]
 
 export function AdminPanel({ user }) {
@@ -387,7 +572,7 @@ export function AdminPanel({ user }) {
       <PageIntro
         eyebrow="DASHBOARD ADMIN"
         title={<>Kelola ruang<br /><em>dan cerita.</em></>}
-        copy="Tambah, ubah, atau hapus konten, timeline, pedoman, portofolio, dan pantau masukan pengunjung."
+        copy="Tambah, ubah, atau hapus konten, timeline, pedoman, portofolio, dan pantau masukan pengunjung serta AI Gateway."
       />
       <div className="admin-tabs" role="tablist" aria-label="Bagian panel admin">
         {TABS.map(([key, label]) => (
@@ -401,6 +586,7 @@ export function AdminPanel({ user }) {
       {view === 'masukan' && <FeedbackView />}
       {view === 'statistik' && <StatsView />}
       {view === 'kontak' && <ContactView />}
+      {view === 'ai-gateway' && <AIGatewayView />}
     </main>
   )
-}
+}

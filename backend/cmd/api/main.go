@@ -66,6 +66,7 @@ func main() {
 	reviewer := handlers.ReviewerHandler{DB: db}
 	msgFeedback := handlers.MessageFeedbackHandler{DB: db}
 	student := handlers.StudentHandler{DB: db}
+	ai := handlers.AIHandler{DB: db}
 
 	api := r.Group("/api")
 	api.POST("/auth/login", auth.Login)
@@ -80,6 +81,13 @@ func main() {
 	api.GET("/stats", stats.List)
 	api.GET("/contact", contact.Get)
 	api.POST("/feedback", feedback.Create)
+
+	// --- Modul Idea Lab & AI Assistant (9Router Gateway) ---
+	api.POST("/ai/brainstorm", middleware.OptionalAuth(secret), ai.Brainstorm)
+	api.GET("/ai/status", ai.GetStatus)
+	api.GET("/ai/history", middleware.OptionalAuth(secret), ai.GetHistory)
+	api.DELETE("/ai/history", middleware.OptionalAuth(secret), ai.ClearHistory)
+
 
 	// --- Modul Dosen Pembimbing ---
 	dosenGroup := api.Group("/dosen", middleware.RequireAuth(secret, "dosen", "admin"))
@@ -149,8 +157,10 @@ func main() {
 	admin.GET("/stats", stats.List)
 	admin.GET("/contact", contact.Get)
 	admin.PUT("/contact", contact.Update)
+	admin.GET("/ai/overview", ai.AdminOverview)
 	r.Run(":" + config.Env("PORT", "8080"))
 }
+
 
 type seedContentItem struct {
 	Type, Title, Category, Description, Body, MediaURL, ThumbnailURL, Color string

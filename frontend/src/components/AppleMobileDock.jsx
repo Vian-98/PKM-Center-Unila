@@ -144,8 +144,9 @@ export function AppleMobileDock({ active, user, onLogin, onLogout, onSwitchRole,
                 <>
                   <a href="#idealab" className="apple-sheet-item" onClick={() => { setSheetOpen(false); window.scrollTo({ top: 0, left: 0, behavior: 'instant' }) }}>
                     <div className="apple-sheet-icon" style={{ background: '#eff6ff', color: '#0071e3' }}><Sparkles size={20} /></div>
-                    <span>Idea Lab AI</span>
+                    <span>PKMATE (AI)</span>
                   </a>
+
                   <a href="#caritim" className="apple-sheet-item" onClick={() => { setSheetOpen(false); window.scrollTo({ top: 0, left: 0, behavior: 'instant' }) }}>
                     <div className="apple-sheet-icon" style={{ background: '#f0fdf4', color: '#16a34a' }}><Users size={20} /></div>
                     <span>Cari Tim / Dosen</span>
