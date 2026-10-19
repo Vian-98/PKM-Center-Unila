@@ -220,6 +220,7 @@ function TopNavbar({ active, user, isDashboard, onLogin, onLogout, onSwitchRole,
 }
 
 const DEMO_ACCOUNTS = [
+  { label: 'Mahasiswa (Nadia - Demo)', email: 'mahasiswa@pkm.unila.ac.id', pass: 'mahasiswa123', desc: 'Nadia Putri • S1 Teknik Elektro (NPM 2117051001)' },
   { label: 'Mahasiswa 1 (FMIPA)', email: 'mhs1@pkm.unila.ac.id', pass: 'mahasiswa123', desc: 'Favian Pratama • Ilmu Komputer (NPM 2217051001)' },
   { label: 'Mahasiswa 2 (Teknik)', email: 'mhs2@pkm.unila.ac.id', pass: 'mahasiswa123', desc: 'Ahmad Fauzi • Teknik Informatika (NPM 2215061002)' },
   { label: 'Mahasiswa 3 (Pertanian)', email: 'mhs3@pkm.unila.ac.id', pass: 'mahasiswa123', desc: 'Siti Nurhaliza • Agribisnis (NPM 2114131003)' },
@@ -258,10 +259,12 @@ function LoginModal({ close, complete }) {
       }
     } catch {
       // Deteksi otomatis peran pengguna berdasarkan akun login (fallback offline)
-      const e = form.email.toLowerCase().trim()
+      const raw = form.email.trim()
+      const e = raw.toLowerCase()
       let role = 'mahasiswa'
       let name = 'Mahasiswa Unila'
       let roles = ['mahasiswa']
+      let studentNumber = ''
 
       if (e.includes('dosen.reviewer') || e.includes('sri') || (e.includes('dosen') && e.includes('reviewer'))) {
         role = 'dosen'
@@ -279,32 +282,43 @@ function LoginModal({ close, complete }) {
         role = 'admin'
         name = 'Admin PKM Center'
         roles = ['admin', 'dosen', 'reviewer']
-      } else if (e.includes('mhs1') || e.includes('favian')) {
+      } else if (e.includes('mhs1') || e.includes('favian') || e === '2217051001') {
         role = 'mahasiswa'
-        name = 'Favian Pratama'
+        name = 'Favian Rifqi Pratama'
         roles = ['mahasiswa']
-      } else if (e.includes('mhs2') || e.includes('ahmad')) {
+        studentNumber = '2217051001'
+      } else if (e.includes('mhs2') || e.includes('ahmad') || e === '2215061002') {
         role = 'mahasiswa'
         name = 'Ahmad Fauzi'
         roles = ['mahasiswa']
-      } else if (e.includes('mhs3') || e.includes('siti')) {
+        studentNumber = '2215061002'
+      } else if (e.includes('mhs3') || e.includes('siti') || e === '2114131003') {
         role = 'mahasiswa'
         name = 'Siti Nurhaliza'
         roles = ['mahasiswa']
-      } else {
+        studentNumber = '2114131003'
+      } else if (e.includes('mahasiswa') || e.includes('nadia') || e === '2117051001') {
         role = 'mahasiswa'
         name = 'Nadia Putri Maharani'
         roles = ['mahasiswa']
+        studentNumber = '2117051001'
+      } else {
+        role = 'mahasiswa'
+        name = raw.includes('@') ? raw.split('@')[0].replace(/[._-]/g, ' ').toUpperCase() : `Mahasiswa (${raw})`
+        roles = ['mahasiswa']
+        studentNumber = /^\d+$/.test(raw) ? raw : ''
       }
 
+      const safeId = e.replace(/[^a-z0-9]/gi, '_')
       loggedUser = {
-        id: `user-${role}`,
+        id: `user-${safeId}`,
         name,
-        email: form.email,
+        email: form.email.includes('@') ? form.email : `${form.email}@pkm.unila.ac.id`,
+        studentNumber,
         role,
         roles,
       }
-      localStorage.setItem('pkm_token', `token-${role}`)
+      localStorage.setItem('pkm_token', `token-${safeId}`)
     }
 
     if (loggedUser) {

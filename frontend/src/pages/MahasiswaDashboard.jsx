@@ -92,7 +92,7 @@ const getInitials = (name) => {
 }
 
 export function MahasiswaDashboard({ user }) {
-  const userKey = user?.id || user?.email || 'guest'
+  const userKey = user?.email ? user.email.toLowerCase().replace(/[^a-z0-9]/g, '_') : (user?.id || 'guest')
   const [activeTab, setActiveTab] = useState('ringkasan')
   const [data, setData] = useState(() => loadStore(`pkm_mhs_dashboard_${userKey}`, EMPTY))
   const [loading, setLoading] = useState(true)

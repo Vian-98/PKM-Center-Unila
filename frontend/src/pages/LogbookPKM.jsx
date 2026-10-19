@@ -24,7 +24,7 @@ function clampPercent(value) {
 }
 
 export function LogbookPKM({ user }) {
-  const userKey = user?.id || user?.email || 'guest'
+  const userKey = user?.email ? user.email.toLowerCase().replace(/[^a-z0-9]/g, '_') : (user?.id || 'guest')
   const [entries, setEntries] = useState(() => loadStore(`pkm_mhs_logbook_${userKey}`, []))
   const [form, setForm] = useState(EMPTY_ENTRY)
   const [proposal, setProposal] = useState(() => loadStore(`pkm_mhs_proposal_${userKey}`, null))

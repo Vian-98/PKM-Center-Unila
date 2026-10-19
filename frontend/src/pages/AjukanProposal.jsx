@@ -44,7 +44,7 @@ function getInitialForm(u) {
 const STEP_TITLES = ['Identitas Usulan', 'Tim & Pembimbing', 'Berkas Proposal']
 
 export function AjukanProposal({ user }) {
-  const userKey = user?.id || user?.email || 'guest'
+  const userKey = user?.email ? user.email.toLowerCase().replace(/[^a-z0-9]/g, '_') : (user?.id || 'guest')
   const [step, setStep] = useState(1)
   const [schemes, setSchemes] = useState(FALLBACK_SCHEMES)
   const [supervisors, setSupervisors] = useState([])

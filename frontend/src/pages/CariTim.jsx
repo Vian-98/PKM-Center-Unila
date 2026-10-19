@@ -145,7 +145,7 @@ const FACULTIES = [
 ]
 
 export function CariTim({ user }) {
-  const userKey = user?.id || user?.email || 'guest'
+  const userKey = user?.email ? user.email.toLowerCase().replace(/[^a-z0-9]/g, '_') : (user?.id || 'guest')
   const isNadia = user?.email === 'mahasiswa@pkm.unila.ac.id' || user?.username === 'mahasiswa'
 
   const [tab, setTab] = useState('dosen')

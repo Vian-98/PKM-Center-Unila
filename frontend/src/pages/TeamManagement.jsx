@@ -30,7 +30,7 @@ function getDefaultTeam(u) {
     }
   }
 
-  const uKey = u?.id || u?.email || 'guest'
+  const uKey = u?.email ? u.email.toLowerCase().replace(/[^a-z0-9]/g, '_') : (u?.id || 'guest')
   const name = u?.name || 'Mahasiswa'
   const npm = u?.studentNumber || u?.npm || '-'
   const prodi = u?.studyProgram || u?.department || u?.faculty || 'Universitas Lampung'
@@ -49,7 +49,7 @@ function getDefaultTeam(u) {
 }
 
 export function TeamManagement({ user }) {
-  const userKey = user?.id || user?.email || 'guest'
+  const userKey = user?.email ? user.email.toLowerCase().replace(/[^a-z0-9]/g, '_') : (user?.id || 'guest')
   const isNadia = user?.email === 'mahasiswa@pkm.unila.ac.id' || user?.username === 'mahasiswa'
 
   const [team, setTeam] = useState(() => loadStore(`pkm_mhs_team_${userKey}`, getDefaultTeam(user)))

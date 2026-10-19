@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -17,7 +18,7 @@ type AuthHandler struct {
 }
 
 type loginInput struct {
-	Email    string `json:"email" binding:"required,email"`
+	Email    string `json:"email" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
 
@@ -53,13 +54,40 @@ func (h AuthHandler) primaryRole(userID string) string {
 func (h AuthHandler) Login(c *gin.Context) {
 	var input loginInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Email dan kata sandi wajib valid"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Identitas akun dan kata sandi wajib diisi"})
 		return
 	}
+
+	ident := strings.TrimSpace(input.Email)
 	var user models.User
-	if err := h.DB.Where("email = ?", input.Email).First(&user).Error; err != nil ||
-		bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(input.Password)) != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "Email atau kata sandi tidak tepat"})
+
+	// 1. Cek langsung kecocokan email
+	err := h.DB.Where("LOWER(email) = LOWER(?)", ident).First(&user).Error
+
+	// 2. Jika tidak ditemukan dan bukan format email (tidak ada @), coba alias domain kampus
+	if err != nil && !strings.Contains(ident, "@") {
+		aliasEmail := strings.ToLower(ident) + "@pkm.unila.ac.id"
+		err = h.DB.Where("LOWER(email) = LOWER(?)", aliasEmail).First(&user).Error
+	}
+
+	// 3. Jika belum ditemukan, cari berdasarkan NPM pada student_profiles
+	if err != nil {
+		var sp models.StudentProfile
+		if spErr := h.DB.Where("student_number = ?", ident).First(&sp).Error; spErr == nil {
+			err = h.DB.Where("id = ?", sp.UserID).First(&user).Error
+		}
+	}
+
+	// 4. Jika belum ditemukan, cari berdasarkan NIP/NIDN pada lecturer_profiles
+	if err != nil {
+		var lp models.LecturerProfile
+		if lpErr := h.DB.Where("lecturer_number = ?", ident).First(&lp).Error; lpErr == nil {
+			err = h.DB.Where("id = ?", lp.UserID).First(&user).Error
+		}
+	}
+
+	if err != nil || bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(input.Password)) != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Email, NPM/NIP, atau kata sandi tidak tepat"})
 		return
 	}
 	role := h.primaryRole(user.ID)
