@@ -391,7 +391,8 @@ func (h StudentHandler) GetStudents(c *gin.Context) {
 	currentUserID := getUserIDFromContext(c)
 	query := h.DB.Table("users u").
 		Select(`u.id, u.full_name as name, u.email, sp.student_number as npm, sp.faculty,
-		        sp.department, sp.study_program as study_program, sp.entry_year, sp.academic_status`).
+		        sp.department, sp.study_program as study_program, sp.entry_year, sp.academic_status,
+		        COALESCE(sp.biography, '') as bio`).
 		Joins("JOIN student_profiles sp ON sp.user_id = u.id")
 
 	if currentUserID != "" {
@@ -423,6 +424,7 @@ func (h StudentHandler) GetStudents(c *gin.Context) {
 			StudyProgram   string `json:"studyProgram"`
 			EntryYear      int    `json:"entryYear"`
 			AcademicStatus string `json:"academicStatus"`
+			Bio            string `json:"bio"`
 		}
 		if h.DB.ScanRows(rows, &s) == nil {
 			items = append(items, gin.H{
@@ -435,6 +437,7 @@ func (h StudentHandler) GetStudents(c *gin.Context) {
 				"studyProgram":   s.StudyProgram,
 				"entryYear":      s.EntryYear,
 				"academicStatus": s.AcademicStatus,
+				"bio":            s.Bio,
 			})
 		}
 	}

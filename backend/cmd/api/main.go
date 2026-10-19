@@ -118,6 +118,7 @@ func main() {
 
 	// --- Modul Portal Mahasiswa (Anggota 2 — Favian) ---
 	api.GET("/proposals/track", student.TrackProposal) // publik: lacak status via NPM
+	api.GET("/students", student.GetStudents)          // publik: direktori mahasiswa terdaftar di database
 	studentGroup := api.Group("/student", middleware.RequireAuth(secret, "mahasiswa", "admin"))
 	studentGroup.GET("/dashboard", student.GetDashboard)
 	studentGroup.GET("/schemes", student.GetSchemes)

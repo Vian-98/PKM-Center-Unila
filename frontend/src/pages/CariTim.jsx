@@ -76,62 +76,142 @@ const DOSEN_LIST = [
   },
 ]
 
-const MAHASISWA_LIST = [
+function getSkillsForStudent(studyProgram = '', faculty = '') {
+  const sp = (studyProgram || '').toLowerCase()
+  const fac = (faculty || '').toLowerCase()
+  if (sp.includes('komputer') || sp.includes('informatika')) {
+    return ['Kecerdasan Buatan', 'Computer Vision', 'Fullstack Web', 'Internet of Things']
+  }
+  if (sp.includes('elektro')) {
+    return ['Smart IoT', 'Edge AI', 'Otomasi Hardware', 'C++ / MicroPython']
+  }
+  if (sp.includes('agribisnis') || fac.includes('pertanian')) {
+    return ['Rantai Pasok Agribisnis', 'Analisis Usaha Tani', 'Pemberdayaan Petani', 'Hilirisasi Pangan']
+  }
+  if (sp.includes('manajemen') || sp.includes('bisnis') || fac.includes('feb')) {
+    return ['Business Model Canvas', 'Analisis Finansial', 'Digital Marketing', 'Validasi Pasar']
+  }
+  if (sp.includes('komunikasi') || fac.includes('fisip')) {
+    return ['Komunikasi Publik', 'Kampanye Kreatif', 'Content Creation', 'Hubungan Masyarakat']
+  }
+  if (sp.includes('dokter') || fac.includes('kedokteran')) {
+    return ['Riset Biomedis', 'Kesehatan Tropis', 'Edukasi Preventif', 'Metodologi Medis']
+  }
+  if (sp.includes('kimia') || sp.includes('fisika') || sp.includes('biologi')) {
+    return ['Kimia Analitik', 'Bio-Briket', 'Spektroskopi', 'Karakterisasi Bahan']
+  }
+  if (fac.includes('hukum')) {
+    return ['Analisis Regulasi', 'Hukum Lingkungan', 'Policy Brief', 'Sosiologi Hukum']
+  }
+  return ['PKM Teamwork', 'Riset Ilmiah', 'Kolaborasi Multidisiplin']
+}
+
+function getSkemaForStudent(faculty = '') {
+  const fac = (faculty || '').toLowerCase()
+  if (fac.includes('teknik') || fac.includes('mipa')) return 'PKM-KC'
+  if (fac.includes('pertanian') || fac.includes('feb')) return 'PKM-K'
+  if (fac.includes('fisip') || fac.includes('hukum') || fac.includes('fkip')) return 'PKM-PM'
+  if (fac.includes('kedokteran')) return 'PKM-RE'
+  return 'PKM-KC'
+}
+
+function getTargetForStudent(faculty = '') {
+  const fac = (faculty || '').toLowerCase()
+  if (fac.includes('teknik')) return 'Mencari Rekan: FMIPA & Fakultas Pertanian'
+  if (fac.includes('mipa')) return 'Mencari Rekan: Fakultas Teknik & FEB'
+  if (fac.includes('pertanian')) return 'Mencari Rekan: Fakultas Teknik & FEB'
+  if (fac.includes('feb')) return 'Mencari Rekan: Fakultas Teknik & FMIPA'
+  if (fac.includes('fisip')) return 'Mencari Rekan: FEB & Pertanian'
+  if (fac.includes('kedokteran')) return 'Mencari Rekan: FMIPA & Teknik'
+  return 'Mencari rekan lintas program studi / fakultas'
+}
+
+// Data mahasiswa terverifikasi yang terdaftar di database PostgreSQL (users & student_profiles)
+const DB_REGISTERED_STUDENTS = [
   {
-    id: 'mhs-1',
-    name: 'Nadia Putri Maharani',
+    id: '01037e8c-7e95-4e2e-b1e9-b0713f933f5f',
+    name: 'Favian Pratama (Mahasiswa 1)',
+    email: 'mhs1@pkm.unila.ac.id',
+    faculty: 'FMIPA',
+    prodi: 'S1 Ilmu Komputer',
+    npm: '2217051001',
+    skills: ['Kecerdasan Buatan', 'Computer Vision', 'Python & PyTorch', 'Fullstack Web'],
+    skema: 'PKM-KC',
+    target: 'Mencari Rekan: Fakultas Teknik (Hardware IoT) & FEB',
+    bio: 'Fokus riset PKM-KC & Kecerdasan Buatan untuk deteksi dini dan otomasi sistem cerdas.'
+  },
+  {
+    id: 'a7c1364a-df35-4020-9dcb-f69820af20c8',
+    name: 'Ahmad Fauzi (Mahasiswa 2)',
+    email: 'mhs2@pkm.unila.ac.id',
+    faculty: 'Fakultas Teknik',
+    prodi: 'S1 Teknik Informatika',
+    npm: '2215061002',
+    skills: ['Rekayasa Perangkat Lunak', 'Mobile Flutter', 'Cloud API', 'Embedded IoT'],
+    skema: 'PKM-PI',
+    target: 'Mencari Rekan: FMIPA & Pertanian',
+    bio: 'Fokus riset PKM-PI & Rekayasa Perangkat Lunak untuk digitalisasi proses UMKM dan pertanian.'
+  },
+  {
+    id: '727081be-9b82-4773-8110-18ce3ae5f460',
+    name: 'Siti Nurhaliza (Mahasiswa 3)',
+    email: 'mhs3@pkm.unila.ac.id',
+    faculty: 'Fakultas Pertanian',
+    prodi: 'S1 Agribisnis',
+    npm: '2114131003',
+    skills: ['Rantai Pasok Agribisnis', 'Analisis Kelayakan Usaha', 'Pemasaran Produk', 'Sosial Ekonomi'],
+    skema: 'PKM-K',
+    target: 'Mencari Rekan: Fakultas Teknik & FEB',
+    bio: 'Fokus riset PKM-K & Hilirisasi Produk Komoditas pertanian lokal bernilai ekonomi tinggi.'
+  },
+  {
+    id: 'b89bff11-c9f8-4df4-8279-1347ecdd3ae2',
+    name: 'Nadia Mahasiswa',
+    email: 'mahasiswa@pkm.unila.ac.id',
     faculty: 'Fakultas Teknik',
     prodi: 'Teknik Elektro',
     npm: '2117051001',
     skills: ['Smart IoT', 'Edge AI', 'Otomasi Hardware', 'C++ / MicroPython'],
     skema: 'PKM-KC',
-    target: 'Mencari 2 Rekan: FMIPA (Kimia) & FP (Agronomi)',
-    bio: 'Mengembangkan prototype detektor kualitas tanah nirkabel. Butuh rekan untuk formulasi nutrisi dan validasi agronomis.',
+    target: 'Mencari Rekan: FMIPA & Fakultas Pertanian',
+    bio: 'Mahasiswa aktif Teknik Elektro Universitas Lampung dengan fokus riset otomasi sensor pertanian.'
   },
   {
-    id: 'mhs-2',
-    name: 'Rian Saputra',
-    faculty: 'FMIPA',
-    prodi: 'Kimia',
-    npm: '2117021045',
-    skills: ['Bio-Briket', 'Energi Terbarukan', 'Karakterisasi Bahan', 'Spektroskopi'],
-    skema: 'PKM-RE',
-    target: 'Mencari 2 Rekan: Teknik Mesin & Desain Produk',
-    bio: 'Riset sintesis karbon aktif dan briket dari limbah biomassa kulit kopi robusta Lampung Barat.',
-  },
-  {
-    id: 'mhs-3',
-    name: 'Fajar Nugroho',
-    faculty: 'Fakultas Pertanian',
-    prodi: 'Proteksi Tanaman',
-    npm: '2114011032',
-    skills: ['SIG & Pemetaan', 'Hama Hayati', 'Drone Mapping', 'Kultur Jaringan'],
-    skema: 'PKM-VGK',
-    target: 'Mencari 1 Rekan: Teknik Informatika (GIS)',
-    bio: 'Pemetaan spasial sebaran penyakit busuk buah kakao berbasis citra multispektral UAV di Pesawaran.',
-  },
-  {
-    id: 'mhs-4',
-    name: 'Aisyah Zahra',
+    id: '57e6e844-4a90-4c97-a3ac-2c5807472ddb',
+    name: 'Rizky Ramadhan',
+    email: 'rizky.ramadhan@student.unila.ac.id',
     faculty: 'FEB',
-    prodi: 'Manajemen Bisnis',
-    npm: '2211011088',
-    skills: ['Business Model Canvas', 'Finansial Proyeksi', 'Pemasaran Digital', 'Branding'],
+    prodi: 'S1 Manajemen Bisnis',
+    npm: '2211011045',
+    skills: ['Business Model Canvas', 'Analisis Finansial', 'Digital Marketing', 'Validasi Pasar'],
     skema: 'PKM-K',
-    target: 'Mencari 2 Rekan: Teknologi Hasil Pertanian & DKV',
-    bio: 'Inisiasi produk olahan herbal fungsional bunga telang Lampung bernilai ekonomi tinggi bagi UMKM wanita.',
+    target: 'Mencari Rekan: FMIPA & Fakultas Teknik',
+    bio: 'Peminat PKM-K dan Analisis Pasar untuk produk-produk inovatif berbasis teknologi.'
   },
   {
-    id: 'mhs-5',
-    name: 'Dimas Pratama',
-    faculty: 'Fakultas Hukum',
-    prodi: 'Ilmu Hukum',
-    npm: '2112011014',
-    skills: ['Analisis Regulasi', 'Hukum Lingkungan', 'Policy Brief', 'Sosiologi Hukum'],
-    skema: 'PKM-RSH',
-    target: 'Mencari 2 Rekan: FISIP & Ekonomi Pembangunan',
-    bio: 'Kajian yuridis efektivitas regulasi perlindungan wilayah pesisir Teluk Lampung dari abrasi dan pencemaran.',
+    id: 'aacae1ea-de05-446f-b1f5-53c47f1e355d',
+    name: 'Bima Sakti',
+    email: 'bima.sakti@student.unila.ac.id',
+    faculty: 'FISIP',
+    prodi: 'S1 Ilmu Komunikasi',
+    npm: '2216031022',
+    skills: ['Komunikasi Publik', 'Kampanye Kreatif', 'Content Creation', 'Hubungan Masyarakat'],
+    skema: 'PKM-PM',
+    target: 'Mencari Rekan: FEB & Pertanian',
+    bio: 'Fokus pada komunikasi publik dan kampanye kreatif untuk pemberdayaan komunitas desa.'
   },
+  {
+    id: 'e5b72ce8-a668-441c-a333-d522adfcb00d',
+    name: 'Aulia Rahma Putri',
+    email: 'aulia.rahma@student.unila.ac.id',
+    faculty: 'Fakultas Kedokteran',
+    prodi: 'S1 Pendidikan Dokter',
+    npm: '2318011008',
+    skills: ['Riset Biomedis', 'Kesehatan Tropis', 'Edukasi Preventif', 'Metodologi Medis'],
+    skema: 'PKM-RE',
+    target: 'Mencari Rekan: FMIPA (Kimia/Biologi) & Teknik',
+    bio: 'Fokus riset biomedis dan penanganan masalah kesehatan tropis pada masyarakat pesisir.'
+  }
 ]
 
 const FACULTIES = [
@@ -142,6 +222,8 @@ const FACULTIES = [
   'Fakultas Pertanian',
   'FEB',
   'Fakultas Hukum',
+  'Fakultas Kedokteran',
+  'FISIP',
 ]
 
 export function CariTim({ user }) {
@@ -154,7 +236,33 @@ export function CariTim({ user }) {
   const [invited, setInvited] = useState({})
   const [vacancies] = useState(getVacancies)
   const [sentRequests, setSentRequests] = useState(() => getMySentRequests(userKey))
+  const [mahasiswaList, setMahasiswaList] = useState(DB_REGISTERED_STUDENTS)
   const [alertMsg, setAlertMsg] = useState('')
+
+  // Muat data mahasiswa terdaftar secara live dari backend database
+  useEffect(() => {
+    let alive = true
+    fetch('/api/students')
+      .then(res => res.json())
+      .then(result => {
+        if (!alive || !result?.data?.length) return
+        const mapped = result.data.map(s => ({
+          id: s.id,
+          name: s.name,
+          email: s.email,
+          faculty: s.faculty || 'Universitas Lampung',
+          prodi: s.studyProgram || s.department || 'Universitas Lampung',
+          npm: s.npm || '-',
+          bio: s.bio || `Mahasiswa aktif ${s.studyProgram || s.faculty} Universitas Lampung. Terbuka berkolaborasi dalam tim PKM.`,
+          skema: getSkemaForStudent(s.faculty),
+          target: getTargetForStudent(s.faculty),
+          skills: getSkillsForStudent(s.studyProgram || s.department, s.faculty)
+        }))
+        setMahasiswaList(mapped)
+      })
+      .catch(() => {})
+    return () => { alive = false }
+  }, [])
 
   useEffect(() => {
     setSentRequests(getMySentRequests(userKey))
@@ -251,20 +359,29 @@ export function CariTim({ user }) {
     })
   }, [faculty, search])
 
-  // Filter Mahasiswa
+  // Filter Mahasiswa (Hanya Mahasiswa Terdaftar di Database)
   const filteredMahasiswa = useMemo(() => {
-    return MAHASISWA_LIST.filter(m => {
+    return mahasiswaList.filter(m => {
+      // Sembunyikan mahasiswa yang sedang login agar tidak mengundang diri sendiri
+      if (user) {
+        const myNpm = user.studentNumber || user.npm
+        if (m.id === user.id) return false
+        if (myNpm && m.npm === myNpm) return false
+        if (user.email && m.email === user.email) return false
+      }
+
       const matchFac = faculty === 'Semua Fakultas' || m.faculty === faculty
       const q = search.toLowerCase().trim()
       const matchSearch = !q ||
         m.name.toLowerCase().includes(q) ||
         m.faculty.toLowerCase().includes(q) ||
         m.prodi.toLowerCase().includes(q) ||
+        (m.npm && m.npm.toLowerCase().includes(q)) ||
         m.skills.some(s => s.toLowerCase().includes(q)) ||
         m.skema.toLowerCase().includes(q)
       return matchFac && matchSearch
     })
-  }, [faculty, search])
+  }, [mahasiswaList, faculty, search, user])
 
   // Filter Lowongan Tim
   const filteredVacancies = useMemo(() => {
