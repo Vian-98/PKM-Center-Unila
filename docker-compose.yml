@@ -25,6 +25,28 @@ services:
       INITIAL_PASSWORD: "admin123"
     volumes:
       - 9router_data:/root/.9router
+      - 9router_shared:/shared
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:20128/api/health >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # One-shot: membuat API key di 9Router dan menuliskannya ke volume bersama
+  # agar backend selalu punya kredensial yang valid di environment mana pun.
+  9router-init:
+    build: ./9router-app
+    container_name: pkm_9router_init
+    restart: "no"
+    command: ["node", "/app/provision-key.js"]
+    environment:
+      NINEROUTER_BASE_URL: http://9router:20128
+    volumes:
+      - 9router_data:/root/.9router:ro
+      - 9router_shared:/shared
+    depends_on:
+      9router:
+        condition: service_healthy
 
   backend:
     build: ./backend
@@ -35,13 +57,19 @@ services:
       CORS_ORIGIN: http://localhost:5173
       # URL 9Router di dalam jaringan Docker (panggil nama service '9router')
       AI_GATEWAY_URL: http://9router:20128/v1
-      AI_GATEWAY_KEY: sk-37e4ccdf3c8d4cf5-7unsdj-fea45214
-      AI_GATEWAY_MODEL: pkm-brainstorming
+      # Kosongkan untuk memakai API key yang diprovision otomatis oleh service 9router.
+      AI_GATEWAY_KEY: ${AI_GATEWAY_KEY:-}
+      AI_GATEWAY_KEY_FILE: /shared/9router-api-key
+      AI_GATEWAY_MODEL: ${AI_GATEWAY_MODEL:-pkm-brainstorming}
+    volumes:
+      - 9router_shared:/shared:ro
     depends_on:
       db:
         condition: service_healthy
       9router:
         condition: service_started
+      9router-init:
+        condition: service_completed_successfully
     ports:
       - "8081:8080"
 
@@ -50,7 +78,10 @@ services:
       context: ./frontend
       target: development
     environment:
-      VITE_API_URL: http://localhost:8081/api
+      # Gunakan path relatif agar request browser lewat reverse proxy (nginx) /
+      # proxy Vite, bukan mengarah ke localhost mesin pengguna.
+      VITE_API_URL: /api
+      VITE_PROXY_TARGET: http://backend:8080
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -61,4 +92,5 @@ services:
 
 volumes:
   postgres_data:
-  9router_data: # Volume untuk menyimpan konfigurasi API Key 9Router
+  9router_data: # Volume untuk menyimpan konfigurasi & kredensial 9Router
+  9router_shared: # Berisi API key hasil provisioning untuk dipakai backend

@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -87,10 +88,27 @@ Panduan Penilaian & Output:
   4. 🤝 **Rekomendasi Kolaborasi Tim Multidisiplin** (saran jurusan/fakultas di Unila yang cocok dilibatkan, misal: FMIPA, FT, FP, FK, FEB, FH, FISIP, FKIP).
 - Gunakan format Markdown rapi dengan poin-poin yang mudah dibaca.`
 
+// gatewayAPIKey mengambil API key 9Router dari environment. Jika kosong,
+// key dibaca dari file hasil provisioning otomatis service 9router.
+func gatewayAPIKey() string {
+	if key := config.Env("AI_GATEWAY_KEY", ""); key != "" {
+		return key
+	}
+	keyFile := config.Env("AI_GATEWAY_KEY_FILE", "")
+	if keyFile == "" {
+		return ""
+	}
+	raw, err := os.ReadFile(keyFile)
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(raw))
+}
+
 // callGateway mengirim permintaan ke 9Router OpenAI-compatible endpoint
 func (h AIHandler) callGateway(ctx context.Context, messages []openAIChatMessage, model string) (string, string, error) {
 	gatewayURL := config.Env("AI_GATEWAY_URL", "http://9router:20128/v1")
-	apiKey := config.Env("AI_GATEWAY_KEY", "sk-37e4ccdf3c8d4cf5-7unsdj-fea45214")
+	apiKey := gatewayAPIKey()
 	endpoint := strings.TrimRight(gatewayURL, "/") + "/chat/completions"
 
 	reqBody := openAIChatRequest{
@@ -304,7 +322,7 @@ func (h AIHandler) ClearHistory(c *gin.Context) {
 // GetStatus memeriksa ketersediaan gateway 9Router
 func (h AIHandler) GetStatus(c *gin.Context) {
 	gatewayURL := config.Env("AI_GATEWAY_URL", "http://9router:20128/v1")
-	apiKey := config.Env("AI_GATEWAY_KEY", "sk-37e4ccdf3c8d4cf5-7unsdj-fea45214")
+	apiKey := gatewayAPIKey()
 	preferredModel := config.Env("AI_GATEWAY_MODEL", "pkm-brainstorming")
 
 	client := &http.Client{Timeout: 5 * time.Second}
@@ -337,7 +355,7 @@ func (h AIHandler) GetStatus(c *gin.Context) {
 // AdminOverview menyediakan data status 9Router dan audit analitik AI untuk Admin
 func (h AIHandler) AdminOverview(c *gin.Context) {
 	gatewayURL := config.Env("AI_GATEWAY_URL", "http://9router:20128/v1")
-	apiKey := config.Env("AI_GATEWAY_KEY", "sk-37e4ccdf3c8d4cf5-7unsdj-fea45214")
+	apiKey := gatewayAPIKey()
 	preferredModel := config.Env("AI_GATEWAY_MODEL", "pkm-brainstorming")
 
 	client := &http.Client{Timeout: 5 * time.Second}

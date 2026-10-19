@@ -18,6 +18,12 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173,
     allowedHosts: ['pkm.makroboi.site', 'pkmcenter.makroboi.site', 'localhost', '127.0.0.1'],
+    proxy: {
+      '/api': {
+        target: process.env.VITE_PROXY_TARGET || 'http://localhost:8081',
+        changeOrigin: true,
+      },
+    },
     watch: {
       usePolling: true,
       interval: 300,

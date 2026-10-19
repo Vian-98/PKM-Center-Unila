@@ -18,7 +18,7 @@
 #   PKM_REPO          path repo   (default /home/ubuntu/PKM-Center-Unila)
 #   PKM_BRANCH        branch      (default main)
 #   PKM_BUILD_PATTERN regex path pemicu rebuild
-#                     (default ^(backend/|frontend/)|^docker-compose[.]yml$)
+#                     (default ^(backend/|frontend/|9router-app/)|^docker-compose[.]yml$)
 #   FORCE=1           paksa rebuild walau tidak ada commit baru (untuk pengujian)
 #
 set -euo pipefail
@@ -54,7 +54,7 @@ log "commit baru terdeteksi: ${LOCAL:0:8} -> ${REMOTE:0:8}"
 
 # Filter path: rebuild hanya bila ada perubahan yang menyentuh aplikasi.
 # Default: backend/, frontend/, atau docker-compose.yml.
-BUILD_PATTERN="${PKM_BUILD_PATTERN:-^(backend/|frontend/)|^docker-compose[.]yml$}"
+BUILD_PATTERN="${PKM_BUILD_PATTERN:-^(backend/|frontend/|9router-app/)|^docker-compose[.]yml$}"
 CHANGED="$(git diff --name-only "$LOCAL" "$REMOTE" || true)"
 NEED_REBUILD=1
 if [ "${FORCE:-0}" != "1" ] && ! printf '%s\n' "$CHANGED" | grep -qE "$BUILD_PATTERN"; then

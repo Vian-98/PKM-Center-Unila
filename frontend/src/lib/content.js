@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-export const api = import.meta.env.VITE_API_URL || 'http://localhost:8081/api'
+export const api = import.meta.env.VITE_API_URL || '/api'
 
 const unsplash = (id) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=1200&q=70`
 const unsplashBig = (id) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=1400&q=75`

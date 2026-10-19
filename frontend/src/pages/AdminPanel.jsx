@@ -482,7 +482,7 @@ function AIGatewayView() {
           </p>
         </div>
         <a
-          href="http://localhost:20128"
+          href={import.meta.env.VITE_9ROUTER_URL || `${window.location.protocol}//${window.location.hostname}:20128`}
           target="_blank"
           rel="noreferrer"
           className="button"
