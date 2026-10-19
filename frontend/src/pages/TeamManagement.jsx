@@ -8,7 +8,8 @@ import {
   getIncomingRequests, saveIncomingRequests,
   getVacancies, saveVacancies
 } from '../lib/matchmakingData'
-import { authFetch } from '../lib/studentApi'
+import { authFetch, getTeamInvitations, respondTeamInvitation } from '../lib/studentApi'
+import { getIncomingInvitationsForUser, updateLocalInvitationStatus } from '../lib/teamInvitationData'
 
 function getDefaultTeam(u) {
   const isNadia = u?.email === 'mahasiswa@pkm.unila.ac.id' || u?.username === 'mahasiswa'
@@ -55,6 +56,7 @@ export function TeamManagement({ user }) {
   const [team, setTeam] = useState(() => loadStore(`pkm_mhs_team_${userKey}`, getDefaultTeam(user)))
   const [allRequests, setAllRequests] = useState(getIncomingRequests)
   const [allVacancies, setAllVacancies] = useState(getVacancies)
+  const [incomingInvites, setIncomingInvites] = useState(() => getIncomingInvitationsForUser(user))
   const [showVacancyModal, setShowVacancyModal] = useState(false)
   const [alertMsg, setAlertMsg] = useState('')
 
@@ -78,9 +80,42 @@ export function TeamManagement({ user }) {
     setTeam(currentTeam)
     setAllRequests(getIncomingRequests())
     setAllVacancies(getVacancies())
+    setIncomingInvites(getIncomingInvitationsForUser(user))
+
+    // Sinkronkan data undangan tim dari backend & global storage
+    let alive = true
+    getTeamInvitations()
+      .then(res => {
+        if (!alive || !res?.data) return
+        const apiIncoming = res.data.incoming || []
+        const localIncoming = getIncomingInvitationsForUser(user)
+        const map = new Map()
+        localIncoming.forEach(i => map.set(i.id, i))
+        apiIncoming.forEach(i => {
+          map.set(i.id, {
+            id: i.id,
+            teamId: i.teamId,
+            teamName: i.teamName,
+            scheme: i.scheme || 'PKM-KC',
+            senderName: i.senderName,
+            senderFaculty: i.senderFaculty,
+            senderProdi: i.senderProdi,
+            roleOffered: i.roleOffered || 'Calon Anggota Multidisiplin',
+            message: i.message,
+            status: i.status,
+            createdAt: i.createdAt
+          })
+        })
+        const activePending = Array.from(map.values()).filter(i => i.status === 'pending')
+        setIncomingInvites(activePending)
+      })
+      .catch(() => {
+        if (alive) {
+          setIncomingInvites(getIncomingInvitationsForUser(user))
+        }
+      })
 
     // Sinkronkan data anggota tim resmi dari backend jika ada
-    let alive = true
     authFetch('/student/dashboard')
       .then(res => {
         if (!alive || !res?.data?.team) return
@@ -186,15 +221,57 @@ export function TeamManagement({ user }) {
     setTimeout(() => setAlertMsg(''), 5000)
   }
 
-  // Aksi Ketua: Tolak Calon Anggota
-  const handleRejectRequest = (reqId, studentName) => {
-    const updatedRequests = allRequests.map(r =>
-      r.id === reqId ? { ...r, status: 'rejected' } : r
-    )
-    setAllRequests(updatedRequests)
-    saveIncomingRequests(updatedRequests)
+  // Aksi Mahasiswa: Terima Undangan Bergabung dari Tim Lain
+  const handleAcceptInvite = async (inv) => {
+    try {
+      await respondTeamInvitation(inv.id, 'accept')
+    } catch (err) {
+      console.warn('respondTeamInvitation API fallback to local sync:', err.message)
+    }
 
-    setAlertMsg(`Permintaan bergabung dari ${studentName} telah ditolak.`)
+    updateLocalInvitationStatus(inv.id, 'accepted', user)
+
+    // Perbarui profil tim mahasiswa penerima agar langsung menjadi anggota aktif tim tersebut
+    const joinedTeam = {
+      id: inv.teamId,
+      name: inv.teamName,
+      leader: inv.senderName,
+      scheme: inv.scheme || 'PKM-KC',
+      members: [
+        {
+          name: inv.senderName,
+          role: 'Ketua Pengusul',
+          prodi: inv.senderProdi || inv.senderFaculty || 'FMIPA',
+          npm: '-'
+        },
+        {
+          name: user?.name || 'Mahasiswa',
+          role: 'Anggota Tim (Multidisiplin)',
+          prodi: user?.studyProgram || user?.department || user?.faculty || 'Universitas Lampung',
+          npm: user?.studentNumber || user?.npm || '-'
+        }
+      ],
+      invitations: []
+    }
+    setTeam(joinedTeam)
+    saveStore(`pkm_mhs_team_${userKey}`, joinedTeam)
+
+    setIncomingInvites(prev => prev.filter(i => i.id !== inv.id))
+    setAlertMsg(`Selamat! Anda telah resmi bergabung ke dalam ${inv.teamName}!`)
+    setTimeout(() => setAlertMsg(''), 6000)
+  }
+
+  // Aksi Mahasiswa: Tolak Undangan Bergabung dari Tim Lain
+  const handleRejectInvite = async (inv) => {
+    try {
+      await respondTeamInvitation(inv.id, 'reject')
+    } catch (err) {
+      console.warn('respondTeamInvitation API fallback to local sync:', err.message)
+    }
+
+    updateLocalInvitationStatus(inv.id, 'rejected', user)
+    setIncomingInvites(prev => prev.filter(i => i.id !== inv.id))
+    setAlertMsg(`Undangan bergabung ke ${inv.teamName} telah ditolak.`)
     setTimeout(() => setAlertMsg(''), 4500)
   }
 
@@ -281,6 +358,147 @@ export function TeamManagement({ user }) {
           <CheckCircle2 size={18} />
           <span>{alertMsg}</span>
         </div>
+      )}
+
+      {/* Grid of Polymorphic Glass Cards */}
+      {/* ========================================================
+          CARD UTAMA: UNDANGAN BERGABUNG MASUK DARI TIM LAIN
+          ======================================================== */}
+      {incomingInvites.length > 0 && (
+        <section
+          className="student-panel"
+          style={{
+            marginBottom: '1.75rem',
+            borderLeft: '4px solid #0071e3',
+            background: 'linear-gradient(135deg, rgba(239, 246, 255, 0.8) 0%, rgba(255, 255, 255, 0.98) 100%)',
+            border: '1.5px solid #bfdbfe',
+            borderRadius: '20px',
+            padding: '1.5rem',
+            boxShadow: '0 8px 24px rgba(0, 113, 227, 0.08)'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div className="caritim-hub-icon blue" style={{ width: 42, height: 42, borderRadius: '12px' }}>
+                <UserPlus size={22} />
+              </div>
+              <div>
+                <h3 className="student-panel-title" style={{ margin: 0, color: '#1e3a8a', fontSize: '1.1rem' }}>
+                  Undangan Bergabung ke Tim Masuk
+                </h3>
+                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                  Ketua tim PKM lain mengundang Anda untuk bergabung ke dalam usulan tim mereka
+                </span>
+              </div>
+            </div>
+            <span
+              className="bento-scheme-pill"
+              style={{
+                background: '#dbeafe',
+                color: '#1d4ed8',
+                fontWeight: 700,
+                fontSize: '0.78rem',
+                padding: '0.35rem 0.85rem',
+                borderRadius: '9999px'
+              }}
+            >
+              {incomingInvites.length} Undangan Menunggu Konfirmasi
+            </span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1rem' }}>
+            {incomingInvites.map(inv => (
+              <div
+                key={inv.id}
+                style={{
+                  padding: '1.25rem',
+                  background: '#ffffff',
+                  borderRadius: '16px',
+                  border: '1px solid #bfdbfe',
+                  boxShadow: '0 4px 16px rgba(0, 113, 227, 0.06)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.75rem'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '1.02rem' }}>
+                      {inv.teamName}
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.2rem' }}>
+                      Ketua Pengusul: <strong style={{ color: '#0f172a' }}>{inv.senderName}</strong> {inv.senderFaculty ? `(${inv.senderFaculty})` : ''}
+                    </div>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      padding: '0.25rem 0.65rem',
+                      borderRadius: '9999px',
+                      background: '#fef3c7',
+                      color: '#b45309',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.25rem'
+                    }}
+                  >
+                    <Clock size={11} />
+                    Menunggu Konfirmasi
+                  </span>
+                </div>
+
+                <div
+                  style={{
+                    background: '#eff6ff',
+                    padding: '0.6rem 0.85rem',
+                    borderRadius: '10px',
+                    border: '1px solid #dbeafe',
+                    fontSize: '0.8rem',
+                    color: '#1e40af'
+                  }}
+                >
+                  Peran Ditawarkan: <strong>{inv.roleOffered || 'Calon Anggota Multidisiplin'}</strong>
+                </div>
+
+                {inv.message && (
+                  <p style={{ margin: 0, fontSize: '0.8rem', color: '#475569', lineHeight: 1.45, fontStyle: 'italic' }}>
+                    "{inv.message}"
+                  </p>
+                )}
+
+                <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+                  <button
+                    type="button"
+                    className="btn-action primary"
+                    onClick={() => handleAcceptInvite(inv)}
+                    style={{
+                      flex: 1,
+                      justifyContent: 'center',
+                      padding: '0.65rem 1rem',
+                      fontSize: '0.85rem',
+                      background: '#059669',
+                      borderColor: '#059669',
+                      color: '#ffffff'
+                    }}
+                  >
+                    <Check size={15} style={{ marginRight: '0.4rem' }} />
+                    <span>Terima Undangan</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-action secondary"
+                    onClick={() => handleRejectInvite(inv)}
+                    style={{ padding: '0.65rem 1rem', fontSize: '0.85rem', color: '#dc2626' }}
+                  >
+                    <X size={15} style={{ marginRight: '0.3rem' }} />
+                    <span>Tolak</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       )}
 
       {/* Grid of Polymorphic Glass Cards */}

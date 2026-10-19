@@ -109,3 +109,22 @@ export function formatDateTimeID(value) {
     day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
   })
 }
+
+export async function getTeamInvitations() {
+  return authFetch('/student/invitations')
+}
+
+export async function sendTeamInvitation(payload) {
+  return authFetch('/student/invitations', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+}
+
+export async function respondTeamInvitation(id, action) {
+  return authFetch(`/student/invitations/${id}/respond`, {
+    method: 'POST',
+    body: JSON.stringify({ action })
+  })
+}
+

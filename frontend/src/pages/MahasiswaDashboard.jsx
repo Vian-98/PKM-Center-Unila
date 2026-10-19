@@ -10,6 +10,7 @@ import {
   authFetch, getNotifications, markNotificationsRead,
   statusLabel, statusTone, formatDateID, formatDateTimeID,
 } from '../lib/studentApi'
+import { getIncomingInvitationsForUser } from '../lib/teamInvitationData'
 
 const EMPTY = {
   student: {}, team: null, proposal: null, supervisor: null, reviewers: [],
@@ -95,8 +96,13 @@ export function MahasiswaDashboard({ user }) {
   const userKey = user?.email ? user.email.toLowerCase().replace(/[^a-z0-9]/g, '_') : (user?.id || 'guest')
   const [activeTab, setActiveTab] = useState('ringkasan')
   const [data, setData] = useState(() => loadStore(`pkm_mhs_dashboard_${userKey}`, EMPTY))
+  const [incomingInvites, setIncomingInvites] = useState(() => getIncomingInvitationsForUser(user))
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    setIncomingInvites(getIncomingInvitationsForUser(user))
+  }, [userKey, user])
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
@@ -182,6 +188,47 @@ export function MahasiswaDashboard({ user }) {
           </a>
         </div>
       </header>
+
+      {/* Alert Banner Undangan Tim Masuk */}
+      {incomingInvites.length > 0 && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+            border: '1.5px solid #93c5fd',
+            borderRadius: '16px',
+            padding: '1rem 1.25rem',
+            marginBottom: '1.5rem',
+            gap: '1rem',
+            flexWrap: 'wrap',
+            boxShadow: '0 4px 14px rgba(0, 113, 227, 0.08)'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ width: 40, height: 40, borderRadius: '10px', background: '#0071e3', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <UserPlus size={20} />
+            </div>
+            <div>
+              <div style={{ fontWeight: 800, color: '#1e3a8a', fontSize: '0.98rem' }}>
+                Undangan Bergabung ke Tim PKM Baru!
+              </div>
+              <div style={{ fontSize: '0.82rem', color: '#334155', marginTop: '0.15rem' }}>
+                Anda diundang oleh <strong>{incomingInvites[0]?.senderName}</strong> untuk bergabung ke dalam <strong>{incomingInvites[0]?.teamName}</strong>.
+              </div>
+            </div>
+          </div>
+          <a
+            href="#tim"
+            className="btn-action primary"
+            style={{ padding: '0.55rem 1.15rem', fontSize: '0.84rem', gap: '0.4rem', textDecoration: 'none' }}
+          >
+            <span>Tinjau & Tanggapi di Manajemen Tim</span>
+            <ArrowRight size={14} />
+          </a>
+        </div>
+      )}
 
       {/* 4-Column Symmetrical Spotlight Stat Cards Grid (Light Frosted Glass) */}
       <div className="student-metric-grid">

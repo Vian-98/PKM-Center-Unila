@@ -1099,3 +1099,371 @@ func (h StudentHandler) UploadStudentFile(c *gin.Context) {
 		"size": file.Size,
 	}})
 }
+
+// GetTeamInvitations mengembalikan daftar undangan masuk (diterima) dan undangan keluar (dikirim) untuk mahasiswa.
+func (h StudentHandler) GetTeamInvitations(c *gin.Context) {
+	userID := getUserIDFromContext(c)
+	if userID == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Akses tidak diizinkan"})
+		return
+	}
+
+	// 1. Undangan Masuk: Ditujukan kepada mahasiswa yang sedang login (recipient_id = userID)
+	incoming := []gin.H{}
+	incRows, err := h.DB.Table("team_invitations ti").
+		Select(`ti.id, ti.team_id, t.name as team_name, ti.sender_id, u.full_name as sender_name, u.email as sender_email,
+		        COALESCE(sp.faculty, '') as sender_faculty, COALESCE(sp.study_program, sp.department, '') as sender_prodi,
+		        ti.role_offered, ti.message, ti.status, ti.created_at, ti.responded_at`).
+		Joins("JOIN teams t ON t.id = ti.team_id").
+		Joins("JOIN users u ON u.id = ti.sender_id").
+		Joins("LEFT JOIN student_profiles sp ON sp.user_id = u.id").
+		Where("ti.recipient_id = ?", userID).
+		Order("ti.created_at DESC").
+		Rows()
+	if err == nil {
+		defer incRows.Close()
+		for incRows.Next() {
+			var r struct {
+				ID            string     `json:"id"`
+				TeamID        string     `json:"teamId"`
+				TeamName      string     `json:"teamName"`
+				SenderID      string     `json:"senderId"`
+				SenderName    string     `json:"senderName"`
+				SenderEmail   string     `json:"senderEmail"`
+				SenderFaculty string     `json:"senderFaculty"`
+				SenderProdi   string     `json:"senderProdi"`
+				RoleOffered   string     `json:"roleOffered"`
+				Message       string     `json:"message"`
+				Status        string     `json:"status"`
+				CreatedAt     time.Time  `json:"createdAt"`
+				RespondedAt   *time.Time `json:"respondedAt"`
+			}
+			if h.DB.ScanRows(incRows, &r) == nil {
+				incoming = append(incoming, gin.H{
+					"id":            r.ID,
+					"teamId":        r.TeamID,
+					"teamName":      r.TeamName,
+					"senderId":      r.SenderID,
+					"senderName":    r.SenderName,
+					"senderEmail":   r.SenderEmail,
+					"senderFaculty": r.SenderFaculty,
+					"senderProdi":   r.SenderProdi,
+					"roleOffered":   r.RoleOffered,
+					"message":       r.Message,
+					"status":        r.Status,
+					"createdAt":     r.CreatedAt,
+					"respondedAt":   r.RespondedAt,
+				})
+			}
+		}
+	}
+
+	// 2. Undangan Keluar: Dikirimkan oleh mahasiswa ini atau atas nama tim yang dipimpinnya
+	outgoing := []gin.H{}
+	outRows, err := h.DB.Table("team_invitations ti").
+		Select(`ti.id, ti.team_id, t.name as team_name, ti.recipient_id, u.full_name as recipient_name, u.email as recipient_email,
+		        COALESCE(sp.student_number, '') as recipient_npm, COALESCE(sp.faculty, '') as recipient_faculty,
+		        COALESCE(sp.study_program, sp.department, '') as recipient_prodi,
+		        ti.role_offered, ti.message, ti.status, ti.created_at, ti.responded_at`).
+		Joins("JOIN teams t ON t.id = ti.team_id").
+		Joins("JOIN users u ON u.id = ti.recipient_id").
+		Joins("LEFT JOIN student_profiles sp ON sp.user_id = u.id").
+		Where("ti.sender_id = ? OR t.leader_id = ?", userID, userID).
+		Order("ti.created_at DESC").
+		Rows()
+	if err == nil {
+		defer outRows.Close()
+		for outRows.Next() {
+			var r struct {
+				ID               string     `json:"id"`
+				TeamID           string     `json:"teamId"`
+				TeamName         string     `json:"teamName"`
+				RecipientID      string     `json:"recipientId"`
+				RecipientName    string     `json:"recipientName"`
+				RecipientEmail   string     `json:"recipientEmail"`
+				RecipientNPM     string     `json:"recipientNpm"`
+				RecipientFaculty string     `json:"recipientFaculty"`
+				RecipientProdi   string     `json:"recipientProdi"`
+				RoleOffered      string     `json:"roleOffered"`
+				Message          string     `json:"message"`
+				Status           string     `json:"status"`
+				CreatedAt        time.Time  `json:"createdAt"`
+				RespondedAt      *time.Time `json:"respondedAt"`
+			}
+			if h.DB.ScanRows(outRows, &r) == nil {
+				outgoing = append(outgoing, gin.H{
+					"id":               r.ID,
+					"teamId":           r.TeamID,
+					"teamName":         r.TeamName,
+					"recipientId":      r.RecipientID,
+					"recipientName":    r.RecipientName,
+					"recipientEmail":   r.RecipientEmail,
+					"recipientNpm":     r.RecipientNPM,
+					"recipientFaculty": r.RecipientFaculty,
+					"recipientProdi":   r.RecipientProdi,
+					"roleOffered":      r.RoleOffered,
+					"message":          r.Message,
+					"status":           r.Status,
+					"createdAt":        r.CreatedAt,
+					"respondedAt":      r.RespondedAt,
+				})
+			}
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": gin.H{
+		"incoming": incoming,
+		"outgoing": outgoing,
+	}})
+}
+
+// SendTeamInvitation mengirimkan undangan resmi bergabung ke tim kepada mahasiswa lain.
+func (h StudentHandler) SendTeamInvitation(c *gin.Context) {
+	userID := getUserIDFromContext(c)
+	if userID == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Akses tidak diizinkan"})
+		return
+	}
+
+	var req struct {
+		RecipientID    string `json:"recipientId"`
+		RecipientEmail string `json:"recipientEmail"`
+		RecipientNPM   string `json:"recipientNpm"`
+		RoleOffered    string `json:"roleOffered"`
+		Message        string `json:"message"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Format data tidak valid"})
+		return
+	}
+
+	// 1. Cari data penerima di users / student_profiles
+	var recipient models.User
+	found := false
+	if req.RecipientID != "" {
+		if err := h.DB.First(&recipient, "id = ?", req.RecipientID).Error; err == nil {
+			found = true
+		}
+	}
+	if !found && req.RecipientEmail != "" {
+		if err := h.DB.First(&recipient, "LOWER(email) = LOWER(?)", req.RecipientEmail).Error; err == nil {
+			found = true
+		}
+	}
+	if !found && req.RecipientNPM != "" {
+		var sp models.StudentProfile
+		if err := h.DB.First(&sp, "student_number = ?", req.RecipientNPM).Error; err == nil {
+			if err := h.DB.First(&recipient, "id = ?", sp.UserID).Error; err == nil {
+				found = true
+			}
+		}
+	}
+	if !found {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Mahasiswa penerima undangan tidak ditemukan"})
+		return
+	}
+
+	if recipient.ID == userID {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Tidak dapat mengirimkan undangan ke diri sendiri"})
+		return
+	}
+
+	// 2. Dapatkan data pengirim dan pastikan tim pengirim tersedia
+	var sender models.User
+	if err := h.DB.First(&sender, "id = ?", userID).Error; err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Pengguna tidak valid"})
+		return
+	}
+
+	period, err := h.currentPeriod()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Periode PKM aktif tidak ditemukan"})
+		return
+	}
+
+	team, err := h.ensureTeam(userID, period.ID, sender.FullName)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Gagal menyiapkan tim pengusul"})
+		return
+	}
+
+	// 3. Periksa apakah sudah menjadi anggota tim
+	var existingMember models.TeamMember
+	if err := h.DB.Where("team_id = ? AND student_id = ?", team.ID, recipient.ID).First(&existingMember).Error; err == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Mahasiswa sudah menjadi anggota tim ini"})
+		return
+	}
+
+	// 4. Periksa apakah sudah ada undangan berstatus pending
+	var existingInv models.TeamInvitation
+	if err := h.DB.Where("team_id = ? AND recipient_id = ? AND status = 'pending'", team.ID, recipient.ID).First(&existingInv).Error; err == nil {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Undangan telah dikirimkan sebelumnya dan sedang menunggu konfirmasi",
+			"data":    existingInv,
+		})
+		return
+	}
+
+	role := strings.TrimSpace(req.RoleOffered)
+	if role == "" {
+		role = "Calon Anggota Multidisiplin"
+	}
+	msg := strings.TrimSpace(req.Message)
+	if msg == "" {
+		msg = fmt.Sprintf("Halo %s, saya mengundang Anda bergabung ke dalam tim %s sebagai %s.", recipient.FullName, team.Name, role)
+	}
+
+	inv := models.TeamInvitation{
+		ID:          uuidV4(),
+		TeamID:      team.ID,
+		SenderID:    userID,
+		RecipientID: recipient.ID,
+		RoleOffered: role,
+		Message:     msg,
+		Status:      "pending",
+		CreatedAt:   time.Now(),
+	}
+
+	if err := h.DB.Create(&inv).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Gagal menyimpan undangan tim ke database"})
+		return
+	}
+
+	// 5. Tambahkan notifikasi resmi ke penerima undangan di database
+	notif := models.Notification{
+		ID:               uuidV4(),
+		UserID:           recipient.ID,
+		NotificationType: "invitation",
+		Title:            "Undangan Bergabung Tim PKM",
+		Message:          fmt.Sprintf("%s mengundang Anda bergabung ke dalam %s sebagai %s.", sender.FullName, team.Name, role),
+		TargetURL:        "#tim",
+		IsRead:           false,
+		CreatedAt:        time.Now(),
+	}
+	h.DB.Create(&notif)
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message": fmt.Sprintf("Undangan resmi berhasil dikirimkan kepada %s!", recipient.FullName),
+		"data": gin.H{
+			"id":          inv.ID,
+			"teamId":      team.ID,
+			"teamName":    team.Name,
+			"senderName":  sender.FullName,
+			"roleOffered": inv.RoleOffered,
+			"status":      inv.Status,
+			"createdAt":   inv.CreatedAt,
+		},
+	})
+}
+
+// RespondTeamInvitation menangani tanggapan penerima undangan (menerima atau menolak tawaran tim).
+func (h StudentHandler) RespondTeamInvitation(c *gin.Context) {
+	userID := getUserIDFromContext(c)
+	if userID == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Akses tidak diizinkan"})
+		return
+	}
+
+	invID := c.Param("id")
+	var req struct {
+		Action string `json:"action" binding:"required"` // "accept" atau "reject"
+	}
+	if err := c.ShouldBindJSON(&req); err != nil || (req.Action != "accept" && req.Action != "reject") {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Aksi tidak valid (harus 'accept' atau 'reject')"})
+		return
+	}
+
+	var inv models.TeamInvitation
+	if err := h.DB.Where("id = ? AND recipient_id = ?", invID, userID).First(&inv).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Undangan tidak ditemukan atau bukan milik Anda"})
+		return
+	}
+
+	if inv.Status != "pending" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Undangan ini sudah pernah ditanggapi sebelumnya"})
+		return
+	}
+
+	var team models.Team
+	h.DB.First(&team, "id = ?", inv.TeamID)
+
+	var recipient models.User
+	h.DB.First(&recipient, "id = ?", userID)
+
+	now := time.Now()
+	if req.Action == "accept" {
+		// Periksa kuota anggota tim maksimum (5 orang sesuai aturan Belmawa)
+		var memberCount int64
+		h.DB.Model(&models.TeamMember{}).Where("team_id = ?", inv.TeamID).Count(&memberCount)
+		if memberCount >= 5 {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "Batas kuota maksimum tim (5 mahasiswa) telah terpenuhi"})
+			return
+		}
+
+		inv.Status = "accepted"
+		inv.RespondedAt = &now
+		if err := h.DB.Save(&inv).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "Gagal memperbarui status undangan"})
+			return
+		}
+
+		// Tambahkan mahasiswa ke team_members
+		member := models.TeamMember{
+			TeamID:           inv.TeamID,
+			StudentID:        userID,
+			MemberRole:       "member",
+			InvitationStatus: "accepted",
+			JoinedAt:         &now,
+		}
+		h.DB.Create(&member)
+
+		// Notifikasi balik ke pengirim undangan (Ketua Tim)
+		h.DB.Create(&models.Notification{
+			ID:               uuidV4(),
+			UserID:           inv.SenderID,
+			NotificationType: "invitation",
+			Title:            "Undangan Tim Diterima!",
+			Message:          fmt.Sprintf("%s telah menerima undangan dan resmi bergabung ke dalam %s!", recipient.FullName, team.Name),
+			TargetURL:        "#tim",
+			IsRead:           false,
+			CreatedAt:        now,
+		})
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": fmt.Sprintf("Selamat! Anda telah resmi bergabung ke dalam %s.", team.Name),
+			"data": gin.H{
+				"id":     inv.ID,
+				"teamId": inv.TeamID,
+				"status": "accepted",
+			},
+		})
+		return
+	}
+
+	// Action == "reject"
+	inv.Status = "rejected"
+	inv.RespondedAt = &now
+	h.DB.Save(&inv)
+
+	// Notifikasi balik ke pengirim undangan
+	h.DB.Create(&models.Notification{
+		ID:               uuidV4(),
+		UserID:           inv.SenderID,
+		NotificationType: "invitation",
+		Title:            "Undangan Tim Ditolak",
+		Message:          fmt.Sprintf("%s belum dapat bergabung ke dalam %s saat ini.", recipient.FullName, team.Name),
+		TargetURL:        "#tim",
+		IsRead:           false,
+		CreatedAt:        now,
+	})
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Undangan telah berhasil ditolak.",
+		"data": gin.H{
+			"id":     inv.ID,
+			"teamId": inv.TeamID,
+			"status": "rejected",
+		},
+	})
+}
+

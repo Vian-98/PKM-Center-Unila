@@ -30,6 +30,7 @@ type TeamInvitation struct {
 	TeamID      string     `json:"teamId" gorm:"column:team_id;type:uuid;not null"`
 	SenderID    string     `json:"senderId" gorm:"column:sender_id;type:uuid;not null"`
 	RecipientID string     `json:"recipientId" gorm:"column:recipient_id;type:uuid;not null"`
+	RoleOffered string     `json:"roleOffered" gorm:"column:role_offered"`
 	Message     string     `json:"message"`
 	Status      string     `json:"status" gorm:"default:pending"`
 	RespondedAt *time.Time `json:"respondedAt" gorm:"column:responded_at"`

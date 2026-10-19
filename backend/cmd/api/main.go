@@ -132,6 +132,9 @@ func main() {
 	studentGroup.POST("/notifications/read", student.MarkNotificationsRead)
 	studentGroup.GET("/logbook", student.GetLogbook)
 	studentGroup.POST("/logbook", student.CreateLogbook)
+	studentGroup.GET("/invitations", student.GetTeamInvitations)
+	studentGroup.POST("/invitations", student.SendTeamInvitation)
+	studentGroup.POST("/invitations/:id/respond", student.RespondTeamInvitation)
 
 	// --- Modul Admin ---
 	admin := api.Group("/admin", middleware.RequireAuth(secret, "admin"))

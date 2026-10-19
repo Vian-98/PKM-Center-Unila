@@ -6,6 +6,8 @@ import {
 import { GlowCard } from '../components/GlowCard'
 import { getVacancies, getMySentRequests, saveMySentRequests } from '../lib/matchmakingData'
 import { loadStore, saveStore } from '../lib/dosenReviewerData'
+import { sendTeamInvitation } from '../lib/studentApi'
+import { recordNewInvitation } from '../lib/teamInvitationData'
 
 const DOSEN_LIST = [
   {
@@ -268,17 +270,19 @@ export function CariTim({ user }) {
     setSentRequests(getMySentRequests(userKey))
   }, [userKey])
 
-  const handleInvite = (id, name, type) => {
+  const handleInvite = async (id, name, type, studentObj = null) => {
     setInvited(prev => ({ ...prev, [id]: true }))
-    // Sinkronisasi undangan mahasiswa ke pkm_mhs_team_${userKey} di localStorage
+    // Sinkronisasi undangan mahasiswa ke pkm_mhs_team_${userKey} dan global cross-account storage
     if (type.includes('Mahasiswa') || type.includes('Anggota')) {
       const defaultTeam = isNadia ? {
+        id: 'team-my',
         name: 'Tim PKM Unggulan Unila',
         members: [
           { name: 'Nadia Putri Maharani', role: 'Ketua Pengusul', prodi: 'S1 Teknik Elektro', npm: '2117051001' }
         ],
         invitations: []
       } : {
+        id: `team-${userKey}`,
         name: `Tim PKM ${user?.name || 'Mahasiswa'}`,
         members: [
           { name: user?.name || 'Mahasiswa', role: 'Ketua Pengusul', prodi: user?.studyProgram || user?.department || 'Universitas Lampung', npm: user?.studentNumber || user?.npm || '-' }
@@ -288,18 +292,61 @@ export function CariTim({ user }) {
 
       const currentTeam = loadStore(`pkm_mhs_team_${userKey}`, defaultTeam)
       const existingInv = currentTeam.invitations || []
+      const roleOffered = 'Calon Anggota Multidisiplin'
+      const newInvId = `inv-${Date.now()}`
+
       const newInv = {
-        id: `inv-${Date.now()}`,
+        id: newInvId,
         name: name,
-        faculty: 'Universitas Lampung',
-        role: 'Calon Anggota Multidisiplin',
+        faculty: studentObj?.faculty || 'Universitas Lampung',
+        role: roleOffered,
         status: 'Menunggu Konfirmasi',
         date: 'Hari ini'
       }
+
+      // 1. Simpan ke daftar undangan keluar tim pengirim
       saveStore(`pkm_mhs_team_${userKey}`, {
         ...currentTeam,
         invitations: [newInv, ...existingInv]
       })
+
+      // 2. Simpan ke registry global agar langsung muncul di akun mahasiswa penerima (Siti Nurhaliza dkk)
+      const globalInv = {
+        id: newInvId,
+        teamId: currentTeam.id || `team-${userKey}`,
+        teamName: currentTeam.name || `Tim PKM ${user?.name || 'Mahasiswa'}`,
+        scheme: currentTeam.scheme || 'PKM-KC',
+        senderId: user?.id || userKey,
+        senderName: user?.name || 'Mahasiswa',
+        senderEmail: user?.email || '',
+        senderFaculty: user?.faculty || 'FMIPA',
+        senderProdi: user?.studyProgram || user?.department || 'S1 Ilmu Komputer',
+        recipientId: studentObj?.id || id,
+        recipientName: studentObj?.name || name,
+        recipientEmail: studentObj?.email || '',
+        recipientNpm: studentObj?.npm || '',
+        recipientFaculty: studentObj?.faculty || 'Universitas Lampung',
+        recipientProdi: studentObj?.prodi || '',
+        roleOffered: roleOffered,
+        message: `Halo ${studentObj?.name || name}, kami mengundang Anda untuk bergabung ke dalam ${currentTeam.name || 'Tim PKM'} sebagai ${roleOffered}.`,
+        status: 'pending',
+        date: 'Hari ini',
+        createdAt: new Date().toISOString()
+      }
+      recordNewInvitation(globalInv)
+
+      // 3. Kirim ke backend API jika session mahasiswa aktif
+      try {
+        await sendTeamInvitation({
+          recipientId: studentObj?.id || id,
+          recipientEmail: studentObj?.email || '',
+          recipientNpm: studentObj?.npm || '',
+          roleOffered: roleOffered,
+          message: globalInv.message
+        })
+      } catch (err) {
+        console.warn('sendTeamInvitation API fallback to local sync:', err.message)
+      }
     }
     setAlertMsg(`Undangan resmi berhasil dikirimkan kepada ${name} (${type})!`)
     setTimeout(() => setAlertMsg(''), 4500)
@@ -623,7 +670,7 @@ export function CariTim({ user }) {
                 <button
                   type="button"
                   className={`btn-action ${invited[m.id] ? 'success' : 'primary'}`}
-                  onClick={() => handleInvite(m.id, m.name, 'Anggota Tim')}
+                  onClick={() => handleInvite(m.id, m.name, 'Anggota Tim', m)}
                   style={{ flex: 1 }}
                 >
                   {invited[m.id] ? (
