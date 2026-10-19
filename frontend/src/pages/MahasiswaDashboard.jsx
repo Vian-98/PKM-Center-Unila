@@ -92,8 +92,9 @@ const getInitials = (name) => {
 }
 
 export function MahasiswaDashboard({ user }) {
+  const userKey = user?.id || user?.email || 'guest'
   const [activeTab, setActiveTab] = useState('ringkasan')
-  const [data, setData] = useState(() => loadStore('pkm_mhs_dashboard', EMPTY))
+  const [data, setData] = useState(() => loadStore(`pkm_mhs_dashboard_${userKey}`, EMPTY))
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -103,6 +104,9 @@ export function MahasiswaDashboard({ user }) {
 
   useEffect(() => {
     let alive = true
+    setData(loadStore(`pkm_mhs_dashboard_${userKey}`, EMPTY))
+    setLoading(true)
+
     async function load() {
       try {
         const result = await authFetch('/student/dashboard')
@@ -110,7 +114,7 @@ export function MahasiswaDashboard({ user }) {
         if (result?.data) {
           const merged = { ...EMPTY, ...result.data, stats: { ...EMPTY.stats, ...(result.data.stats || {}) } }
           setData(merged)
-          saveStore('pkm_mhs_dashboard', merged)
+          saveStore(`pkm_mhs_dashboard_${userKey}`, merged)
         }
         setError('')
       } catch (err) {
@@ -121,11 +125,27 @@ export function MahasiswaDashboard({ user }) {
     }
     load()
     return () => { alive = false }
-  }, [user])
+  }, [userKey])
 
-  const student = data.student || {}
+  const student = data.student && data.student.name ? data.student : (user ? {
+    name: user.name,
+    studentNumber: user.studentNumber || user.npm || '-',
+    faculty: user.faculty || 'Universitas Lampung',
+    studyProgram: user.studyProgram || user.department || 'S1'
+  } : {})
+
+  const localTeam = !data.team ? loadStore(`pkm_mhs_team_${userKey}`, null) : null
+  const team = data.team || (localTeam ? {
+    name: localTeam.name,
+    members: (localTeam.members || []).map((m, idx) => ({
+      studentId: `mem-${idx}`,
+      name: m.name,
+      studentNumber: m.npm,
+      memberRole: m.role?.includes('Ketua') ? 'leader' : 'member'
+    }))
+  } : null)
+
   const proposal = data.proposal
-  const team = data.team
   const supervisor = data.supervisor
   const stats = data.stats || {}
   const steps = data.stepper || EMPTY.stepper

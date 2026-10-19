@@ -24,9 +24,10 @@ function clampPercent(value) {
 }
 
 export function LogbookPKM({ user }) {
-  const [entries, setEntries] = useState(() => loadStore('pkm_mhs_logbook', []))
+  const userKey = user?.id || user?.email || 'guest'
+  const [entries, setEntries] = useState(() => loadStore(`pkm_mhs_logbook_${userKey}`, []))
   const [form, setForm] = useState(EMPTY_ENTRY)
-  const [proposal, setProposal] = useState(() => loadStore('pkm_mhs_proposal', null))
+  const [proposal, setProposal] = useState(() => loadStore(`pkm_mhs_proposal_${userKey}`, null))
   const [state, setState] = useState({ loading: false, uploading: false, error: '', success: '' })
   const fileRef = useRef(null)
 
@@ -37,7 +38,7 @@ export function LogbookPKM({ user }) {
       const result = await authFetch('/student/logbook')
       if (result?.data) {
         setEntries(result.data)
-        saveStore('pkm_mhs_logbook', result.data)
+        saveStore(`pkm_mhs_logbook_${userKey}`, result.data)
       }
     } catch {
       /* gunakan data lokal bila backend belum terjangkau */
@@ -49,12 +50,18 @@ export function LogbookPKM({ user }) {
   }, [])
 
   useEffect(() => {
+    setEntries(loadStore(`pkm_mhs_logbook_${userKey}`, []))
+    setProposal(loadStore(`pkm_mhs_proposal_${userKey}`, null))
     loadEntries()
     authFetch('/student/dashboard')
-      .then(res => { if (res?.data?.proposal) { setProposal(res.data.proposal); saveStore('pkm_mhs_proposal', res.data.proposal) } })
+      .then(res => {
+        const p = res?.data?.proposal || null
+        setProposal(p)
+        saveStore(`pkm_mhs_proposal_${userKey}`, p)
+      })
       .catch(() => {})
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user])
+  }, [userKey])
 
   const handleUpload = async (event) => {
     const file = event.target.files?.[0]
@@ -84,7 +91,7 @@ export function LogbookPKM({ user }) {
       const saved = result?.data
       setEntries(prev => {
         const next = [{ ...payload, id: saved?.id || Date.now(), verificationStatus: 'pending', comments: [], createdAt: new Date().toISOString() }, ...prev]
-        saveStore('pkm_mhs_logbook', next)
+        saveStore(`pkm_mhs_logbook_${userKey}`, next)
         return next
       })
       setForm(EMPTY_ENTRY)

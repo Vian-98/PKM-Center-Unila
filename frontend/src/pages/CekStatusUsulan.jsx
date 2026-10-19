@@ -146,6 +146,25 @@ export function CekStatusUsulan({ user }) {
     return { all: results.length, funded, review, draft }
   }, [results])
 
+  const quickChips = useMemo(() => {
+    const list = []
+    const npm = user?.studentNumber || user?.npm
+    if (user?.name && npm) {
+      const first = user.name.split(' ')[0]
+      list.push({ label: `${first} (${npm}) - Akun Anda`, query: npm })
+    } else if (user?.email === 'mahasiswa@pkm.unila.ac.id' || user?.username === 'mahasiswa') {
+      list.push({ label: 'Nadia (2117051001)', query: '2117051001' })
+    }
+    list.push(
+      { label: 'Semua Usulan (Feed)', query: 'all' },
+      { label: 'PKM-KC', query: 'PKM-KC' },
+      { label: 'PKM-RE', query: 'PKM-RE' },
+      { label: 'PKM-RSH', query: 'PKM-RSH' },
+      { label: 'Teknik Elektro', query: 'Teknik Elektro' },
+    )
+    return list
+  }, [user])
+
   return (
     <div className="module-container" style={{ paddingTop: '1.5rem' }}>
       {/* Toast Notification */}
@@ -242,7 +261,7 @@ export function CekStatusUsulan({ user }) {
           {/* Quick Suggestion Chips */}
           <div className="track-chips-container">
             <span className="track-chips-label">Pencarian Cepat:</span>
-            {QUICK_SUGGESTIONS.map((chip) => (
+            {quickChips.map((chip) => (
               <button
                 key={chip.label}
                 type="button"

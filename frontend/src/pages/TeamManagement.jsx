@@ -1,31 +1,60 @@
 import { useState, useEffect } from 'react'
 import {
   Users, UserPlus, Shield, CheckCircle2, Clock, ArrowRight, UserCheck,
-  Check, X, Briefcase, Plus, AlertCircle, Sparkles, Send
+  Check, X, Briefcase, Plus, AlertCircle, Sparkles, Send, Trash2
 } from 'lucide-react'
 import { loadStore, saveStore } from '../lib/dosenReviewerData'
 import {
   getIncomingRequests, saveIncomingRequests,
   getVacancies, saveVacancies
 } from '../lib/matchmakingData'
+import { authFetch } from '../lib/studentApi'
 
-export function TeamManagement() {
-  const [team, setTeam] = useState(() => loadStore('pkm_mhs_team', {
-    name: 'Tim PKM Unggulan Unila',
-    leader: 'Nadia Putri Maharani',
+function getDefaultTeam(u) {
+  const isNadia = u?.email === 'mahasiswa@pkm.unila.ac.id' || u?.username === 'mahasiswa'
+  if (isNadia) {
+    return {
+      id: 'team-my',
+      name: 'Tim PKM Unggulan Unila',
+      leader: 'Nadia Putri Maharani',
+      leaderEmail: 'mahasiswa@pkm.unila.ac.id',
+      scheme: 'PKM-KC',
+      members: [
+        { name: 'Nadia Putri Maharani', role: 'Ketua Pengusul', prodi: 'S1 Teknik Elektro', npm: '2117051001' },
+        { name: 'Rian Saputra', role: 'Anggota 1', prodi: 'S1 Kimia FMIPA', npm: '2117021045' },
+        { name: 'Fajar Nugroho', role: 'Anggota 2', prodi: 'S1 Proteksi Tanaman FP', npm: '2114011022' },
+      ],
+      invitations: [
+        { id: 'inv-1', name: 'Dewi Sartika', faculty: 'Fakultas Ekonomi & Bisnis', role: 'Analisis Finansial & Bisnis', status: 'Menunggu Konfirmasi', date: '14 Okt 2026' }
+      ]
+    }
+  }
+
+  const uKey = u?.id || u?.email || 'guest'
+  const name = u?.name || 'Mahasiswa'
+  const npm = u?.studentNumber || u?.npm || '-'
+  const prodi = u?.studyProgram || u?.department || u?.faculty || 'Universitas Lampung'
+
+  return {
+    id: `team-${uKey}`,
+    name: `Tim PKM ${name}`,
+    leader: name,
+    leaderEmail: u?.email || '',
     scheme: 'PKM-KC',
     members: [
-      { name: 'Nadia Putri Maharani', role: 'Ketua Pengusul', prodi: 'S1 Teknik Elektro', npm: '2117051001' },
-      { name: 'Rian Saputra', role: 'Anggota 1', prodi: 'S1 Kimia FMIPA', npm: '2117021045' },
-      { name: 'Fajar Nugroho', role: 'Anggota 2', prodi: 'S1 Proteksi Tanaman FP', npm: '2114011022' },
+      { name, role: 'Ketua Pengusul', prodi, npm }
     ],
-    invitations: [
-      { id: 'inv-1', name: 'Dewi Sartika', faculty: 'Fakultas Ekonomi & Bisnis', role: 'Analisis Finansial & Bisnis', status: 'Menunggu Konfirmasi', date: '14 Okt 2026' }
-    ]
-  }))
+    invitations: []
+  }
+}
 
-  const [incomingRequests, setIncomingRequests] = useState(getIncomingRequests)
-  const [vacancies, setVacancies] = useState(getVacancies)
+export function TeamManagement({ user }) {
+  const userKey = user?.id || user?.email || 'guest'
+  const isNadia = user?.email === 'mahasiswa@pkm.unila.ac.id' || user?.username === 'mahasiswa'
+
+  const [team, setTeam] = useState(() => loadStore(`pkm_mhs_team_${userKey}`, getDefaultTeam(user)))
+  const [allRequests, setAllRequests] = useState(getIncomingRequests)
+  const [allVacancies, setAllVacancies] = useState(getVacancies)
   const [showVacancyModal, setShowVacancyModal] = useState(false)
   const [alertMsg, setAlertMsg] = useState('')
 
@@ -43,14 +72,85 @@ export function TeamManagement() {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
   }, [])
 
+  // Sinkronisasi ketika user login berganti
   useEffect(() => {
-    saveStore('pkm_mhs_team', team)
-  }, [team])
+    const currentTeam = loadStore(`pkm_mhs_team_${userKey}`, getDefaultTeam(user))
+    setTeam(currentTeam)
+    setAllRequests(getIncomingRequests())
+    setAllVacancies(getVacancies())
+
+    // Sinkronkan data anggota tim resmi dari backend jika ada
+    let alive = true
+    authFetch('/student/dashboard')
+      .then(res => {
+        if (!alive || !res?.data?.team) return
+        const backendTeam = res.data.team
+        const backendMembers = (backendTeam.members || []).map(m => ({
+          name: m.name,
+          role: m.memberRole === 'leader' ? 'Ketua Pengusul' : 'Anggota Tim',
+          prodi: m.studyProgram || m.faculty || 'Universitas Lampung',
+          npm: m.studentNumber || '-'
+        }))
+        if (backendMembers.length > 0) {
+          setTeam(prev => {
+            const updated = {
+              ...prev,
+              name: backendTeam.name || prev.name,
+              members: backendMembers
+            }
+            saveStore(`pkm_mhs_team_${userKey}`, updated)
+            return updated
+          })
+        }
+      })
+      .catch(() => {})
+    return () => { alive = false }
+  }, [userKey])
+
+  useEffect(() => {
+    saveStore(`pkm_mhs_team_${userKey}`, team)
+  }, [team, userKey])
 
   const getInitials = (name) => {
     if (!name) return 'U'
     return name.split(' ').filter(Boolean).map(n => n[0]).slice(0, 2).join('').toUpperCase()
   }
+
+  // Filter Permintaan Masuk: Hanya permintaan yang ditujukan ke tim pemilik akun ini
+  const incomingRequests = allRequests.filter(r => {
+    if (isNadia) {
+      return (
+        r.teamId === 'team-my' ||
+        r.teamId === 'team-agro' ||
+        r.targetLeaderEmail === 'mahasiswa@pkm.unila.ac.id' ||
+        (team.name && r.teamName === team.name)
+      )
+    }
+    return (
+      (user?.email && r.targetLeaderEmail === user.email) ||
+      (team.id && r.teamId === team.id) ||
+      (team.name && r.teamName === team.name) ||
+      (r.targetLeaderName && user?.name && r.targetLeaderName.toLowerCase() === user.name.toLowerCase())
+    )
+  })
+
+  // Filter Lowongan: Hanya lowongan yang dipasang oleh tim pemilik akun ini
+  const myVacancies = allVacancies.filter(v => {
+    if (isNadia) {
+      return (
+        v.teamId === 'team-my' ||
+        v.teamId === 'team-agro' ||
+        v.leaderEmail === 'mahasiswa@pkm.unila.ac.id' ||
+        v.leaderName === 'Nadia Putri Maharani'
+      )
+    }
+    return (
+      (user?.email && v.leaderEmail === user.email) ||
+      (team.id && v.teamId === team.id) ||
+      (team.name && v.teamName === team.name) ||
+      (v.leaderName && user?.name && v.leaderName.toLowerCase() === user.name.toLowerCase())
+    )
+  })
 
   // Aksi Ketua: Terima Calon Anggota (Request dari Mahasiswa)
   const handleAcceptRequest = (req) => {
@@ -75,11 +175,11 @@ export function TeamManagement() {
       members: updatedMembers
     }))
 
-    // Perbarui status request menjadi accepted
-    const updatedRequests = incomingRequests.map(r =>
+    // Perbarui status request menjadi accepted di global storage
+    const updatedRequests = allRequests.map(r =>
       r.id === req.id ? { ...r, status: 'accepted' } : r
     )
-    setIncomingRequests(updatedRequests)
+    setAllRequests(updatedRequests)
     saveIncomingRequests(updatedRequests)
 
     setAlertMsg(`Selamat! ${req.studentName} resmi diterima bergabung ke dalam tim!`)
@@ -88,10 +188,10 @@ export function TeamManagement() {
 
   // Aksi Ketua: Tolak Calon Anggota
   const handleRejectRequest = (reqId, studentName) => {
-    const updatedRequests = incomingRequests.map(r =>
+    const updatedRequests = allRequests.map(r =>
       r.id === reqId ? { ...r, status: 'rejected' } : r
     )
-    setIncomingRequests(updatedRequests)
+    setAllRequests(updatedRequests)
     saveIncomingRequests(updatedRequests)
 
     setAlertMsg(`Permintaan bergabung dari ${studentName} telah ditolak.`)
@@ -109,11 +209,12 @@ export function TeamManagement() {
 
     const createdVac = {
       id: `vac-${Date.now()}`,
-      teamId: 'team-my',
+      teamId: team.id || `team-${userKey}`,
       teamName: team.name,
-      leaderName: team.leader,
+      leaderName: team.leader || user?.name || 'Mahasiswa',
+      leaderEmail: user?.email || '',
       scheme: team.scheme || 'PKM-KC',
-      title: 'Smart Agriculture IoT untuk Monitoring & Otomasi Lahan Lada Berbasis Edge AI',
+      title: `${team.name} — Rekrutmen Terbuka`,
       targetFaculty: newVac.targetFaculty,
       targetMajor: newVac.targetMajor || 'Semua Program Studi Terkait',
       roleName: newVac.roleName,
@@ -122,8 +223,8 @@ export function TeamManagement() {
       description: newVac.description
     }
 
-    const updated = [createdVac, ...vacancies]
-    setVacancies(updated)
+    const updated = [createdVac, ...allVacancies]
+    setAllVacancies(updated)
     saveVacancies(updated)
     setShowVacancyModal(false)
     setNewVac({
@@ -141,8 +242,8 @@ export function TeamManagement() {
 
   // Hapus Lowongan Tim Sendiri
   const handleDeleteVacancy = (vacId) => {
-    const updated = vacancies.filter(v => v.id !== vacId)
-    setVacancies(updated)
+    const updated = allVacancies.filter(v => v.id !== vacId)
+    setAllVacancies(updated)
     saveVacancies(updated)
     setAlertMsg('Lowongan berhasil ditutup.')
     setTimeout(() => setAlertMsg(''), 4000)
@@ -549,6 +650,89 @@ export function TeamManagement() {
                 </div>
                 <div style={{ fontSize: '0.76rem', color: '#64748b' }}>
                   Peran ditawarkan: <strong style={{ color: '#0f172a' }}>{inv.role}</strong>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* ========================================================
+          SECTION 4: LOWONGAN REKRUTMEN AKTIF TIM ANDA
+          ======================================================== */}
+      <section className="student-panel" style={{ marginTop: '1.75rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+            <div className="caritim-hub-icon gold" style={{ width: 36, height: 36 }}>
+              <Briefcase size={18} />
+            </div>
+            <div>
+              <h3 className="student-panel-title" style={{ margin: 0 }}>Lowongan Terbuka Tim Anda</h3>
+              <span style={{ fontSize: '0.78rem', color: '#64748b' }}>Lowongan tim Anda yang sedang tayang di modul Cari Tim</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="btn-action primary"
+            onClick={() => setShowVacancyModal(!showVacancyModal)}
+            style={{ padding: '0.45rem 0.85rem', fontSize: '0.8rem', gap: '0.35rem' }}
+          >
+            <Plus size={14} />
+            <span>Tambah Posisi</span>
+          </button>
+        </div>
+
+        {myVacancies.length === 0 ? (
+          <div className="student-empty" style={{ padding: '1.5rem 1rem' }}>
+            <h4>Belum ada lowongan dibuka</h4>
+            <p>Tim Anda belum mempublikasikan lowongan posisi anggota. Klik tombol "Buka Lowongan" jika tim Anda memerlukan rekan multidisiplin baru.</p>
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '0.85rem' }}>
+            {myVacancies.map((vac) => (
+              <div
+                key={vac.id}
+                style={{
+                  padding: '1rem',
+                  background: 'rgba(248, 250, 252, 0.75)',
+                  border: '1px solid rgba(226, 232, 240, 0.8)',
+                  borderRadius: '16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.5rem'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '0.94rem' }}>{vac.roleName}</div>
+                    <div style={{ fontSize: '0.76rem', color: '#64748b' }}>
+                      Target: {vac.targetFaculty} • {vac.targetMajor}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteVacancy(vac.id)}
+                    title="Tutup & Hapus Lowongan Ini"
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: '#ef4444',
+                      padding: '0.2rem'
+                    }}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+                <p style={{ margin: 0, fontSize: '0.78rem', color: '#475569', lineHeight: 1.45 }}>
+                  {vac.description}
+                </p>
+                <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', marginTop: '0.2rem' }}>
+                  {vac.skills?.map(s => (
+                    <span key={s} style={{ fontSize: '0.68rem', padding: '0.15rem 0.45rem', borderRadius: '6px', background: '#f1f5f9', color: '#475569' }}>
+                      #{s}
+                    </span>
+                  ))}
                 </div>
               </div>
             ))}

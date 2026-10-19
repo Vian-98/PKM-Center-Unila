@@ -27,22 +27,30 @@ const FALLBACK_STUDENTS = [
   { id: '6', npm: '2216031022', name: 'Bima Sakti', studyProgram: 'S1 Ilmu Komunikasi', faculty: 'FISIP' },
 ]
 
-const EMPTY_FORM = {
-  scheme: '', title: '', abstract: '', keywords: '', fieldOfStudy: '',
-  supervisorLecturerId: '', supervisor: '', supervisorMessage: '',
-  members: [{ npm: '', name: '', prodi: '', faculty: '', isManual: false }],
-  docUrl: '', docName: '',
+function getInitialForm(u) {
+  const leaderNpm = u?.studentNumber || u?.npm || ''
+  const leaderName = u?.name || ''
+  const leaderProdi = u?.studyProgram || u?.department || ''
+  const leaderFaculty = u?.faculty || ''
+
+  return {
+    scheme: '', title: '', abstract: '', keywords: '', fieldOfStudy: '',
+    supervisorLecturerId: '', supervisor: '', supervisorMessage: '',
+    members: [{ npm: leaderNpm, name: leaderName, prodi: leaderProdi, faculty: leaderFaculty, isManual: false }],
+    docUrl: '', docName: '',
+  }
 }
 
 const STEP_TITLES = ['Identitas Usulan', 'Tim & Pembimbing', 'Berkas Proposal']
 
 export function AjukanProposal({ user }) {
+  const userKey = user?.id || user?.email || 'guest'
   const [step, setStep] = useState(1)
   const [schemes, setSchemes] = useState(FALLBACK_SCHEMES)
   const [supervisors, setSupervisors] = useState([])
   const [students, setStudents] = useState(FALLBACK_STUDENTS)
-  const [form, setForm] = useState(() => loadStore('pkm_mhs_form', EMPTY_FORM))
-  const [documents, setDocuments] = useState(() => loadStore('pkm_mhs_docs', []))
+  const [form, setForm] = useState(() => loadStore(`pkm_mhs_form_${userKey}`, getInitialForm(user)))
+  const [documents, setDocuments] = useState(() => loadStore(`pkm_mhs_docs_${userKey}`, []))
   const [state, setState] = useState({ loading: false, uploading: false, error: '', success: '' })
   const fileRef = useRef(null)
 
@@ -50,7 +58,12 @@ export function AjukanProposal({ user }) {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
   }, [])
 
-  useEffect(() => { saveStore('pkm_mhs_form', form) }, [form])
+  useEffect(() => {
+    setForm(loadStore(`pkm_mhs_form_${userKey}`, getInitialForm(user)))
+    setDocuments(loadStore(`pkm_mhs_docs_${userKey}`, []))
+  }, [userKey])
+
+  useEffect(() => { saveStore(`pkm_mhs_form_${userKey}`, form) }, [form, userKey])
 
   useEffect(() => {
     let alive = true
@@ -64,19 +77,19 @@ export function AjukanProposal({ user }) {
       .then(res => { if (alive && res?.data?.length) setStudents(res.data) })
       .catch(() => {})
 
-    const stored = loadStore('pkm_mhs_proposal', null)
+    const stored = loadStore(`pkm_mhs_proposal_${userKey}`, null)
     if (stored?.id && stored.id !== 'draft-001') {
       authFetch(`/student/proposals/${stored.id}`)
         .then(res => {
           if (alive && res?.data?.documents) {
             setDocuments(res.data.documents)
-            saveStore('pkm_mhs_docs', res.data.documents)
+            saveStore(`pkm_mhs_docs_${userKey}`, res.data.documents)
           }
         })
         .catch(() => {})
     }
     return () => { alive = false }
-  }, [])
+  }, [userKey])
 
   const update = (patch) => setForm(prev => ({ ...prev, ...patch }))
 
@@ -157,7 +170,7 @@ export function AjukanProposal({ user }) {
     try {
       const result = await authFetch('/student/proposals', { method: 'POST', body: JSON.stringify(payload) })
       const saved = result?.data
-      saveStore('pkm_mhs_proposal', {
+      saveStore(`pkm_mhs_proposal_${userKey}`, {
         ...saved, scheme: form.scheme, supervisor: form.supervisor,
         members: form.members, docUrl: form.docUrl,
         id: saved?.id || 'draft-001', status: saved?.status || 'draft',
@@ -169,7 +182,7 @@ export function AjukanProposal({ user }) {
           changeNotes: 'Diunggah melalui portal mahasiswa', uploadedAt: new Date().toISOString(),
         }, ...documents]
         setDocuments(nextDocs)
-        saveStore('pkm_mhs_docs', nextDocs)
+        saveStore(`pkm_mhs_docs_${userKey}`, nextDocs)
       }
       setState({
         loading: false, uploading: false, error: '',
@@ -177,7 +190,7 @@ export function AjukanProposal({ user }) {
       })
       setTimeout(() => { window.location.hash = '#mahasiswa' }, 900)
     } catch (err) {
-      saveStore('pkm_mhs_proposal', {
+      saveStore(`pkm_mhs_proposal_${userKey}`, {
         ...form, id: 'draft-001', status: asSubmit ? 'submitted' : 'draft', createdAt: new Date().toISOString(),
       })
       setState({ loading: false, uploading: false, error: `Gagal menghubungi server: ${err.message}`, success: '' })

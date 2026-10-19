@@ -750,6 +750,15 @@ func (h StudentHandler) GetLogbook(c *gin.Context) {
 		Pluck("p.id", &proposalIDs)
 
 	if filter := c.Query("proposalId"); filter != "" {
+		var belongs int64
+		h.DB.Table("proposals p").
+			Joins("JOIN team_members tm ON tm.team_id = p.team_id").
+			Where("p.id = ? AND tm.student_id = ?", filter, userID).
+			Count(&belongs)
+		if belongs == 0 {
+			c.JSON(http.StatusForbidden, gin.H{"message": "Anda tidak memiliki akses ke logbook proposal ini"})
+			return
+		}
 		proposalIDs = []string{filter}
 	}
 

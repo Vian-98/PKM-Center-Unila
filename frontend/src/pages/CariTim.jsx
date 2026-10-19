@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import {
   GraduationCap, Users, Sparkles, Search, ArrowRight,
   Check, Send, BookOpen, MessageSquare, CheckCircle2, UserPlus, Briefcase
@@ -144,20 +144,41 @@ const FACULTIES = [
   'Fakultas Hukum',
 ]
 
-export function CariTim() {
+export function CariTim({ user }) {
+  const userKey = user?.id || user?.email || 'guest'
+  const isNadia = user?.email === 'mahasiswa@pkm.unila.ac.id' || user?.username === 'mahasiswa'
+
   const [tab, setTab] = useState('dosen')
   const [search, setSearch] = useState('')
   const [faculty, setFaculty] = useState('Semua Fakultas')
   const [invited, setInvited] = useState({})
   const [vacancies] = useState(getVacancies)
-  const [sentRequests, setSentRequests] = useState(getMySentRequests)
+  const [sentRequests, setSentRequests] = useState(() => getMySentRequests(userKey))
   const [alertMsg, setAlertMsg] = useState('')
+
+  useEffect(() => {
+    setSentRequests(getMySentRequests(userKey))
+  }, [userKey])
 
   const handleInvite = (id, name, type) => {
     setInvited(prev => ({ ...prev, [id]: true }))
-    // Sinkronisasi undangan mahasiswa ke pkm_mhs_team di localStorage
+    // Sinkronisasi undangan mahasiswa ke pkm_mhs_team_${userKey} di localStorage
     if (type.includes('Mahasiswa') || type.includes('Anggota')) {
-      const currentTeam = loadStore('pkm_mhs_team', { name: 'Tim PKM Unggulan Unila', members: [], invitations: [] })
+      const defaultTeam = isNadia ? {
+        name: 'Tim PKM Unggulan Unila',
+        members: [
+          { name: 'Nadia Putri Maharani', role: 'Ketua Pengusul', prodi: 'S1 Teknik Elektro', npm: '2117051001' }
+        ],
+        invitations: []
+      } : {
+        name: `Tim PKM ${user?.name || 'Mahasiswa'}`,
+        members: [
+          { name: user?.name || 'Mahasiswa', role: 'Ketua Pengusul', prodi: user?.studyProgram || user?.department || 'Universitas Lampung', npm: user?.studentNumber || user?.npm || '-' }
+        ],
+        invitations: []
+      }
+
+      const currentTeam = loadStore(`pkm_mhs_team_${userKey}`, defaultTeam)
       const existingInv = currentTeam.invitations || []
       const newInv = {
         id: `inv-${Date.now()}`,
@@ -167,7 +188,7 @@ export function CariTim() {
         status: 'Menunggu Konfirmasi',
         date: 'Hari ini'
       }
-      saveStore('pkm_mhs_team', {
+      saveStore(`pkm_mhs_team_${userKey}`, {
         ...currentTeam,
         invitations: [newInv, ...existingInv]
       })
@@ -176,21 +197,30 @@ export function CariTim() {
     setTimeout(() => setAlertMsg(''), 4500)
   }
 
-  const handleRequestJoin = (vacId, teamName, roleName) => {
+  const handleRequestJoin = (vacId, teamName, roleName, vacObj = {}) => {
     const updated = { ...sentRequests, [vacId]: true }
     setSentRequests(updated)
-    saveMySentRequests(updated)
+    saveMySentRequests(updated, userKey)
 
     // Simpan request ke antrean pkm_mhs_incoming_requests
     const currentIncoming = loadStore('pkm_mhs_incoming_requests', [])
+    const applicantName = user?.name ? `${user.name} (Anda)` : 'Mahasiswa (Anda)'
+    const applicantNpm = user?.studentNumber || user?.npm || '-'
+    const applicantFaculty = user?.faculty || 'Universitas Lampung'
+    const applicantProdi = user?.studyProgram || user?.department || 'S1'
+
     const newReq = {
       id: `req-${Date.now()}`,
       teamId: vacId,
-      studentName: 'Nadia Putri Maharani (Anda)',
-      npm: '2117051001',
-      faculty: 'Fakultas Teknik',
-      prodi: 'S1 Teknik Elektro',
-      skills: ['IoT & Edge AI', 'MicroPython', 'Otomasi'],
+      teamName: teamName,
+      targetLeaderEmail: vacObj?.leaderEmail || '',
+      targetLeaderName: vacObj?.leaderName || '',
+      applicantEmail: user?.email || '',
+      studentName: applicantName,
+      npm: applicantNpm,
+      faculty: applicantFaculty,
+      prodi: applicantProdi,
+      skills: ['PKM Teamwork', 'Riset', 'Kolaborasi'],
       appliedRole: roleName,
       message: `Saya tertarik berkontribusi pada usulan ${teamName} sebagai ${roleName}.`,
       status: 'pending',
@@ -577,7 +607,7 @@ export function CariTim() {
                     type="button"
                     className={`btn-action ${sentRequests[vac.id] ? 'success' : 'primary'}`}
                     disabled={sentRequests[vac.id]}
-                    onClick={() => handleRequestJoin(vac.id, vac.teamName, vac.roleName)}
+                    onClick={() => handleRequestJoin(vac.id, vac.teamName, vac.roleName, vac)}
                     style={{ flex: 1, padding: '0.6rem 0.9rem' }}
                   >
                     {sentRequests[vac.id] ? (

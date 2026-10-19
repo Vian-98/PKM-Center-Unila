@@ -104,10 +104,12 @@ export function saveIncomingRequests(data) {
   saveStore('pkm_mhs_incoming_requests', data)
 }
 
-export function getMySentRequests() {
-  return loadStore('pkm_mhs_my_sent_requests', {})
+export function getMySentRequests(userKey = '') {
+  const key = userKey ? `pkm_mhs_my_sent_requests_${userKey}` : 'pkm_mhs_my_sent_requests'
+  return loadStore(key, {})
 }
 
-export function saveMySentRequests(data) {
-  saveStore('pkm_mhs_my_sent_requests', data)
+export function saveMySentRequests(data, userKey = '') {
+  const key = userKey ? `pkm_mhs_my_sent_requests_${userKey}` : 'pkm_mhs_my_sent_requests'
+  saveStore(key, data)
 }
