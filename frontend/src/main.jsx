@@ -78,9 +78,10 @@ function TopNavbar({ active, user, isDashboard, onLogin, onLogout, onSwitchRole,
   const isActive = (id) => {
     if (id === active) return true
     if (id === 'pedoman' && active === 'pedoman') return true
-    if (id === 'mahasiswa' && ['mahasiswa', 'ajukan-proposal', 'ajukanproposal', 'logbook', 'cek-status', 'cekstatus', 'idealab', 'caritim', 'tim'].includes(active)) return true
-    if (id === 'dosen' && ['dosen'].includes(active)) return true
-    if (id === 'reviewer' && ['reviewer'].includes(active)) return true
+    if (id === 'mahasiswa' && active === 'mahasiswa') return true
+    if (id === 'dosen' && active === 'dosen') return true
+    if (id === 'reviewer' && active === 'reviewer') return true
+    if (id === 'admin' && active === 'admin') return true
     return false
   }
 
@@ -462,6 +463,14 @@ function App() {
     }
   })
 
+  // Daftar rute portal berdasarkan role — semua sub-halaman sekarang berada di bawah prefix role
+  const ROLE_ROUTE_MAP = {
+    mahasiswa: 'mahasiswa',
+    dosen: 'dosen',
+    reviewer: 'reviewer',
+    admin: 'admin',
+  }
+
   useEffect(() => {
     const listen = () => {
       setHash(window.location.hash || '#beranda')
@@ -472,6 +481,31 @@ function App() {
     window.addEventListener('hashchange', listen)
     return () => window.removeEventListener('hashchange', listen)
   }, [])
+
+  // Session guard: Proteksi halaman portal — setiap role hanya bisa mengakses portal miliknya
+  useEffect(() => {
+    const currentRoute = (window.location.hash || '#beranda').replace('#', '').split('/')[0].toLowerCase()
+    const protectedRoles = ['mahasiswa', 'dosen', 'reviewer', 'admin']
+    if (protectedRoles.includes(currentRoute)) {
+      if (!user) {
+        // Belum login → redirect ke beranda dan tampilkan peringatan
+        window.location.hash = '#beranda'
+        setTimeout(() => {
+          alert('⚠️ Anda harus login terlebih dahulu untuk mengakses halaman ini.')
+        }, 100)
+        return
+      }
+      const allowedRoles = user.roles && user.roles.length > 0 ? user.roles : [user.role]
+      if (!allowedRoles.includes(currentRoute) && user.role !== currentRoute) {
+        // Sudah login tapi bukan role yang sesuai → redirect ke beranda
+        window.location.hash = '#beranda'
+        setTimeout(() => {
+          alert('⚠️ Halaman ini hanya dapat diakses oleh akun ' + getRoleLabel(currentRoute) + '. Anda login sebagai ' + getRoleLabel(user.role) + '.')
+        }, 100)
+        return
+      }
+    }
+  }, [hash, user])
 
   // Selalu pastikan posisi halaman reset ke paling atas setiap rute berubah
   useEffect(() => {
@@ -563,41 +597,88 @@ function App() {
   }
 
   const route = hash.replace('#', '').split('/')
-  const raw = route[0] || 'beranda'
-  const active = ['beranda', 'tentang', 'timeline', 'berita', 'pedoman', 'portofolio', 'galeri', 'kontak', 'admin', 'dosen', 'reviewer', 'pesan', 'mahasiswa', 'ajukan-proposal', 'ajukanproposal', 'logbook', 'cek-status', 'cekstatus', 'idealab', 'caritim', 'tim', 'profil'].includes(raw) ? raw : 'beranda'
+  const raw = (route[0] || 'beranda').toLowerCase()
+  const sub = (route[1] || '').toLowerCase()  // Sub-route di bawah prefix role (misal: ajukan-proposal, logbook, dll)
+  const active = ['beranda', 'tentang', 'timeline', 'berita', 'pedoman', 'portofolio', 'galeri', 'kontak', 'admin', 'dosen', 'reviewer', 'mahasiswa'].includes(raw) ? raw : 'beranda'
+
+  const fallbackHome = <Home anchor="beranda" user={user} onLogin={() => setModal(true)} />
 
   let view
-  if (route[0] === 'admin') view = <AdminPanel user={user} />
-  else if (route[0] === 'dosen') view = <DosenDashboard user={user} onSwitchRole={switchRole} />
-  else if (route[0] === 'reviewer') view = <ReviewerDashboard user={user} onSwitchRole={switchRole} />
-  else if (route[0] === 'pesan') view = <PesanFeedback user={user} onLogin={() => setModal(true)} onSwitchUser={setUser} />
-  else if (route[0] === 'profil') view = <ProfilePage user={user} onUpdateUser={setUser} onSwitchRole={switchRole} onLogout={logout} />
-  else if (route[0] === 'mahasiswa') view = <MahasiswaDashboard user={user} />
-  else if (route[0] === 'ajukan-proposal' || route[0] === 'ajukanproposal') view = <AjukanProposal user={user} />
-  else if (route[0] === 'logbook') view = <LogbookPKM user={user} />
-  else if (route[0] === 'cek-status' || route[0] === 'cekstatus') view = <CekStatusUsulan user={user} />
-  else if (route[0] === 'idealab') view = <IdeaLab user={user} />
-  else if (route[0] === 'caritim') view = <CariTim user={user} />
-  else if (route[0] === 'tim') view = <TeamManagement user={user} />
-  else if (route[0] === 'berita') view = route[1] ? <NewsDetail id={route[1]} /> : <NewsIndex />
-  else if (route[0] === 'galeri') view = <Gallery />
-  else if (route[0] === 'pedoman') view = <PedomanIndex />
+  // ── Portal Mahasiswa ──────────────────────────────────────────────
+  if (raw === 'mahasiswa') {
+    if (user && user.role === 'mahasiswa') {
+      if (sub === 'ajukan-proposal') view = <AjukanProposal user={user} />
+      else if (sub === 'logbook') view = <LogbookPKM user={user} />
+      else if (sub === 'cek-status') view = <CekStatusUsulan user={user} />
+      else if (sub === 'idealab' || sub === 'pkmate') view = <IdeaLab user={user} />
+      else if (sub === 'caritim') view = <CariTim user={user} />
+      else if (sub === 'tim') view = <TeamManagement user={user} />
+      else if (sub === 'pesan') view = <PesanFeedback user={user} onLogin={() => setModal(true)} onSwitchUser={setUser} />
+      else if (sub === 'profil') view = <ProfilePage user={user} onUpdateUser={setUser} onSwitchRole={switchRole} onLogout={logout} />
+      else if (sub === 'pedoman') view = <PedomanIndex />
+      else view = <MahasiswaDashboard user={user} />
+    } else {
+      view = fallbackHome
+    }
+  }
+  // ── Portal Dosen ──────────────────────────────────────────────────
+  else if (raw === 'dosen') {
+    if (user && (user.role === 'dosen' || user.role === 'admin' || (user.roles || []).includes('dosen'))) {
+      if (sub === 'pesan') view = <PesanFeedback user={user} onLogin={() => setModal(true)} onSwitchUser={setUser} />
+      else if (sub === 'profil') view = <ProfilePage user={user} onUpdateUser={setUser} onSwitchRole={switchRole} onLogout={logout} />
+      else if (sub === 'pedoman') view = <PedomanIndex />
+      else view = <DosenDashboard user={user} onSwitchRole={switchRole} />
+    } else {
+      view = fallbackHome
+    }
+  }
+  // ── Portal Reviewer ───────────────────────────────────────────────
+  else if (raw === 'reviewer') {
+    if (user && (user.role === 'reviewer' || user.role === 'admin' || (user.roles || []).includes('reviewer'))) {
+      if (sub === 'pesan') view = <PesanFeedback user={user} onLogin={() => setModal(true)} onSwitchUser={setUser} />
+      else if (sub === 'profil') view = <ProfilePage user={user} onUpdateUser={setUser} onSwitchRole={switchRole} onLogout={logout} />
+      else if (sub === 'pedoman') view = <PedomanIndex />
+      else view = <ReviewerDashboard user={user} onSwitchRole={switchRole} />
+    } else {
+      view = fallbackHome
+    }
+  }
+  // ── Portal Admin ──────────────────────────────────────────────────
+  else if (raw === 'admin') {
+    if (user && user.role === 'admin') {
+      if (sub === 'pesan') view = <PesanFeedback user={user} onLogin={() => setModal(true)} onSwitchUser={setUser} />
+      else if (sub === 'profil') view = <ProfilePage user={user} onUpdateUser={setUser} onSwitchRole={switchRole} onLogout={logout} />
+      else if (sub === 'pedoman') view = <PedomanIndex />
+      else view = <AdminPanel user={user} />
+    } else {
+      view = fallbackHome
+    }
+  }
+  // ── Halaman Publik ─────────────────────────────────────────────────
+  else if (raw === 'berita') view = route[1] ? <NewsDetail id={route[1]} /> : <NewsIndex />
+  else if (raw === 'galeri') view = <Gallery />
+  else if (raw === 'pedoman') view = <PedomanIndex />
   else if (route[0] === 'portofolio') view = <PortofolioIndex />
   else if (route[0] === 'kontak') view = <KontakPage />
   else view = <Home anchor={['tentang', 'timeline'].includes(route[0]) ? route[0] : 'beranda'} user={user} onLogin={() => setModal(true)} />
 
   // Render collapsible desktop sidebar for authenticated dashboard routes
-  const isDashboardRoute = ['mahasiswa', 'ajukan-proposal', 'ajukanproposal', 'logbook', 'tim', 'caritim', 'idealab', 'dosen', 'reviewer', 'admin', 'pesan', 'cek-status', 'cekstatus', 'profil'].includes(raw)
+  const isDashboardRoute = ['mahasiswa', 'dosen', 'reviewer', 'admin'].includes(raw)
 
-  // Akses Panduan dari portal sidebar (hash #pedoman/sidebar) tetap pakai sidebar layout
-  const isPedomanSidebar = raw === 'pedoman' && route[1] === 'sidebar'
+  // Akses Panduan dari portal sidebar (hash #role/pedoman) tetap pakai sidebar layout
+  const isPedomanSidebar = sub === 'pedoman'
 
   const handleOpenProfile = () => {
-    window.location.hash = '#profil'
+    // Navigasi profil sekarang di bawah prefix role aktif
+    const rolePrefix = user?.role || 'mahasiswa'
+    window.location.hash = `#${rolePrefix}/profil`
   }
 
+  // Untuk sidebar layout, pass sub-route sebagai active item agar sidebar bisa highlight item yang benar
+  const sidebarActive = sub || raw
+
   const pageContent = (isDashboardRoute || isPedomanSidebar) && user ? (
-    <DesktopSidebarLayout user={user} active={raw} onLogout={logout} onSwitchRole={switchRole} onOpenProfile={handleOpenProfile}>
+    <DesktopSidebarLayout user={user} active={sidebarActive} routePrefix={raw} onLogout={logout} onSwitchRole={switchRole} onOpenProfile={handleOpenProfile}>
       {view}
     </DesktopSidebarLayout>
   ) : (

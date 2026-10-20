@@ -182,7 +182,7 @@ export function MahasiswaDashboard({ user }) {
 
         <div className="student-portal-header-actions">
           <NotificationBell />
-          <a className="btn-portal-create" href="#ajukan-proposal">
+          <a className="btn-portal-create" href="#mahasiswa/ajukan-proposal">
             <Plus size={16} />
             <span>Ajukan Proposal Baru</span>
           </a>
@@ -220,7 +220,7 @@ export function MahasiswaDashboard({ user }) {
             </div>
           </div>
           <a
-            href="#tim"
+            href="#mahasiswa/tim"
             className="btn-action primary"
             style={{ padding: '0.55rem 1.15rem', fontSize: '0.84rem', gap: '0.4rem', textDecoration: 'none' }}
           >
@@ -276,7 +276,7 @@ export function MahasiswaDashboard({ user }) {
               <span className="truncate">{team?.name || 'Tim PKM Unila'}</span>
             </div>
           </div>
-          <a href="#tim" className="metric-card-link">
+          <a href="#mahasiswa/tim" className="metric-card-link">
             <span>Kelola Tim Usulan</span>
             <ArrowRight size={13} />
           </a>
@@ -301,7 +301,7 @@ export function MahasiswaDashboard({ user }) {
               <span className="truncate">{supervisor ? (supervisor.studyProgram || 'Disetujui') : 'Pilih pada usulan'}</span>
             </div>
           </div>
-          <a href="#ajukan-proposal" className="metric-card-link">
+          <a href="#mahasiswa/ajukan-proposal" className="metric-card-link">
             <span>{supervisor ? 'Detail Pembimbing' : 'Pilih Pembimbing'}</span>
             <ArrowRight size={13} />
           </a>
@@ -325,7 +325,7 @@ export function MahasiswaDashboard({ user }) {
               <span className="truncate">{stats.feedbackCount ? `${stats.feedbackCount} Catatan Revisi` : 'Kemajuan Terverifikasi'}</span>
             </div>
           </div>
-          <a href="#logbook" className="metric-card-link">
+          <a href="#mahasiswa/logbook" className="metric-card-link">
             <span>Buka Catatan Logbook</span>
             <ArrowRight size={13} />
           </a>
@@ -471,11 +471,11 @@ export function MahasiswaDashboard({ user }) {
                   )}
 
                   <div className="bento-hero-actions">
-                    <a className="btn-action primary" href="#ajukan-proposal">
+                    <a className="btn-action primary" href="#mahasiswa/ajukan-proposal">
                       <FileEdit size={15} />
                       <span>Edit / Lanjutkan Usulan</span>
                     </a>
-                    <a className="btn-action secondary" href="#logbook">
+                    <a className="btn-action secondary" href="#mahasiswa/logbook">
                       <BookOpen size={15} />
                       <span>Buka Logbook Digital</span>
                     </a>
@@ -502,7 +502,7 @@ export function MahasiswaDashboard({ user }) {
                   <p style={{ color: '#64748b', fontSize: '0.9rem', maxWidth: 460, margin: '0 auto 1.25rem', lineHeight: 1.5 }}>
                     Mulai susun usulan PKM pertama tim Anda melalui formulir bertahap 3-langkah yang mudah dan terpandu.
                   </p>
-                  <a className="btn-action primary" href="#ajukan-proposal">
+                  <a className="btn-action primary" href="#mahasiswa/ajukan-proposal">
                     <Plus size={16} />
                     <span>Ajukan Proposal Baru</span>
                   </a>
@@ -548,7 +548,7 @@ export function MahasiswaDashboard({ user }) {
                     <div className="bento-empty-desc">
                       Pilih dosen pendamping untuk mengesahkan dan memvalidasi usulan PKM tim Anda.
                     </div>
-                    <a className="bento-cta-btn" href="#ajukan-proposal">
+                    <a className="bento-cta-btn" href="#mahasiswa/ajukan-proposal">
                       <Plus size={13} />
                       <span>Pilih Dosen Pembimbing</span>
                     </a>
@@ -570,7 +570,7 @@ export function MahasiswaDashboard({ user }) {
                       </span>
                     </div>
                   </div>
-                  <a href="#tim" className="bento-header-link" title="Kelola Anggota Tim">
+                  <a href="#mahasiswa/tim" className="bento-header-link" title="Kelola Anggota Tim">
                     <span>Kelola</span>
                     <ChevronRight size={13} />
                   </a>
@@ -615,7 +615,7 @@ export function MahasiswaDashboard({ user }) {
                 {(!team?.members || team.members.length < 3) && (
                   <div style={{ marginTop: '0.75rem', paddingTop: '0.65rem', borderTop: '0.5px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem', color: '#64748b' }}>
                     <span>Disarankan 3–5 anggota tim</span>
-                    <a href="#caritim" className="bento-header-link">
+                    <a href="#mahasiswa/caritim" className="bento-header-link">
                       <UserPlus size={13} />
                       <span>Cari Rekan</span>
                     </a>
@@ -662,7 +662,7 @@ export function MahasiswaDashboard({ user }) {
                   </div>
                 </div>
 
-                <a className="btn-action secondary" href="#logbook" style={{ width: '100%', boxSizing: 'border-box' }}>
+                <a className="btn-action secondary" href="#mahasiswa/logbook" style={{ width: '100%', boxSizing: 'border-box' }}>
                   <Plus size={14} />
                   <span>Tambah Catatan Logbook</span>
                 </a>

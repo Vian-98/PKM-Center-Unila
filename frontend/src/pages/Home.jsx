@@ -63,7 +63,7 @@ function Ecosystem() {
       title: 'Uji kekuatan idemu',
       copy: 'Dapatkan analisis kebaruan, dampak, dan kelayakan ide sebelum menyusun proposal.',
       link: 'Coba PKMATE',
-      href: '#idealab',
+      href: '#mahasiswa/pkmate',
 
       dark: true,
       icon: (
@@ -78,7 +78,7 @@ function Ecosystem() {
       title: 'Temukan tim multidisiplin',
       copy: 'Rekomendasi anggota dengan kompetensi yang saling melengkapi dari seluruh fakultas.',
       link: 'Cari anggota',
-      href: '#caritim',
+      href: '#mahasiswa/caritim',
       dark: false,
       icon: (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -92,7 +92,7 @@ function Ecosystem() {
       title: 'Terhubung dengan mentor',
       copy: 'Pilih dosen pembimbing berdasarkan bidang riset dan pengalaman PKM.',
       link: 'Lihat pembimbing',
-      href: '#caritim',
+      href: '#mahasiswa/caritim',
       dark: false,
       icon: (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -226,7 +226,7 @@ export function Home({ anchor = 'beranda', user, onLogin }) {
       return
     }
     if (user.role === 'mahasiswa') {
-      window.location.hash = '#ajukan-proposal'
+      window.location.hash = '#mahasiswa/ajukan-proposal'
     } else {
       window.location.hash = '#kontak'
     }

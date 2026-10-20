@@ -571,7 +571,7 @@ export function TeamManagement({ user }) {
 
           <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem' }}>
             <a
-              href="#caritim"
+              href="#mahasiswa/caritim"
               className="btn-action secondary"
               style={{ flex: 1, justifyContent: 'center', padding: '0.75rem' }}
             >

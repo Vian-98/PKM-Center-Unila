@@ -43,9 +43,9 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
     loadStore('pkm_custom_contacts', [])
   )
 
-  // Hitung daftar kontak relevan untuk akun yang sedang login
+  // Hitung daftar kontak relevan untuk akun yang sedang login (dosen, sesama mahasiswa, dll)
   const contactsList = useMemo(() => {
-    const base = getContactsForUser(currentUserId) || []
+    const base = getContactsForUser(currentUserId, user?.role) || []
     const customs = customContacts.filter(c => c.ownerId === currentUserId)
     const combined = [...base, ...customs]
 
@@ -81,13 +81,27 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
         unreadCount: 0,
       }
     }).sort((a, b) => new Date(b.lastSentAt) - new Date(a.lastSentAt))
-  }, [currentUserId, customContacts, masterMessages])
+  }, [currentUserId, customContacts, masterMessages, user?.role])
 
   // Kontak yang sedang aktif dipilih di jendela chat
   const [selectedContactId, setSelectedContactId] = useState(() => {
-    const init = getContactsForUser(resolveCurrentUserId(user))
-    return init[0]?.id || 'user-mhs-nadia'
+    const target = localStorage.getItem('pkm_target_chat_contact')
+    if (target) {
+      localStorage.removeItem('pkm_target_chat_contact')
+      return target
+    }
+    const init = getContactsForUser(resolveCurrentUserId(user), user?.role)
+    return init[0]?.id || 'user-dosen-budi'
   })
+
+  // Sinkronisasi target kontak jika dipicu dari halaman lain (CariTim / DosenDashboard)
+  useEffect(() => {
+    const target = localStorage.getItem('pkm_target_chat_contact')
+    if (target) {
+      setSelectedContactId(target)
+      localStorage.removeItem('pkm_target_chat_contact')
+    }
+  }, [])
 
   // Jaga agar selectedContactId selalu valid dan bukan diri sendiri
   useEffect(() => {
@@ -101,6 +115,7 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
 
   const [inputText, setInputText] = useState('')
   const [searchContact, setSearchContact] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('all') // 'all' | 'dosen' | 'mahasiswa'
 
   // State Rekap Catatan Revisi & Feedback Proposal
   const [feedbacks, setFeedbacks] = useState(() =>
@@ -295,13 +310,26 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
     alert('Catatan revisi berhasil diterbitkan ke rekapitulasi proposal.')
   }
 
-  // Filter daftar kontak berdasarkan input pencarian
+  // Filter daftar kontak berdasarkan input pencarian & filter kategori (Semua / Dosen / Mahasiswa)
   const filteredContacts = useMemo(() => {
-    return contactsList.filter(c =>
-      c.contactName.toLowerCase().includes(searchContact.toLowerCase()) ||
-      c.contactRole.toLowerCase().includes(searchContact.toLowerCase())
-    )
-  }, [contactsList, searchContact])
+    return contactsList.filter(c => {
+      const matchSearch = (
+        c.contactName.toLowerCase().includes(searchContact.toLowerCase()) ||
+        c.contactRole.toLowerCase().includes(searchContact.toLowerCase())
+      )
+      if (!matchSearch) return false
+
+      if (categoryFilter === 'dosen') {
+        const u = SYSTEM_USERS[c.contactId]
+        return u?.role === 'dosen' || c.contactRole.toLowerCase().includes('dosen')
+      }
+      if (categoryFilter === 'mahasiswa') {
+        const u = SYSTEM_USERS[c.contactId]
+        return u?.role === 'mahasiswa' || c.contactRole.toLowerCase().includes('mahasiswa')
+      }
+      return true
+    })
+  }, [contactsList, searchContact, categoryFilter])
 
   // Filter rekap catatan revisi
   const filteredFeedbacks = useMemo(() => {
@@ -500,6 +528,64 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
                 onClick={() => setNewContactModal(prev => ({ ...prev, isOpen: true }))}
               >
                 + Chat Baru
+              </button>
+            </div>
+
+            {/* Tab Filter Cepat: Semua / Dosen / Mahasiswa */}
+            <div style={{ display: 'flex', gap: '0.35rem', padding: '0.55rem 0.75rem', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+              <button
+                type="button"
+                onClick={() => setCategoryFilter('all')}
+                style={{
+                  flex: 1,
+                  padding: '0.3rem 0.4rem',
+                  borderRadius: '9999px',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  border: 'none',
+                  background: categoryFilter === 'all' ? '#2563eb' : '#e2e8f0',
+                  color: categoryFilter === 'all' ? '#ffffff' : '#475569',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                Semua
+              </button>
+              <button
+                type="button"
+                onClick={() => setCategoryFilter('dosen')}
+                style={{
+                  flex: 1,
+                  padding: '0.3rem 0.4rem',
+                  borderRadius: '9999px',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  border: 'none',
+                  background: categoryFilter === 'dosen' ? '#059669' : '#e2e8f0',
+                  color: categoryFilter === 'dosen' ? '#ffffff' : '#475569',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                Dosen
+              </button>
+              <button
+                type="button"
+                onClick={() => setCategoryFilter('mahasiswa')}
+                style={{
+                  flex: 1,
+                  padding: '0.3rem 0.4rem',
+                  borderRadius: '9999px',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  border: 'none',
+                  background: categoryFilter === 'mahasiswa' ? '#7c3aed' : '#e2e8f0',
+                  color: categoryFilter === 'mahasiswa' ? '#ffffff' : '#475569',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                Mahasiswa
               </button>
             </div>
 
@@ -805,11 +891,27 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
                     }}
                   >
                     <option value="">-- Pilih dari akun terdaftar atau masukkan kustom di bawah --</option>
-                    {directoryOptions.map(u => (
-                      <option key={u.id} value={u.id}>
-                        {u.name} — {u.roleLabel}
-                      </option>
-                    ))}
+                    <optgroup label="Dosen Pembimbing">
+                      {directoryOptions.filter(u => u.role === 'dosen').map(u => (
+                        <option key={u.id} value={u.id}>
+                          {u.name} — {u.roleLabel}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Rekan Mahasiswa PKM">
+                      {directoryOptions.filter(u => u.role === 'mahasiswa').map(u => (
+                        <option key={u.id} value={u.id}>
+                          {u.name} — {u.roleLabel}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Reviewer & Admin">
+                      {directoryOptions.filter(u => u.role !== 'dosen' && u.role !== 'mahasiswa').map(u => (
+                        <option key={u.id} value={u.id}>
+                          {u.name} — {u.roleLabel}
+                        </option>
+                      ))}
+                    </optgroup>
                   </select>
                 </div>
 

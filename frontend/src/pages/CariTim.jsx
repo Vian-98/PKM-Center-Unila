@@ -5,76 +5,37 @@ import {
 } from 'lucide-react'
 import { GlowCard } from '../components/GlowCard'
 import { getVacancies, getMySentRequests, saveMySentRequests } from '../lib/matchmakingData'
-import { loadStore, saveStore } from '../lib/dosenReviewerData'
+import { loadStore, saveStore, initialSupervisorRequests } from '../lib/dosenReviewerData'
 import { sendTeamInvitation } from '../lib/studentApi'
 import { recordNewInvitation } from '../lib/teamInvitationData'
 
+// Direktori Dosen Pembimbing Resmi yang memiliki akun terdaftar dan aktif di sistem PKM Center
 const DOSEN_LIST = [
   {
-    id: 'dos-1',
-    name: 'Dr. Budi Dosen, S.T., M.T.',
+    id: 'user-dosen-budi',
+    name: 'Dr. Budi Santoso, S.T., M.T.',
+    email: 'dosen@pkm.unila.ac.id',
     faculty: 'Fakultas Teknik',
     prodi: 'Teknik Elektro',
     nidn: '0015048201',
+    nip: '198204152008121002',
     bidang: ['Edge AI', 'Internet of Things', 'Sistem Tertanam'],
-    badge: 'Pembimbing PIMNAS 2024',
+    badge: 'Akun Aktif • Pembimbing PIMNAS',
     quota: '4/10 Bimbingan',
     bio: 'Fokus riset otomasi cerdas, instrumentasi industri, dan komputasi edge untuk pertanian dan kebencanaan.',
   },
   {
-    id: 'dos-2',
-    name: 'Darmansyah, S.T., M.T., Ph.D.',
-    faculty: 'Fakultas Teknik',
-    prodi: 'Teknik Informatika',
-    nidn: '0028097903',
-    bidang: ['Computer Vision', 'Deep Learning', 'Smart Farming'],
-    badge: 'Medali Emas PIMNAS',
-    quota: '5/10 Bimbingan',
-    bio: 'Pengembangan visi komputer, klasifikasi citra satelit, dan deteksi dini penyakit tanaman pangan.',
-  },
-  {
-    id: 'dos-3',
-    name: 'Dr. Sumargono, M.Pd.',
-    faculty: 'FKIP',
-    prodi: 'Pendidikan Sejarah',
-    nidn: '0012066802',
-    bidang: ['Pendidikan Sejarah', 'Etnopedagogi', 'Media Digital'],
-    badge: 'Reviewer PKM Nasional',
+    id: 'user-dosen-sri',
+    name: 'Dr. Ir. Sri Mulyani, M.T.',
+    email: 'dosen.reviewer@pkm.unila.ac.id',
+    faculty: 'Fakultas Pertanian',
+    prodi: 'Teknologi Hasil Pertanian',
+    nidn: '0020087501',
+    nip: '197508202001122001',
+    bidang: ['Teknologi Pangan', 'Hilirisasi Hasil Pertanian', 'Bioteknologi Pascapanen'],
+    badge: 'Akun Aktif • Dosen & Reviewer PKM',
     quota: '3/10 Bimbingan',
-    bio: 'Riset kearifan lokal Lampung, revitalisasi tradisi tutur, dan integrasi media digital dalam pembelajaran.',
-  },
-  {
-    id: 'dos-4',
-    name: 'Yusuf Perdana, S.Pd., M.Pd.',
-    faculty: 'FKIP',
-    prodi: 'Teknologi Pendidikan',
-    nidn: '0003019001',
-    bidang: ['Pembelajaran Interaktif', 'Gamifikasi Edukasi', 'Inovasi Modul'],
-    badge: 'Fasilitator PKM Unila',
-    quota: '2/10 Bimbingan',
-    bio: 'Eksplorasi media interaktif, desain pengalaman belajar, dan pemberdayaan komunitas belajar siswa.',
-  },
-  {
-    id: 'dos-5',
-    name: 'Dr. rer. nat. Akmal Junaidi, S.Si., M.Sc.',
-    faculty: 'FMIPA',
-    prodi: 'Ilmu Komputer',
-    nidn: '0019077405',
-    bidang: ['Data Science', 'Natural Language Processing', 'Bioinformatika'],
-    badge: 'Reviewer Internal Unila',
-    quota: '4/10 Bimbingan',
-    bio: 'Penerapan penambangan data genomik, pemodelan statistik bahasa daerah, dan komputasi sains.',
-  },
-  {
-    id: 'dos-6',
-    name: 'Dr. Eng. Ir. Helmy Fitriawan, S.T., M.Sc.',
-    faculty: 'Fakultas Teknik',
-    prodi: 'Teknik Elektro',
-    nidn: '0010087502',
-    bidang: ['Wireless Sensor Network', 'Telekomunikasi', 'Radar Mikro'],
-    badge: 'Koordinator Riset Terapan',
-    quota: '3/10 Bimbingan',
-    bio: 'Riset jaringan nirkabel hemat daya, deteksi propagasi sinyal maritim, dan telemetri jarak jauh.',
+    bio: 'Fasilitasi hilirisasi produk pertanian, formulasi kemasan ramah lingkungan, dan pendampingan UMKM olahan pangan lokal Lampung.',
   },
 ]
 
@@ -348,6 +309,29 @@ export function CariTim({ user }) {
         console.warn('sendTeamInvitation API fallback to local sync:', err.message)
       }
     }
+
+    // Jika mengundang Dosen Pembimbing: Teruskan ke antrean permintaan bimbingan resmi (langsung muncul di DosenDashboard akun dosen tersebut)
+    if (type.includes('Dosen') || type.includes('Pembimbing')) {
+      const currentDosenReqs = loadStore('pkm_dosen_requests', initialSupervisorRequests)
+      const newDosenReq = {
+        id: `req-${Date.now()}`,
+        proposalId: 'prop-custom',
+        proposalTitle: 'Smart Agriculture IoT untuk Monitoring & Otomasi Lahan Lada Lampung Berbasis Edge AI',
+        schemeCode: 'PKM-KC',
+        teamName: isNadia ? 'AgroSense Unila' : `Tim PKM ${user?.name || 'Mahasiswa'}`,
+        studentName: user?.name || 'Nadia Putri Maharani',
+        studentNumber: user?.studentNumber || user?.npm || '2117051001',
+        studentFaculty: user?.faculty || 'Fakultas Teknik',
+        studentProdi: user?.studyProgram || user?.department || 'Teknik Elektro',
+        requestMessage: `Selamat siang Bapak/Ibu ${name}, kami dari tim mahasiswa Unila mengajukan permohonan kesediaan Bapak/Ibu menjadi dosen pembimbing PKM kami. Kami sangat berharap arahan dan bimbingan Bapak/Ibu.`,
+        status: 'pending',
+        responseMessage: '',
+        respondedAt: null,
+        createdAt: new Date().toISOString(),
+      }
+      saveStore('pkm_dosen_requests', [newDosenReq, ...currentDosenReqs])
+    }
+
     setAlertMsg(`Undangan resmi berhasil dikirimkan kepada ${name} (${type})!`)
     setTimeout(() => setAlertMsg(''), 4500)
   }
@@ -604,14 +588,18 @@ export function CariTim({ user }) {
                     </>
                   )}
                 </button>
-                <a
-                  href="#pesan"
+                <button
+                  type="button"
+                  onClick={() => {
+                    localStorage.setItem('pkm_target_chat_contact', d.id)
+                    window.location.hash = '#mahasiswa/pesan'
+                  }}
                   className="btn-action secondary"
-                  title="Kirim pesan langsung"
-                  style={{ padding: '0.65rem 0.85rem' }}
+                  title={`Kirim pesan langsung ke ${d.name}`}
+                  style={{ padding: '0.65rem 0.85rem', cursor: 'pointer' }}
                 >
                   <MessageSquare size={14} />
-                </a>
+                </button>
               </div>
             </article>
           ))}
@@ -685,14 +673,25 @@ export function CariTim({ user }) {
                     </>
                   )}
                 </button>
-                <a
-                  href="#pesan"
+                <button
+                  type="button"
+                  onClick={() => {
+                    const mName = (m.name || '').toLowerCase()
+                    let targetId = 'user-mhs-nadia'
+                    if (mName.includes('favian') || mName.includes('rifqi') || m.id === 'mhs-1') targetId = 'user-mhs-favian'
+                    else if (mName.includes('ahmad') || mName.includes('fauzi') || m.id === 'mhs-2') targetId = 'user-mhs-ahmad'
+                    else if (mName.includes('siti') || mName.includes('nurhaliza') || m.id === 'mhs-3') targetId = 'user-mhs-siti'
+                    else if (mName.includes('bima')) targetId = 'user-mhs-bima'
+                    else if (mName.includes('rian')) targetId = 'user-mhs-rian'
+                    localStorage.setItem('pkm_target_chat_contact', targetId)
+                    window.location.hash = '#mahasiswa/pesan'
+                  }}
                   className="btn-action secondary"
-                  title="Kirim pesan langsung"
-                  style={{ padding: '0.65rem 0.85rem' }}
+                  title={`Kirim pesan langsung ke ${m.name}`}
+                  style={{ padding: '0.65rem 0.85rem', cursor: 'pointer' }}
                 >
                   <MessageSquare size={14} />
-                </a>
+                </button>
               </div>
             </article>
           ))}

@@ -39,7 +39,7 @@ export function AppleMobileDock({ active, user, onLogin, onLogout, onSwitchRole,
       case 'dosen':
         return [
           { id: 'dosen', label: 'Bimbingan', icon: <GraduationCap size={19} strokeWidth={2} />, href: '#dosen' },
-          { id: 'pesan', label: 'Pesan', icon: <MessageSquare size={19} strokeWidth={2} />, href: '#pesan' },
+          { id: 'dosen/pesan', label: 'Pesan', icon: <MessageSquare size={19} strokeWidth={2} />, href: '#dosen/pesan' },
           { id: 'pedoman', label: 'Panduan', icon: <BookOpen size={19} strokeWidth={2} />, href: '#pedoman' },
           { id: 'beranda', label: 'Beranda', icon: <Home size={19} strokeWidth={2} />, href: '#beranda' },
           { id: 'more', label: 'Lainnya', icon: <MoreHorizontal size={19} strokeWidth={2} />, onClick: () => setSheetOpen(true) },
@@ -47,7 +47,7 @@ export function AppleMobileDock({ active, user, onLogin, onLogout, onSwitchRole,
       case 'reviewer':
         return [
           { id: 'reviewer', label: 'Penilaian', icon: <Scale size={19} strokeWidth={2} />, href: '#reviewer' },
-          { id: 'pesan', label: 'Pesan', icon: <MessageSquare size={19} strokeWidth={2} />, href: '#pesan' },
+          { id: 'reviewer/pesan', label: 'Pesan', icon: <MessageSquare size={19} strokeWidth={2} />, href: '#reviewer/pesan' },
           { id: 'pedoman', label: 'Panduan', icon: <BookOpen size={19} strokeWidth={2} />, href: '#pedoman' },
           { id: 'beranda', label: 'Beranda', icon: <Home size={19} strokeWidth={2} />, href: '#beranda' },
           { id: 'more', label: 'Lainnya', icon: <MoreHorizontal size={19} strokeWidth={2} />, onClick: () => setSheetOpen(true) },
@@ -57,16 +57,16 @@ export function AppleMobileDock({ active, user, onLogin, onLogout, onSwitchRole,
           { id: 'admin', label: 'Konten', icon: <FolderCog size={19} strokeWidth={2} />, href: '#admin' },
           { id: 'dosen', label: 'Dosen', icon: <GraduationCap size={19} strokeWidth={2} />, href: '#dosen' },
           { id: 'reviewer', label: 'Reviewer', icon: <Scale size={19} strokeWidth={2} />, href: '#reviewer' },
-          { id: 'pesan', label: 'Pesan', icon: <MessageSquare size={19} strokeWidth={2} />, href: '#pesan' },
+          { id: 'admin/pesan', label: 'Pesan', icon: <MessageSquare size={19} strokeWidth={2} />, href: '#admin/pesan' },
           { id: 'more', label: 'Lainnya', icon: <MoreHorizontal size={19} strokeWidth={2} />, onClick: () => setSheetOpen(true) },
         ]
       case 'mahasiswa':
       default:
         return [
           { id: 'mahasiswa', label: 'Dashboard', icon: <LayoutDashboard size={19} strokeWidth={2} />, href: '#mahasiswa' },
-          { id: 'ajukan-proposal', label: 'Usulan', icon: <FilePlus size={19} strokeWidth={2} />, href: '#ajukan-proposal' },
-          { id: 'logbook', label: 'Logbook', icon: <ClipboardList size={19} strokeWidth={2} />, href: '#logbook' },
-          { id: 'tim', label: 'Tim', icon: <Users size={19} strokeWidth={2} />, href: '#tim' },
+          { id: 'mahasiswa/ajukan-proposal', label: 'Usulan', icon: <FilePlus size={19} strokeWidth={2} />, href: '#mahasiswa/ajukan-proposal' },
+          { id: 'mahasiswa/logbook', label: 'Logbook', icon: <ClipboardList size={19} strokeWidth={2} />, href: '#mahasiswa/logbook' },
+          { id: 'mahasiswa/tim', label: 'Tim', icon: <Users size={19} strokeWidth={2} />, href: '#mahasiswa/tim' },
           { id: 'more', label: 'Lainnya', icon: <MoreHorizontal size={19} strokeWidth={2} />, onClick: () => setSheetOpen(true) },
         ]
     }
@@ -79,7 +79,8 @@ export function AppleMobileDock({ active, user, onLogin, onLogout, onSwitchRole,
       <nav className="apple-mobile-dock" aria-label="Navigasi Bawah">
         <div className="dock-pill-container">
           {items.map(item => {
-            const isSelected = active === item.id || (item.id === 'ajukan-proposal' && active === 'ajukanproposal')
+            const currentHash = window.location.hash || '#beranda'
+            const isSelected = currentHash === `#${item.id}` || currentHash.startsWith(`#${item.id}/`)
             if (item.onClick) {
               return (
                 <button
@@ -142,20 +143,20 @@ export function AppleMobileDock({ active, user, onLogin, onLogout, onSwitchRole,
               )}
               {user?.role === 'mahasiswa' && (
                 <>
-                  <a href="#idealab" className="apple-sheet-item" onClick={() => { setSheetOpen(false); window.scrollTo({ top: 0, left: 0, behavior: 'instant' }) }}>
+                  <a href="#mahasiswa/pkmate" className="apple-sheet-item" onClick={() => { setSheetOpen(false); window.scrollTo({ top: 0, left: 0, behavior: 'instant' }) }}>
                     <div className="apple-sheet-icon" style={{ background: '#eff6ff', color: '#0071e3' }}><Sparkles size={20} /></div>
                     <span>PKMATE (AI)</span>
                   </a>
 
-                  <a href="#caritim" className="apple-sheet-item" onClick={() => { setSheetOpen(false); window.scrollTo({ top: 0, left: 0, behavior: 'instant' }) }}>
+                  <a href="#mahasiswa/caritim" className="apple-sheet-item" onClick={() => { setSheetOpen(false); window.scrollTo({ top: 0, left: 0, behavior: 'instant' }) }}>
                     <div className="apple-sheet-icon" style={{ background: '#f0fdf4', color: '#16a34a' }}><Users size={20} /></div>
                     <span>Cari Tim / Dosen</span>
                   </a>
-                  <a href="#cek-status" className="apple-sheet-item" onClick={() => { setSheetOpen(false); window.scrollTo({ top: 0, left: 0, behavior: 'instant' }) }}>
+                  <a href="#mahasiswa/cek-status" className="apple-sheet-item" onClick={() => { setSheetOpen(false); window.scrollTo({ top: 0, left: 0, behavior: 'instant' }) }}>
                     <div className="apple-sheet-icon" style={{ background: '#fefce8', color: '#ca8a04' }}><Search size={20} /></div>
                     <span>Lacak Usulan</span>
                   </a>
-                  <a href="#pesan" className="apple-sheet-item" onClick={() => { setSheetOpen(false); window.scrollTo({ top: 0, left: 0, behavior: 'instant' }) }}>
+                  <a href="#mahasiswa/pesan" className="apple-sheet-item" onClick={() => { setSheetOpen(false); window.scrollTo({ top: 0, left: 0, behavior: 'instant' }) }}>
                     <div className="apple-sheet-icon" style={{ background: '#faf5ff', color: '#9333ea' }}><MessageSquare size={20} /></div>
                     <span>Pesan &amp; Revisi</span>
                   </a>

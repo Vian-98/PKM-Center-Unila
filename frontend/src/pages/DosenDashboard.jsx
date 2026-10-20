@@ -746,9 +746,24 @@ export function DosenDashboard({ user, onSwitchRole }) {
                       </svg>
                       <span>Lihat Dokumen PDF</span>
                     </a>
-                    <a href="#pesan" className="btn-action secondary" style={{ textDecoration: 'none' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        let targetId = 'user-mhs-nadia'
+                        const leader = (prop.leaderName || '').toLowerCase()
+                        if (leader.includes('fajar') || leader.includes('bima')) targetId = 'user-mhs-bima'
+                        else if (leader.includes('rian')) targetId = 'user-mhs-rian'
+                        else if (leader.includes('ahmad') || leader.includes('zaki')) targetId = 'user-mhs-ahmad'
+                        else if (leader.includes('siti')) targetId = 'user-mhs-siti'
+                        else if (leader.includes('favian')) targetId = 'user-mhs-favian'
+                        localStorage.setItem('pkm_target_chat_contact', targetId)
+                        window.location.hash = '#dosen/pesan'
+                      }}
+                      className="btn-action secondary"
+                      style={{ cursor: 'pointer' }}
+                    >
                       Chat Tim Mahasiswa
-                    </a>
+                    </button>
                     <button
                       className="btn-action primary"
                       onClick={() => handleOpenLogbook(prop)}

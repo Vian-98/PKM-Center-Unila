@@ -19,58 +19,55 @@ import {
   ChevronRight,
 } from 'lucide-react'
 
-export function DesktopSidebarLayout({ user, active, onLogout, onSwitchRole, onOpenProfile, children }) {
+export function DesktopSidebarLayout({ user, active, routePrefix, onLogout, onSwitchRole, onOpenProfile, children }) {
   const [collapsed, setCollapsed] = useState(false)
+
+  // routePrefix = 'mahasiswa' | 'dosen' | 'reviewer' | 'admin'
+  const prefix = routePrefix || user?.role || 'mahasiswa'
 
   const getSidebarLinks = () => {
     if (!user) {
       return [
         { label: 'Beranda Utama', href: '#beranda', icon: <Home size={17} /> },
         { label: 'Panduan PKM', href: '#pedoman', icon: <BookOpen size={17} /> },
-        { label: 'Cek Status', href: '#cek-status', icon: <Search size={17} /> },
       ]
     }
     switch (user.role) {
       case 'dosen':
         return [
           { label: 'Dashboard Bimbingan', href: '#dosen', icon: <GraduationCap size={17} /> },
-          { label: 'Pesan & Catatan', href: '#pesan', icon: <MessageSquare size={17} /> },
-          { label: 'Profil Saya', href: '#profil', icon: <User size={17} /> },
-          { label: 'Buku Panduan', href: '#pedoman/sidebar', icon: <BookOpen size={17} /> },
-          { label: 'Portal Utama', href: '#beranda', icon: <Home size={17} /> },
+          { label: 'Pesan & Catatan', href: '#dosen/pesan', icon: <MessageSquare size={17} /> },
+          { label: 'Profil Saya', href: '#dosen/profil', icon: <User size={17} /> },
+          { label: 'Buku Panduan', href: '#pedoman', icon: <BookOpen size={17} /> },
         ]
       case 'reviewer':
         return [
           { label: 'Antrean Penilaian', href: '#reviewer', icon: <Scale size={17} /> },
-          { label: 'Pesan & Feedback', href: '#pesan', icon: <MessageSquare size={17} /> },
-          { label: 'Profil Saya', href: '#profil', icon: <User size={17} /> },
-          { label: 'Buku Panduan', href: '#pedoman/sidebar', icon: <BookOpen size={17} /> },
-          { label: 'Portal Utama', href: '#beranda', icon: <Home size={17} /> },
+          { label: 'Pesan & Feedback', href: '#reviewer/pesan', icon: <MessageSquare size={17} /> },
+          { label: 'Profil Saya', href: '#reviewer/profil', icon: <User size={17} /> },
+          { label: 'Buku Panduan', href: '#pedoman', icon: <BookOpen size={17} /> },
         ]
       case 'admin':
         return [
           { label: 'Kelola Data', href: '#admin', icon: <FolderCog size={17} /> },
           { label: 'Portal Dosen', href: '#dosen', icon: <GraduationCap size={17} /> },
           { label: 'Portal Reviewer', href: '#reviewer', icon: <Scale size={17} /> },
-          { label: 'Pusat Pesan', href: '#pesan', icon: <MessageSquare size={17} /> },
-          { label: 'Profil Saya', href: '#profil', icon: <User size={17} /> },
-          { label: 'Portal Utama', href: '#beranda', icon: <Home size={17} /> },
+          { label: 'Pusat Pesan', href: '#admin/pesan', icon: <MessageSquare size={17} /> },
+          { label: 'Profil Saya', href: '#admin/profil', icon: <User size={17} /> },
         ]
       case 'mahasiswa':
       default:
         return [
           { label: 'Dashboard', href: '#mahasiswa', icon: <LayoutDashboard size={17} /> },
-          { label: 'Ajukan Proposal', href: '#ajukan-proposal', icon: <FilePlus size={17} /> },
-          { label: 'Logbook Digital', href: '#logbook', icon: <ClipboardList size={17} /> },
-          { label: 'Manajemen Tim', href: '#tim', icon: <Users size={17} /> },
-          { label: 'Cari Tim & Dosen', href: '#caritim', icon: <Users size={17} /> },
-          { label: 'PKMATE (AI)', href: '#idealab', icon: <Sparkles size={17} /> },
-          { label: 'Lacak Proposal', href: '#cek-status', icon: <Search size={17} /> },
-
-          { label: 'Pesan & Konsultasi', href: '#pesan', icon: <MessageSquare size={17} /> },
-          { label: 'Profil Saya', href: '#profil', icon: <User size={17} /> },
-          { label: 'Panduan PKM', href: '#pedoman/sidebar', icon: <BookOpen size={17} /> },
-          { label: 'Website Utama', href: '#beranda', icon: <Home size={17} /> },
+          { label: 'Ajukan Proposal', href: '#mahasiswa/ajukan-proposal', icon: <FilePlus size={17} /> },
+          { label: 'Logbook Digital', href: '#mahasiswa/logbook', icon: <ClipboardList size={17} /> },
+          { label: 'Manajemen Tim', href: '#mahasiswa/tim', icon: <Users size={17} /> },
+          { label: 'Cari Tim & Dosen', href: '#mahasiswa/caritim', icon: <Users size={17} /> },
+          { label: 'PKMATE (AI)', href: '#mahasiswa/pkmate', icon: <Sparkles size={17} /> },
+          { label: 'Lacak Proposal', href: '#mahasiswa/cek-status', icon: <Search size={17} /> },
+          { label: 'Pesan & Konsultasi', href: '#mahasiswa/pesan', icon: <MessageSquare size={17} /> },
+          { label: 'Profil Saya', href: '#mahasiswa/profil', icon: <User size={17} /> },
+          { label: 'Panduan PKM', href: '#pedoman', icon: <BookOpen size={17} /> },
         ]
     }
   }
@@ -129,12 +126,18 @@ export function DesktopSidebarLayout({ user, active, onLogout, onSwitchRole, onO
     mahasiswa: 'Mahasiswa PKM',
   }[user?.role] ?? 'Pengguna'
 
+  // Mencocokkan active state berdasarkan sub-route di hash baru
   const isActive = (href) => {
-    const key = href.replace('#', '')
-    if (key === active) return true
-    if (key === `${active}/sidebar`) return true
-    if (key === 'ajukan-proposal' && active === 'ajukanproposal') return true
-    if (key === 'cek-status' && active === 'cekstatus') return true
+    const currentHash = window.location.hash || '#beranda'
+    // Exact match
+    if (`#${active}` === href || currentHash === href) return true
+    // Match sub-route key (e.g. active='ajukan-proposal' matches href='#mahasiswa/ajukan-proposal')
+    const hrefParts = href.replace('#', '').split('/')
+    const subKey = hrefParts.length > 1 ? hrefParts[1] : hrefParts[0]
+    if (subKey === active) return true
+    // Alias matches
+    if (subKey === 'pkmate' && active === 'idealab') return true
+    if (subKey === 'idealab' && active === 'pkmate') return true
     return false
   }
 
@@ -232,9 +235,9 @@ export function DesktopSidebarLayout({ user, active, onLogout, onSwitchRole, onO
             <span className="bo-topbar-title">{portalLabel}</span>
           </div>
 
-          {/* Right: switch + user pill + logout */}
-          <div className="bo-topbar-right">
-            {canSwitch && (
+          {/* Right: switch role (hanya jika pengguna memiliki multi-peran) */}
+          {canSwitch && (
+            <div className="bo-topbar-right">
               <button
                 className="bo-topbar-switch"
                 onClick={() => onSwitchRole(switchTarget)}
@@ -242,22 +245,8 @@ export function DesktopSidebarLayout({ user, active, onLogout, onSwitchRole, onO
                 <ArrowLeftRight size={13} />
                 <span>{switchLabel}</span>
               </button>
-            )}
-
-            {user && (
-              <button className="bo-topbar-user" onClick={onOpenProfile}>
-                <div className="bo-topbar-avatar">{initials}</div>
-                <div className="bo-topbar-user-text">
-                  <span className="bo-topbar-name">{user.name}</span>
-                  <span className="bo-topbar-role">{roleLabel}</span>
-                </div>
-              </button>
-            )}
-
-            <button className="bo-topbar-logout" onClick={onLogout} title="Keluar">
-              <LogOut size={15} />
-            </button>
-          </div>
+            </div>
+          )}
         </header>
 
         {/* Page content */}

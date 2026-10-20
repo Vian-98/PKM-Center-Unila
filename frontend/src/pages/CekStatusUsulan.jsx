@@ -125,7 +125,7 @@ export function CekStatusUsulan({ user }) {
   }
 
   const handleCopyLink = (item) => {
-    const shareUrl = `${window.location.origin}${window.location.pathname}#cek-status`
+    const shareUrl = `${window.location.origin}${window.location.pathname}#mahasiswa/cek-status`
     navigator.clipboard?.writeText(`${shareUrl} (NPM: ${item.studentNumber} - ${item.title})`)
     setCopyToast(`Tautan usulan "${item.title.slice(0, 28)}..." disalin!`)
     setTimeout(() => setCopyToast(''), 3000)
@@ -797,7 +797,7 @@ export function CekStatusUsulan({ user }) {
                     </button>
                     {user?.role === 'mahasiswa' && (
                       <a
-                        href="#logbook"
+                        href="#mahasiswa/logbook"
                         className="track-action-btn gold"
                         style={{ textDecoration: 'none' }}
                       >
