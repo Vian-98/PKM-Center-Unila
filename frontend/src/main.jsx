@@ -611,8 +611,8 @@ function App() {
       else if (sub === 'logbook') view = <LogbookPKM user={user} />
       else if (sub === 'cek-status') view = <CekStatusUsulan user={user} />
       else if (sub === 'idealab' || sub === 'pkmate') view = <IdeaLab user={user} />
-      else if (sub === 'caritim') view = <CariTim user={user} />
-      else if (sub === 'tim') view = <TeamManagement user={user} />
+      else if (sub === 'caritim') view = <TeamManagement user={user} initialTab="dosen" />
+      else if (sub === 'tim') view = <TeamManagement user={user} initialTab="tim" />
       else if (sub === 'pesan') view = <PesanFeedback user={user} onLogin={() => setModal(true)} onSwitchUser={setUser} />
       else if (sub === 'profil') view = <ProfilePage user={user} onUpdateUser={setUser} onSwitchRole={switchRole} onLogout={logout} />
       else if (sub === 'pedoman') view = <PedomanIndex />

@@ -61,13 +61,10 @@ export function DesktopSidebarLayout({ user, active, routePrefix, onLogout, onSw
           { label: 'Dashboard', href: '#mahasiswa', icon: <LayoutDashboard size={17} /> },
           { label: 'Ajukan Proposal', href: '#mahasiswa/ajukan-proposal', icon: <FilePlus size={17} /> },
           { label: 'Logbook Digital', href: '#mahasiswa/logbook', icon: <ClipboardList size={17} /> },
-          { label: 'Manajemen Tim', href: '#mahasiswa/tim', icon: <Users size={17} /> },
-          { label: 'Cari Tim & Dosen', href: '#mahasiswa/caritim', icon: <Users size={17} /> },
+          { label: 'Manajemen & Cari Tim', href: '#mahasiswa/tim', icon: <Users size={17} /> },
           { label: 'PKMATE (AI)', href: '#mahasiswa/pkmate', icon: <Sparkles size={17} /> },
           { label: 'Lacak Proposal', href: '#mahasiswa/cek-status', icon: <Search size={17} /> },
           { label: 'Pesan & Konsultasi', href: '#mahasiswa/pesan', icon: <MessageSquare size={17} /> },
-          { label: 'Profil Saya', href: '#mahasiswa/profil', icon: <User size={17} /> },
-          { label: 'Panduan PKM', href: '#pedoman', icon: <BookOpen size={17} /> },
         ]
     }
   }
@@ -138,6 +135,8 @@ export function DesktopSidebarLayout({ user, active, routePrefix, onLogout, onSw
     // Alias matches
     if (subKey === 'pkmate' && active === 'idealab') return true
     if (subKey === 'idealab' && active === 'pkmate') return true
+    if (subKey === 'tim' && active === 'caritim') return true
+    if (subKey === 'caritim' && active === 'tim') return true
     return false
   }
 

@@ -148,9 +148,9 @@ export function AppleMobileDock({ active, user, onLogin, onLogout, onSwitchRole,
                     <span>PKMATE (AI)</span>
                   </a>
 
-                  <a href="#mahasiswa/caritim" className="apple-sheet-item" onClick={() => { setSheetOpen(false); window.scrollTo({ top: 0, left: 0, behavior: 'instant' }) }}>
+                  <a href="#mahasiswa/tim" className="apple-sheet-item" onClick={() => { setSheetOpen(false); window.scrollTo({ top: 0, left: 0, behavior: 'instant' }) }}>
                     <div className="apple-sheet-icon" style={{ background: '#f0fdf4', color: '#16a34a' }}><Users size={20} /></div>
-                    <span>Cari Tim / Dosen</span>
+                    <span>Manajemen &amp; Cari Tim</span>
                   </a>
                   <a href="#mahasiswa/cek-status" className="apple-sheet-item" onClick={() => { setSheetOpen(false); window.scrollTo({ top: 0, left: 0, behavior: 'instant' }) }}>
                     <div className="apple-sheet-icon" style={{ background: '#fefce8', color: '#ca8a04' }}><Search size={20} /></div>

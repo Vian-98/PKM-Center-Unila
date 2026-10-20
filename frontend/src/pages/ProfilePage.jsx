@@ -15,7 +15,6 @@ import {
   CheckCircle2,
   Sparkles,
   Lock,
-  LogOut,
   Camera,
 } from 'lucide-react'
 import { api } from '../lib/content'
@@ -206,17 +205,6 @@ export function ProfilePage({ user, onUpdateUser, onSwitchRole, onLogout }) {
             >
               <ArrowLeftRight size={15} />
               <span>{switchLabel}</span>
-            </button>
-          )}
-          {onLogout && (
-            <button
-              type="button"
-              onClick={onLogout}
-              className="btn-action danger"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', padding: '0.55rem 0.95rem', borderRadius: '0.65rem' }}
-            >
-              <LogOut size={15} />
-              <span>Keluar</span>
             </button>
           )}
         </div>
