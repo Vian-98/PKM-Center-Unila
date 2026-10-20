@@ -25,6 +25,25 @@ import './styles.css'
 import './ref.css'
 import './modules.css'
 
+// Bersihkan seluruh riwayat chat & pesan di semua akun (Mahasiswa, Dosen, Reviewer, Admin)
+try {
+  const PURGE_KEY = 'pkm_chat_purge_2026_v5_clean'
+  if (localStorage.getItem(PURGE_KEY) !== 'done') {
+    localStorage.setItem(PURGE_KEY, 'done')
+    localStorage.setItem('pkm_master_direct_messages', '[]')
+    localStorage.setItem('pkm_proposal_feedback', '[]')
+    localStorage.removeItem('pkm_custom_contacts')
+    localStorage.removeItem('pkm_target_chat_contact')
+    Object.keys(localStorage).forEach(k => {
+      if (k.startsWith('pkmate_chat_history_') || k.startsWith('pkm_master_direct_messages')) {
+        localStorage.removeItem(k)
+      }
+    })
+  }
+} catch (e) {
+  console.warn('Gagal membersihkan cache chat:', e)
+}
+
 function Brand({ dark = false }) {
   return (
     <a className={`brand ${dark ? 'brand-dark' : ''}`} href="#beranda" aria-label="PKM Center Universitas Lampung">
@@ -40,6 +59,7 @@ const NAV_GUEST = [
   ['beranda', 'Beranda'],
   ['tentang', 'Tentang PKM'],
   ['timeline', 'Timeline'],
+  ['pkmate', 'PKMATE (AI)'],
   ['berita', 'Berita'],
   ['pedoman', 'Panduan'],
   ['galeri', 'Galeri'],
@@ -599,7 +619,7 @@ function App() {
   const route = hash.replace('#', '').split('/')
   const raw = (route[0] || 'beranda').toLowerCase()
   const sub = (route[1] || '').toLowerCase()  // Sub-route di bawah prefix role (misal: ajukan-proposal, logbook, dll)
-  const active = ['beranda', 'tentang', 'timeline', 'berita', 'pedoman', 'portofolio', 'galeri', 'kontak', 'admin', 'dosen', 'reviewer', 'mahasiswa'].includes(raw) ? raw : 'beranda'
+  const active = ['beranda', 'tentang', 'timeline', 'berita', 'pedoman', 'portofolio', 'galeri', 'kontak', 'admin', 'dosen', 'reviewer', 'mahasiswa', 'pkmate', 'idealab'].includes(raw) ? raw : 'beranda'
 
   const fallbackHome = <Home anchor="beranda" user={user} onLogin={() => setModal(true)} />
 
@@ -610,13 +630,15 @@ function App() {
       if (sub === 'ajukan-proposal') view = <AjukanProposal user={user} />
       else if (sub === 'logbook') view = <LogbookPKM user={user} />
       else if (sub === 'cek-status') view = <CekStatusUsulan user={user} />
-      else if (sub === 'idealab' || sub === 'pkmate') view = <IdeaLab user={user} />
+      else if (sub === 'idealab' || sub === 'pkmate') view = <IdeaLab user={user} onLogin={() => setModal(true)} />
       else if (sub === 'caritim') view = <TeamManagement user={user} initialTab="dosen" />
       else if (sub === 'tim') view = <TeamManagement user={user} initialTab="tim" />
       else if (sub === 'pesan') view = <PesanFeedback user={user} onLogin={() => setModal(true)} onSwitchUser={setUser} />
       else if (sub === 'profil') view = <ProfilePage user={user} onUpdateUser={setUser} onSwitchRole={switchRole} onLogout={logout} />
       else if (sub === 'pedoman') view = <PedomanIndex />
       else view = <MahasiswaDashboard user={user} />
+    } else if (sub === 'idealab' || sub === 'pkmate') {
+      view = <IdeaLab user={null} onLogin={() => setModal(true)} />
     } else {
       view = fallbackHome
     }
@@ -655,6 +677,7 @@ function App() {
     }
   }
   // ── Halaman Publik ─────────────────────────────────────────────────
+  else if (raw === 'pkmate' || raw === 'idealab') view = <IdeaLab user={user} onLogin={() => setModal(true)} />
   else if (raw === 'berita') view = route[1] ? <NewsDetail id={route[1]} /> : <NewsIndex />
   else if (raw === 'galeri') view = <Gallery />
   else if (raw === 'pedoman') view = <PedomanIndex />

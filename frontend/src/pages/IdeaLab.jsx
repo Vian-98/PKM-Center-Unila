@@ -15,7 +15,8 @@ import {
   Zap,
   Info,
   Lock,
-  ShieldCheck
+  ShieldCheck,
+  AlertTriangle
 } from 'lucide-react'
 import { api } from '../lib/content'
 
@@ -183,14 +184,74 @@ function parseInlineMarkup(text) {
   return parts
 }
 
-export function IdeaLab({ user }) {
+export function IdeaLab({ user, onLogin }) {
+  const isMahasiswa = Boolean(user && user.role === 'mahasiswa')
+  const userKey = user?.id || (user?.email ? user.email.toLowerCase().replace(/[^a-z0-9]/g, '_') : 'guest')
+  const chatStorageKey = isMahasiswa ? `pkmate_chat_history_${userKey}` : null
+  const getTodayDateStr = () => new Date().toISOString().slice(0, 10)
+
+  // Batas kuota chat
+  const GUEST_SESSION_MAX = 10
+  const MHS_DAILY_MAX = 50
+
   const initialGreeting = {
     role: 'ai',
     content:
       'Halo! Saya PKMATE, asisten AI resmi PKM Center Universitas Lampung.\n\nSaya siap mendampingimu untuk:\n1. Menguji tingkat kebaruan ide (Novelty Score)\n2. Menemukan skema PKM Belmawa (RE, RSH, K, PM, PI, KC, KI, VGK, GFT, AI) yang paling tepat\n3. Memperkuat metodologi & luaran wajib agar lolos pendanaan Belmawa\n4. Merekomendasikan kolaborasi jurusan/fakultas multidisiplin di Unila\n\nApa gagasan inovatif atau masalah di masyarakat yang ingin kamu diskusikan hari ini?'
   }
 
-  const [messages, setMessages] = useState([initialGreeting])
+  // Riwayat percakapan:
+  // - Mahasiswa: diambil dari localStorage per akun mahasiswa
+  // - Guest: TIDAK disimpan di localStorage (hanya in-memory state; hilang jika di-refresh)
+  const [messages, setMessages] = useState(() => {
+    try {
+      if (localStorage.getItem('pkmate_storage_version') !== '2026_cleared_all') {
+        localStorage.setItem('pkmate_storage_version', '2026_cleared_all')
+        Object.keys(localStorage).forEach(k => {
+          if (k.startsWith('pkmate_chat_history_')) {
+            localStorage.removeItem(k)
+          }
+        })
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    if (isMahasiswa && chatStorageKey) {
+      try {
+        const saved = localStorage.getItem(chatStorageKey)
+        if (saved) {
+          const parsed = JSON.parse(saved)
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed
+        }
+      } catch (e) {
+        console.warn('[PKMATE] Gagal membaca riwayat chat lokal:', e)
+      }
+    }
+    return [initialGreeting]
+  })
+
+  // Kuota penggunaan:
+  // - Guest: maksimal 10 chat per sesi (disimpan di sessionStorage)
+  // - Mahasiswa: maksimal 50 chat per hari (disimpan di localStorage per tanggal)
+  const [guestSessionCount, setGuestSessionCount] = useState(() => {
+    try {
+      return parseInt(sessionStorage.getItem('pkmate_guest_session_chat_count') || '0', 10)
+    } catch {
+      return 0
+    }
+  })
+
+  const [mhsDailyCount, setMhsDailyCount] = useState(() => {
+    if (!isMahasiswa) return 0
+    try {
+      const key = `pkmate_daily_quota_${userKey}_${getTodayDateStr()}`
+      return parseInt(localStorage.getItem(key) || '0', 10)
+    } catch {
+      return 0
+    }
+  })
+
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [copiedIndex, setCopiedIndex] = useState(null)
@@ -198,38 +259,86 @@ export function IdeaLab({ user }) {
   const chatEndRef = useRef(null)
   const inputRef = useRef(null)
 
+  // Status apakah kuota telah terlampaui
+  const isQuotaExceeded = isMahasiswa
+    ? mhsDailyCount >= MHS_DAILY_MAX
+    : guestSessionCount >= GUEST_SESSION_MAX
+
+  // Sinkronisasi kuota saat user atau tanggal berubah
+  useEffect(() => {
+    if (isMahasiswa) {
+      try {
+        const key = `pkmate_daily_quota_${userKey}_${getTodayDateStr()}`
+        setMhsDailyCount(parseInt(localStorage.getItem(key) || '0', 10))
+      } catch {}
+    } else {
+      try {
+        setGuestSessionCount(parseInt(sessionStorage.getItem('pkmate_guest_session_chat_count') || '0', 10))
+      } catch {}
+    }
+  }, [userKey, isMahasiswa])
+
+  // Sinkronisasi riwayat pesan ke localStorage untuk Mahasiswa (Tamu tidak disimpan)
+  useEffect(() => {
+    if (isMahasiswa && chatStorageKey && messages.length > 0) {
+      try {
+        localStorage.setItem(chatStorageKey, JSON.stringify(messages))
+      } catch (e) {
+        console.warn('[PKMATE] Gagal menyimpan chat ke localStorage:', e)
+      }
+    }
+  }, [messages, isMahasiswa, chatStorageKey])
+
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
 
-    // Ambil histori sesi brainstorming sebelumnya jika user login
-    const token = getToken()
-    if (token && user?.id) {
-      fetch(`${api}/ai/history`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-        .then(res => res.json())
-        .then(result => {
-          if (result.data && Array.isArray(result.data) && result.data.length > 0) {
-            const formatted = result.data.flatMap(item => [
-              { role: 'user', content: item.inputText, time: item.createdAt },
-              { role: 'ai', content: item.outputText, time: item.createdAt }
-            ])
-            setMessages([initialGreeting, ...formatted])
-          } else {
-            setMessages([initialGreeting])
+    if (isMahasiswa) {
+      // Ambil histori tersimpan lokal atau dari backend
+      let hasLocal = false
+      if (chatStorageKey) {
+        try {
+          const saved = localStorage.getItem(chatStorageKey)
+          if (saved) {
+            const parsed = JSON.parse(saved)
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              setMessages(parsed)
+              hasLocal = true
+            }
           }
+        } catch {}
+      }
+
+      const token = getToken()
+      if (token && user?.id && !hasLocal) {
+        fetch(`${api}/ai/history`, {
+          headers: { Authorization: `Bearer ${token}` }
         })
-        .catch(err => {
-          console.warn('[PKMATE] Gagal memuat riwayat:', err)
-          setMessages([initialGreeting])
-        })
+          .then(res => res.json())
+          .then(result => {
+            if (result.data && Array.isArray(result.data) && result.data.length > 0) {
+              const formatted = result.data.flatMap(item => [
+                { role: 'user', content: item.inputText, time: item.createdAt },
+                { role: 'ai', content: item.outputText, time: item.createdAt }
+              ])
+              const fullHistory = [initialGreeting, ...formatted]
+              setMessages(fullHistory)
+              if (chatStorageKey) {
+                localStorage.setItem(chatStorageKey, JSON.stringify(fullHistory))
+              }
+            } else {
+              setMessages([initialGreeting])
+            }
+          })
+          .catch(err => {
+            console.warn('[PKMATE] Gagal memuat riwayat:', err)
+            setMessages([initialGreeting])
+          })
+      }
     } else {
-      // Jika mode tamu / logout, reset riwayat pesan
+      // Mode tamu (Guest): Chat SELALU mulai bersih dan hilang saat di-refresh
       setMessages([initialGreeting])
     }
-  }, [user?.id])
-
-
+  }, [userKey, isMahasiswa])
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -239,16 +348,42 @@ export function IdeaLab({ user }) {
     const q = (text || input).trim()
     if (!q || loading) return
 
+    // Validasi kuota chat sebelum mengirim
+    if (isQuotaExceeded) {
+      if (!isMahasiswa) {
+        alert('Batas kuota sesi tamu telah tercapai (10/10 chat). Silakan masuk dengan akun Mahasiswa Unila untuk melanjutkan.')
+      } else {
+        alert('Batas kuota harian konsultasi PKMATE telah tercapai (50/50 chat hari ini). Kuota Anda akan diperbarui besok.')
+      }
+      return
+    }
+
     const userMsg = { role: 'user', content: q, time: new Date() }
     const updatedMessages = [...messages, userMsg]
     setMessages(updatedMessages)
     setInput('')
     setLoading(true)
 
+    // Perbarui kuota chat
+    if (isMahasiswa) {
+      const nextCount = mhsDailyCount + 1
+      setMhsDailyCount(nextCount)
+      try {
+        const key = `pkmate_daily_quota_${userKey}_${getTodayDateStr()}`
+        localStorage.setItem(key, String(nextCount))
+      } catch {}
+    } else {
+      const nextCount = guestSessionCount + 1
+      setGuestSessionCount(nextCount)
+      try {
+        sessionStorage.setItem('pkmate_guest_session_chat_count', String(nextCount))
+      } catch {}
+    }
+
     try {
       const token = getToken()
       const headers = { 'Content-Type': 'application/json' }
-      if (token) headers.Authorization = `Bearer ${token}`
+      if (token && isMahasiswa) headers.Authorization = `Bearer ${token}`
 
       // Ambil 8 percakapan terakhir untuk konteks
       const historyPayload = messages
@@ -296,7 +431,6 @@ export function IdeaLab({ user }) {
         }
       ])
     } finally {
-
       setLoading(false)
       inputRef.current?.focus()
     }
@@ -316,8 +450,14 @@ export function IdeaLab({ user }) {
   const handleClearChat = async () => {
     if (!window.confirm('Bersihkan percakapan brainstorming ini?')) return
 
+    if (chatStorageKey) {
+      try {
+        localStorage.removeItem(chatStorageKey)
+      } catch {}
+    }
+
     const token = getToken()
-    if (token) {
+    if (token && isMahasiswa) {
       try {
         await fetch(`${api}/ai/history`, {
           method: 'DELETE',
@@ -372,18 +512,18 @@ export function IdeaLab({ user }) {
             <button
               key={idx}
               type="button"
-              disabled={loading}
+              disabled={loading || isQuotaExceeded}
               onClick={() => sendIdea(s)}
               style={{
                 padding: '0.42rem 0.85rem',
                 borderRadius: '9999px',
                 fontSize: '0.77rem',
                 fontWeight: 600,
-                background: 'rgba(255, 255, 255, 0.85)',
+                background: isQuotaExceeded ? 'rgba(241, 245, 249, 0.7)' : 'rgba(255, 255, 255, 0.85)',
                 backdropFilter: 'blur(10px)',
                 border: '1px solid rgba(203, 213, 225, 0.85)',
-                color: '#1e293b',
-                cursor: loading ? 'not-allowed' : 'pointer',
+                color: isQuotaExceeded ? '#94a3b8' : '#1e293b',
+                cursor: loading || isQuotaExceeded ? 'not-allowed' : 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '0.35rem',
@@ -391,19 +531,19 @@ export function IdeaLab({ user }) {
                 boxShadow: '0 1px 3px rgba(0, 0, 0, 0.02)'
               }}
               onMouseEnter={e => {
-                if (!loading) {
+                if (!loading && !isQuotaExceeded) {
                   e.currentTarget.style.background = '#f0fdf4'
                   e.currentTarget.style.borderColor = '#86efac'
                   e.currentTarget.style.transform = 'translateY(-1px)'
                 }
               }}
               onMouseLeave={e => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.85)'
+                e.currentTarget.style.background = isQuotaExceeded ? 'rgba(241, 245, 249, 0.7)' : 'rgba(255, 255, 255, 0.85)'
                 e.currentTarget.style.borderColor = 'rgba(203, 213, 225, 0.85)'
                 e.currentTarget.style.transform = 'translateY(0)'
               }}
             >
-              <Lightbulb size={12} color="#f59e0b" />
+              <Lightbulb size={12} color={isQuotaExceeded ? '#94a3b8' : '#f59e0b'} />
               <span>{s}</span>
             </button>
           ))}
@@ -452,41 +592,85 @@ export function IdeaLab({ user }) {
             </span>
 
 
-            {user?.name ? (
-              <span
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.3rem',
-                  fontSize: '0.72rem',
-                  fontWeight: 600,
-                  color: '#047857',
-                  background: 'rgba(209, 250, 229, 0.7)',
-                  border: '1px solid rgba(167, 243, 208, 0.9)',
-                  padding: '0.15rem 0.55rem',
-                  borderRadius: '9999px'
-                }}
-                title="Riwayat chat tersimpan secara privat dan hanya dapat diakses oleh akun Anda"
-              >
-                <Lock size={11} color="#059669" />
-                <span>Akun Privat: {user.name}</span>
-              </span>
+            {isMahasiswa ? (
+              <>
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                    fontSize: '0.72rem',
+                    fontWeight: 600,
+                    color: '#047857',
+                    background: 'rgba(209, 250, 229, 0.7)',
+                    border: '1px solid rgba(167, 243, 208, 0.9)',
+                    padding: '0.15rem 0.55rem',
+                    borderRadius: '9999px'
+                  }}
+                  title="Riwayat chat tersimpan secara privat di akun Anda"
+                >
+                  <Lock size={11} color="#059669" />
+                  <span>Akun: {user.name}</span>
+                </span>
+
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                    fontSize: '0.72rem',
+                    fontWeight: 600,
+                    color: mhsDailyCount >= MHS_DAILY_MAX ? '#b45309' : '#0369a1',
+                    background: mhsDailyCount >= MHS_DAILY_MAX ? '#fef3c7' : '#e0f2fe',
+                    border: `1px solid ${mhsDailyCount >= MHS_DAILY_MAX ? '#fde68a' : '#bae6fd'}`,
+                    padding: '0.15rem 0.55rem',
+                    borderRadius: '9999px'
+                  }}
+                  title="Batas kuota mahasiswa adalah 50 chat per hari"
+                >
+                  <Zap size={11} color={mhsDailyCount >= MHS_DAILY_MAX ? '#d97706' : '#0284c7'} />
+                  <span>Kuota Hari Ini: {mhsDailyCount}/50 Chat (Sisa {Math.max(0, MHS_DAILY_MAX - mhsDailyCount)})</span>
+                </span>
+              </>
             ) : (
-              <span
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.3rem',
-                  fontSize: '0.72rem',
-                  color: '#64748b',
-                  background: '#f1f5f9',
-                  padding: '0.15rem 0.5rem',
-                  borderRadius: '9999px'
-                }}
-                title="Login untuk menyimpan riwayat sesi Anda secara privat"
-              >
-                <span>Mode Tamu</span>
-              </span>
+              <>
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                    fontSize: '0.72rem',
+                    color: '#64748b',
+                    background: '#f1f5f9',
+                    border: '1px solid #e2e8f0',
+                    padding: '0.15rem 0.55rem',
+                    borderRadius: '9999px'
+                  }}
+                  title="Sesi tamu: Pesan tidak disimpan permanen (akan hilang saat halaman di-refresh)"
+                >
+                  <User size={11} />
+                  <span>Mode Tamu (Tanpa Simpan)</span>
+                </span>
+
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                    fontSize: '0.72rem',
+                    fontWeight: 600,
+                    color: guestSessionCount >= GUEST_SESSION_MAX ? '#b45309' : '#475569',
+                    background: guestSessionCount >= GUEST_SESSION_MAX ? '#fef3c7' : '#f8fafc',
+                    border: `1px solid ${guestSessionCount >= GUEST_SESSION_MAX ? '#fde68a' : '#e2e8f0'}`,
+                    padding: '0.15rem 0.55rem',
+                    borderRadius: '9999px'
+                  }}
+                  title="Batas kuota tamu adalah 10 chat per sesi"
+                >
+                  <Zap size={11} color={guestSessionCount >= GUEST_SESSION_MAX ? '#d97706' : '#64748b'} />
+                  <span>Kuota Sesi: {guestSessionCount}/10 Chat (Sisa {Math.max(0, GUEST_SESSION_MAX - guestSessionCount)})</span>
+                </span>
+              </>
             )}
 
             {messages.length > 1 && (
@@ -709,6 +893,50 @@ export function IdeaLab({ user }) {
           <div ref={chatEndRef} />
         </div>
 
+        {/* Quota Exceeded Alert Banner */}
+        {isQuotaExceeded && (
+          <div
+            style={{
+              marginTop: '1rem',
+              padding: '0.85rem 1.15rem',
+              background: '#fffbeb',
+              border: '1.5px solid #fde68a',
+              borderRadius: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '0.75rem',
+              flexWrap: 'wrap'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+              <div style={{ background: '#fef3c7', padding: '0.45rem', borderRadius: '10px', color: '#d97706', display: 'flex' }}>
+                <AlertTriangle size={18} />
+              </div>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '0.84rem', color: '#92400e' }}>
+                  {!isMahasiswa ? 'Batas Kuota Sesi Tamu Tercapai (10/10 Chat)' : 'Batas Kuota Harian Tercapai (50/50 Chat)'}
+                </div>
+                <div style={{ fontSize: '0.78rem', color: '#78350f', marginTop: '0.15rem' }}>
+                  {!isMahasiswa
+                    ? 'Anda telah menggunakan kuota 10 chat sesi tamu. Masuk dengan akun Mahasiswa Unila untuk kuota 50 chat per hari dan menyimpan riwayat ide Anda.'
+                    : 'Anda telah mencapai batas 50 chat konsultasi hari ini. Kuota harian Anda akan otomatis direset besok pukul 00:00 WIB.'}
+                </div>
+              </div>
+            </div>
+            {!isMahasiswa && onLogin && (
+              <button
+                type="button"
+                onClick={onLogin}
+                className="btn-action primary"
+                style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', borderRadius: '12px' }}
+              >
+                Masuk Akun Mahasiswa &rarr;
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Chat Input Bar */}
         <form
           onSubmit={handleSubmit}
@@ -725,22 +953,30 @@ export function IdeaLab({ user }) {
             type="text"
             value={input}
             onChange={e => setInput(e.target.value)}
-            placeholder="Tuliskan gagasan, masalah lapangan, atau rancangan teknologi PKM-mu..."
-            disabled={loading}
+            placeholder={
+              isQuotaExceeded
+                ? (!isMahasiswa
+                    ? 'Batas kuota 10 chat sesi tamu telah tercapai. Silakan masuk akun mahasiswa...'
+                    : 'Batas kuota 50 chat hari ini telah tercapai. Kuota direset besok pukul 00:00 WIB...')
+                : 'Tuliskan gagasan, masalah lapangan, atau rancangan teknologi PKM-mu...'
+            }
+            disabled={loading || isQuotaExceeded}
             style={{
               flex: 1,
               padding: '0.85rem 1.25rem',
               borderRadius: '16px',
               border: '1px solid rgba(203, 213, 225, 0.95)',
-              background: '#ffffff',
+              background: isQuotaExceeded ? '#f8fafc' : '#ffffff',
               fontSize: '0.9rem',
               outline: 'none',
               boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.03)',
               transition: 'border-color 0.15s ease, box-shadow 0.15s ease'
             }}
             onFocus={e => {
-              e.currentTarget.style.borderColor = '#0071e3'
-              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(0, 113, 227, 0.12)'
+              if (!isQuotaExceeded) {
+                e.currentTarget.style.borderColor = '#0071e3'
+                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(0, 113, 227, 0.12)'
+              }
             }}
             onBlur={e => {
               e.currentTarget.style.borderColor = 'rgba(203, 213, 225, 0.95)'
@@ -749,20 +985,20 @@ export function IdeaLab({ user }) {
           />
           <button
             type="submit"
-            disabled={!input.trim() || loading}
+            disabled={!input.trim() || loading || isQuotaExceeded}
             className="btn-action primary"
             style={{
               padding: '0.85rem 1.5rem',
               borderRadius: '16px',
               gap: '0.45rem',
-              background: !input.trim() || loading ? '#94a3b8' : 'linear-gradient(135deg, #0071e3, #0284c7)',
-              cursor: !input.trim() || loading ? 'not-allowed' : 'pointer',
+              background: !input.trim() || loading || isQuotaExceeded ? '#94a3b8' : 'linear-gradient(135deg, #0071e3, #0284c7)',
+              cursor: !input.trim() || loading || isQuotaExceeded ? 'not-allowed' : 'pointer',
               border: 'none',
               color: '#ffffff',
               fontWeight: 600,
               display: 'inline-flex',
               alignItems: 'center',
-              boxShadow: !input.trim() || loading ? 'none' : '0 4px 14px rgba(0, 113, 227, 0.35)',
+              boxShadow: !input.trim() || loading || isQuotaExceeded ? 'none' : '0 4px 14px rgba(0, 113, 227, 0.35)',
               transition: 'all 0.15s ease'
             }}
           >

@@ -30,7 +30,7 @@ export function AppleMobileDock({ active, user, onLogin, onLogout, onSwitchRole,
         { id: 'beranda', label: 'Beranda', icon: <Home size={19} strokeWidth={2} />, href: '#beranda' },
         { id: 'berita', label: 'Berita', icon: <Newspaper size={19} strokeWidth={2} />, href: '#berita' },
         { id: 'pedoman', label: 'Panduan', icon: <BookOpen size={19} strokeWidth={2} />, href: '#pedoman' },
-        { id: 'cek-status', label: 'Lacak', icon: <Search size={19} strokeWidth={2} />, href: '#cek-status' },
+        { id: 'pkmate', label: 'PKMATE', icon: <Sparkles size={19} strokeWidth={2} />, href: '#pkmate' },
         { id: 'masuk', label: 'Masuk', icon: <User size={19} strokeWidth={2} />, onClick: onLogin },
       ]
     }

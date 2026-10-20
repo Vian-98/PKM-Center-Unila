@@ -14,7 +14,6 @@ import {
   Home,
   BookOpen,
   ArrowLeftRight,
-  User,
   Menu,
   ChevronRight,
 } from 'lucide-react'
@@ -37,14 +36,12 @@ export function DesktopSidebarLayout({ user, active, routePrefix, onLogout, onSw
         return [
           { label: 'Dashboard Bimbingan', href: '#dosen', icon: <GraduationCap size={17} /> },
           { label: 'Pesan & Catatan', href: '#dosen/pesan', icon: <MessageSquare size={17} /> },
-          { label: 'Profil Saya', href: '#dosen/profil', icon: <User size={17} /> },
           { label: 'Buku Panduan', href: '#pedoman', icon: <BookOpen size={17} /> },
         ]
       case 'reviewer':
         return [
           { label: 'Antrean Penilaian', href: '#reviewer', icon: <Scale size={17} /> },
           { label: 'Pesan & Feedback', href: '#reviewer/pesan', icon: <MessageSquare size={17} /> },
-          { label: 'Profil Saya', href: '#reviewer/profil', icon: <User size={17} /> },
           { label: 'Buku Panduan', href: '#pedoman', icon: <BookOpen size={17} /> },
         ]
       case 'admin':
@@ -53,7 +50,6 @@ export function DesktopSidebarLayout({ user, active, routePrefix, onLogout, onSw
           { label: 'Portal Dosen', href: '#dosen', icon: <GraduationCap size={17} /> },
           { label: 'Portal Reviewer', href: '#reviewer', icon: <Scale size={17} /> },
           { label: 'Pusat Pesan', href: '#admin/pesan', icon: <MessageSquare size={17} /> },
-          { label: 'Profil Saya', href: '#admin/profil', icon: <User size={17} /> },
         ]
       case 'mahasiswa':
       default:

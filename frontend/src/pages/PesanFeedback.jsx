@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
+import { Trash2 } from 'lucide-react'
 import { api } from '../lib/content'
 import {
   loadStore,
@@ -13,20 +14,6 @@ import {
 export function PesanFeedback({ user, onLogin, onSwitchUser }) {
   const [activeTab, setActiveTab] = useState('chat') // 'chat' | 'feedback'
 
-  const handleQuickLogin = (canonicalUser) => {
-    const logged = {
-      id: canonicalUser.id,
-      name: canonicalUser.name,
-      email: canonicalUser.email,
-      role: canonicalUser.role,
-      roles: canonicalUser.role === 'dosen' ? ['dosen', 'reviewer'] : [canonicalUser.role],
-      department: canonicalUser.dept,
-      faculty: canonicalUser.faculty,
-    }
-    localStorage.setItem('pkm_user', JSON.stringify(logged))
-    localStorage.setItem('pkm_token', `token-${canonicalUser.role}`)
-    if (onSwitchUser) onSwitchUser(logged)
-  }
 
   // Resolusi identitas pengguna aktif yang sedang login
   const currentUserId = useMemo(() => resolveCurrentUserId(user), [user])
@@ -34,64 +21,29 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
   const currentUserRole = user?.role ? user.role.toUpperCase() : (currentUserId ? SYSTEM_USERS[currentUserId]?.role?.toUpperCase() : '') || 'PENGGUNA'
 
   // Master Direct Messages Database (Tersimpan lintas akun di LocalStorage)
-  const [masterMessages, setMasterMessages] = useState(() =>
-    loadStore('pkm_master_direct_messages', initialMasterMessages)
-  )
+  const [masterMessages, setMasterMessages] = useState(() => {
+    // Bersihkan seluruh riwayat chat di semua akun
+    if (localStorage.getItem('pkm_direct_messages_version_v5') !== 'clean') {
+      localStorage.setItem('pkm_direct_messages_version_v5', 'clean')
+      saveStore('pkm_master_direct_messages', [])
+      return []
+    }
+    return loadStore('pkm_master_direct_messages', [])
+  })
 
   // Kontak kustom yang ditambahkan manual oleh pengguna
   const [customContacts, setCustomContacts] = useState(() =>
     loadStore('pkm_custom_contacts', [])
   )
 
-  // Hitung daftar kontak relevan untuk akun yang sedang login (dosen, sesama mahasiswa, dll)
-  const contactsList = useMemo(() => {
-    const base = getContactsForUser(currentUserId, user?.role) || []
-    const customs = customContacts.filter(c => c.ownerId === currentUserId)
-    const combined = [...base, ...customs]
-
-    // Pastikan tidak pernah menampilkan diri sendiri di kontak chat
-    const filtered = combined.filter(c => {
-      const cid = c.id || c.contactId
-      return cid !== currentUserId
-    })
-
-    // Hitung pesan terakhir dinamis untuk tiap kontak
-    return filtered.map(c => {
-      const cid = c.id || c.contactId
-      const cName = c.name || c.contactName
-      const cRole = c.roleLabel || c.contactRole || 'Pengguna PKM'
-      const cEmail = c.email || c.contactEmail || '-'
-      const cAvatar = c.avatar || cName.split(' ').filter(Boolean).map(n => n[0]).slice(0, 2).join('').toUpperCase()
-
-      // Cari pesan terakhir antara currentUserId dan kontak ini
-      const relevant = masterMessages.filter(
-        m => (m.senderId === currentUserId && m.receiverId === cid) ||
-             (m.senderId === cid && m.receiverId === currentUserId)
-      )
-      const lastMsg = relevant[relevant.length - 1]
-
-      return {
-        contactId: cid,
-        contactName: cName,
-        contactRole: cRole,
-        contactEmail: cEmail,
-        avatar: cAvatar,
-        lastMessage: lastMsg ? lastMsg.message : (c.lastMessage || 'Belum ada pesan baru.'),
-        lastSentAt: lastMsg ? lastMsg.createdAt : (c.lastSentAt || '2026-10-10T08:00:00Z'),
-        unreadCount: 0,
-      }
-    }).sort((a, b) => new Date(b.lastSentAt) - new Date(a.lastSentAt))
-  }, [currentUserId, customContacts, masterMessages, user?.role])
-
-  // Kontak yang sedang aktif dipilih di jendela chat
+  // Kontak yang sedang aktif dipilih di jendela chat (prioritaskan target navigasi atau kontak chat terakhir)
   const [selectedContactId, setSelectedContactId] = useState(() => {
     const target = localStorage.getItem('pkm_target_chat_contact')
     if (target) {
       localStorage.removeItem('pkm_target_chat_contact')
       return target
     }
-    const init = getContactsForUser(resolveCurrentUserId(user), user?.role)
-    return init[0]?.id || 'user-dosen-budi'
+    return ''
   })
 
   // Sinkronisasi target kontak jika dipicu dari halaman lain (CariTim / DosenDashboard)
@@ -103,13 +55,69 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
     }
   }, [])
 
-  // Jaga agar selectedContactId selalu valid dan bukan diri sendiri
+  // Hitung daftar kontak yang HANYA memiliki riwayat percakapan nyata (ada chat)
+  const contactsList = useMemo(() => {
+    const allKnown = [
+      ...Object.values(SYSTEM_USERS),
+      ...customContacts.filter(c => c.ownerId === currentUserId)
+    ]
+
+    const userMap = new Map()
+    for (const u of allKnown) {
+      const uid = u.id || u.contactId
+      if (uid && uid !== currentUserId) {
+        userMap.set(uid, u)
+      }
+    }
+
+    const listWithHistory = []
+
+    for (const [cid, u] of userMap.entries()) {
+      const cName = u.name || u.contactName || 'Pengguna PKM'
+      const cRole = u.roleLabel || u.contactRole || (u.role ? u.role.toUpperCase() : 'PENGGUNA')
+      const cEmail = u.email || u.contactEmail || '-'
+      const cAvatar = u.avatar || cName.split(' ').filter(Boolean).map(n => n[0]).slice(0, 2).join('').toUpperCase()
+
+      // Cari pesan antara pengguna aktif dan kontak ini (abaikan yang telah dihapus oleh pengguna aktif)
+      const relevant = masterMessages.filter(
+        m => !m.deletedFor?.includes(currentUserId) &&
+             ((m.senderId === currentUserId && m.receiverId === cid) ||
+              (m.senderId === cid && m.receiverId === currentUserId))
+      )
+
+      const hasHistory = relevant.length > 0
+      const isTargeted = cid === selectedContactId
+
+      // HANYA tampilkan kontak jika memiliki riwayat chat nyata ATAU sedang dibuka oleh pengguna
+      if (hasHistory || isTargeted) {
+        const lastMsg = relevant[relevant.length - 1]
+        listWithHistory.push({
+          contactId: cid,
+          contactName: cName,
+          contactRole: cRole,
+          contactEmail: cEmail,
+          avatar: cAvatar,
+          lastMessage: lastMsg ? lastMsg.message : 'Percakapan baru (belum ada pesan)...',
+          lastSentAt: lastMsg ? lastMsg.createdAt : new Date().toISOString(),
+          unreadCount: 0,
+          hasHistory,
+        })
+      }
+    }
+
+    // Urutkan berdasarkan waktu pesan terakhir (paling baru di atas)
+    return listWithHistory.sort((a, b) => new Date(b.lastSentAt) - new Date(a.lastSentAt))
+  }, [currentUserId, customContacts, masterMessages, selectedContactId])
+
+  // Jaga agar selectedContactId selalu sinkron dengan kontak aktif
   useEffect(() => {
     if (contactsList.length > 0) {
       const exists = contactsList.some(c => c.contactId === selectedContactId)
       if (!exists || selectedContactId === currentUserId) {
         setSelectedContactId(contactsList[0].contactId)
       }
+    } else {
+      setSelectedContactId('')
     }
   }, [contactsList, selectedContactId, currentUserId])
 
@@ -118,9 +126,14 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
   const [categoryFilter, setCategoryFilter] = useState('all') // 'all' | 'dosen' | 'mahasiswa'
 
   // State Rekap Catatan Revisi & Feedback Proposal
-  const [feedbacks, setFeedbacks] = useState(() =>
-    loadStore('pkm_proposal_feedback', initialProposalFeedback)
-  )
+  const [feedbacks, setFeedbacks] = useState(() => {
+    if (localStorage.getItem('pkm_proposal_feedback_v5') !== 'clean') {
+      localStorage.setItem('pkm_proposal_feedback_v5', 'clean')
+      saveStore('pkm_proposal_feedback', [])
+      return []
+    }
+    return loadStore('pkm_proposal_feedback', [])
+  })
   const [feedbackFilter, setFeedbackFilter] = useState('all') // 'all' | 'revision' | 'approved'
   const [feedbackSearch, setFeedbackSearch] = useState('')
 
@@ -178,14 +191,37 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
   // Kontak terpilih saat ini
   const selectedContact = contactsList.find(c => c.contactId === selectedContactId) || contactsList[0]
 
-  // Filter pesan riil antara pengguna aktif dan kontak terpilih
+  // Filter pesan riil antara pengguna aktif dan kontak terpilih (abaikan yang telah dihapus oleh pengguna aktif)
   const currentMessages = useMemo(() => {
     if (!selectedContactId) return []
     return masterMessages.filter(
-      m => (m.senderId === currentUserId && m.receiverId === selectedContactId) ||
-           (m.senderId === selectedContactId && m.receiverId === currentUserId)
+      m => !m.deletedFor?.includes(currentUserId) &&
+           ((m.senderId === currentUserId && m.receiverId === selectedContactId) ||
+            (m.senderId === selectedContactId && m.receiverId === currentUserId))
     )
   }, [masterMessages, currentUserId, selectedContactId])
+
+  // Hapus riwayat chat perseorangan hanya dari sisi pengguna aktif (tetap tersimpan bagi lawan bicara)
+  const handleDeleteConversation = () => {
+    if (!selectedContactId) return
+    const contactName = selectedContact?.contactName || 'kontak ini'
+    if (window.confirm(`Hapus riwayat chat dengan ${contactName}?\n\nPesan hanya akan terhapus dari tampilan akun Anda dan tetap tersimpan pada akun lawan bicara.`)) {
+      setMasterMessages(prev =>
+        prev.map(m => {
+          const isBetween = (m.senderId === currentUserId && m.receiverId === selectedContactId) ||
+                            (m.senderId === selectedContactId && m.receiverId === currentUserId)
+          if (isBetween) {
+            const deletedFor = Array.isArray(m.deletedFor) ? m.deletedFor : []
+            if (!deletedFor.includes(currentUserId)) {
+              return { ...m, deletedFor: [...deletedFor, currentUserId] }
+            }
+          }
+          return m
+        })
+      )
+      setSelectedContactId('')
+    }
+  }
 
   // Kirim Pesan Riil (Multi-User Inter-Account Tanpa Bot Palsu)
   const handleSendMessage = async (e) => {
@@ -457,35 +493,6 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', background: '#f8fafc', border: '1px solid #e2e8f0', padding: '0.3rem 0.6rem', borderRadius: '0.55rem' }}>
-            <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>Uji Chat Lawan Bicara:</span>
-            <select
-              style={{
-                padding: '0.25rem 0.5rem',
-                fontSize: '0.78rem',
-                border: '1px solid #cbd5e1',
-                borderRadius: '0.4rem',
-                background: '#ffffff',
-                color: '#1e293b',
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-              value={currentUserId || ''}
-              onChange={e => {
-                const targetUser = SYSTEM_USERS[e.target.value]
-                if (targetUser) handleQuickLogin(targetUser)
-              }}
-              title="Ganti ke akun lain untuk melihat pesan dari sudut pandang lawan bicara dan membalasnya"
-            >
-              <option value="" disabled>-- Beralih Akun (Uji Balasan) --</option>
-              {Object.values(SYSTEM_USERS).map(u => (
-                <option key={u.id} value={u.id}>
-                  {u.name} ({u.roleLabel}) {u.id === currentUserId ? '— [Sedang Aktif]' : ''}
-                </option>
-              ))}
-            </select>
-          </div>
-
           {/* Tab Switcher */}
           <div className="modern-tabs" style={{ marginBottom: 0 }}>
             <button
@@ -591,8 +598,23 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
 
             <div className="chat-contacts-list">
               {filteredContacts.length === 0 ? (
-                <div style={{ padding: '1.5rem', textAlign: 'center', color: '#64748b', fontSize: '0.85rem' }}>
-                  Tidak ada kontak yang cocok dengan pencarian.
+                <div style={{ padding: '2.5rem 1rem', textAlign: 'center', color: '#64748b', fontSize: '0.85rem' }}>
+                  <div style={{ fontWeight: 700, color: '#334155', marginBottom: '0.35rem' }}>
+                    {searchContact ? 'Tidak ada kontak yang cocok' : 'Belum Ada Riwayat Chat'}
+                  </div>
+                  <p style={{ margin: '0 0 1rem 0', fontSize: '0.78rem', color: '#94a3b8' }}>
+                    {searchContact
+                      ? 'Coba gunakan kata kunci lain.'
+                      : 'Hanya kontak dengan riwayat percakapan yang ditampilkan di sini.'}
+                  </p>
+                  <button
+                    type="button"
+                    className="btn-action primary"
+                    style={{ padding: '0.45rem 0.85rem', fontSize: '0.75rem', borderRadius: '8px', margin: '0 auto' }}
+                    onClick={() => setNewContactModal(prev => ({ ...prev, isOpen: true }))}
+                  >
+                    + Chat Baru
+                  </button>
                 </div>
               ) : (
                 filteredContacts.map(c => {
@@ -620,89 +642,127 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
 
           {/* Kolom Kanan: Jendela Percakapan */}
           <main className="chat-main-area">
-            {/* Header Chat Aktif */}
-            <div className="chat-header">
-              <div className="chat-header-user">
-                <div className="contact-avatar">
-                  {selectedContact?.avatar || 'PK'}
+            {!selectedContact ? (
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '3.5rem 1.5rem', textAlign: 'center', color: '#64748b' }}>
+                <div style={{ width: '64px', height: '64px', background: '#eff6ff', borderRadius: '50%', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                  </svg>
                 </div>
-                <div>
-                  <div style={{ fontWeight: 800, fontSize: '1rem', color: '#0f172a' }}>
-                    {selectedContact?.contactName || 'Pilih Kontak'}
-                  </div>
-                  <div style={{ fontSize: '0.8rem', color: '#059669', display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600 }}>
-                    <span>Terhubung - {selectedContact?.contactRole}</span>
-                  </div>
-                </div>
+                <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0f172a', margin: '0 0 0.4rem 0' }}>
+                  Belum Ada Percakapan Aktif
+                </h3>
+                <p style={{ fontSize: '0.85rem', maxWidth: '420px', lineHeight: 1.5, margin: '0 0 1.25rem 0' }}>
+                  Halaman pesan hanya menampilkan kontak yang memiliki riwayat chat. Klik tombol di bawah untuk memulai obrolan baru dengan dosen pembimbing atau rekan mahasiswa.
+                </p>
+                <button
+                  type="button"
+                  className="btn-action primary"
+                  onClick={() => setNewContactModal(prev => ({ ...prev, isOpen: true }))}
+                  style={{ padding: '0.6rem 1.25rem', fontSize: '0.85rem', borderRadius: '9999px' }}
+                >
+                  + Mulai Chat Baru
+                </button>
               </div>
-              <button
-                className="btn-action secondary"
-                style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem' }}
-                onClick={() => setContactInfoModal({ isOpen: true, contact: selectedContact })}
-              >
-                Info Kontak
-              </button>
-            </div>
-
-            {/* Riwayat Balon Pesan */}
-            <div className="chat-messages-scroll">
-              <div style={{ textAlign: 'center', margin: '0.5rem 0 1rem 0' }}>
-                <span style={{ fontSize: '0.75rem', background: '#e2e8f0', color: '#475569', padding: '0.2rem 0.75rem', borderRadius: '9999px' }}>
-                  Saluran Komunikasi Resmi PKM Center — Universitas Lampung
-                </span>
-              </div>
-
-              {currentMessages.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: '#64748b' }}>
-                  <div style={{ fontWeight: 700, fontSize: '1rem', color: '#334155', marginBottom: '0.35rem' }}>
-                    Belum ada riwayat pesan langsung dengan {selectedContact?.contactName}.
-                  </div>
-                  <p style={{ fontSize: '0.85rem', maxWidth: '420px', margin: '0 auto' }}>
-                    Ketik pesan pertama Anda di bawah untuk memulai konsultasi bimbingan, pertanyaan review, atau koordinasi teknis.
-                  </p>
-                </div>
-              ) : (
-                currentMessages.map(msg => {
-                  const isMine = msg.senderId === currentUserId
-                  return (
-                    <div
-                      key={msg.id}
-                      className={`chat-bubble ${isMine ? 'mine' : 'theirs'}`}
-                    >
-                      {!isMine && (
-                        <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#2563eb', marginBottom: '0.2rem' }}>
-                          {msg.senderName || selectedContact?.contactName}
-                        </div>
-                      )}
-                      <div>{msg.message}</div>
-                      <div className="chat-bubble-time">
-                        {new Date(msg.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-                        {isMine && ' - Terkirim'}
+            ) : (
+              <>
+                {/* Header Chat Aktif */}
+                <div className="chat-header">
+                  <div className="chat-header-user">
+                    <div className="contact-avatar">
+                      {selectedContact?.avatar || 'PK'}
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: '1rem', color: '#0f172a' }}>
+                        {selectedContact?.contactName || 'Pilih Kontak'}
+                      </div>
+                      <div style={{ fontSize: '0.8rem', color: '#059669', display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600 }}>
+                        <span>Terhubung - {selectedContact?.contactRole}</span>
                       </div>
                     </div>
-                  )
-                })
-              )}
-              <div ref={messagesEndRef} />
-            </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <button
+                      type="button"
+                      className="btn-action danger"
+                      style={{ padding: '0.4rem 0.8rem', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+                      onClick={handleDeleteConversation}
+                      title="Hapus riwayat chat dengan kontak ini dari tampilan Anda"
+                    >
+                      <Trash2 size={13} />
+                      <span>Hapus Chat</span>
+                    </button>
+                    <button
+                      className="btn-action secondary"
+                      style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem' }}
+                      onClick={() => setContactInfoModal({ isOpen: true, contact: selectedContact })}
+                    >
+                      Info Kontak
+                    </button>
+                  </div>
+                </div>
 
-            {/* Input Bar Pesan */}
-            <form className="chat-input-bar" onSubmit={handleSendMessage}>
-              <input
-                type="text"
-                placeholder={`Tulis pesan untuk ${selectedContact?.contactName || 'kontak'}...`}
-                value={inputText}
-                onChange={e => setInputText(e.target.value)}
-              />
-              <button
-                type="submit"
-                className="btn-action primary"
-                style={{ borderRadius: '9999px', padding: '0.65rem 1.25rem' }}
-                disabled={!inputText.trim()}
-              >
-                Kirim
-              </button>
-            </form>
+                {/* Riwayat Balon Pesan */}
+                <div className="chat-messages-scroll">
+                  <div style={{ textAlign: 'center', margin: '0.5rem 0 1rem 0' }}>
+                    <span style={{ fontSize: '0.75rem', background: '#e2e8f0', color: '#475569', padding: '0.2rem 0.75rem', borderRadius: '9999px' }}>
+                      Saluran Komunikasi Resmi PKM Center — Universitas Lampung
+                    </span>
+                  </div>
+
+                  {currentMessages.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: '#64748b' }}>
+                      <div style={{ fontWeight: 700, fontSize: '1rem', color: '#334155', marginBottom: '0.35rem' }}>
+                        Belum ada riwayat pesan langsung dengan {selectedContact?.contactName}.
+                      </div>
+                      <p style={{ fontSize: '0.85rem', maxWidth: '420px', margin: '0 auto' }}>
+                        Ketik pesan pertama Anda di bawah untuk memulai konsultasi bimbingan, pertanyaan review, atau koordinasi teknis.
+                      </p>
+                    </div>
+                  ) : (
+                    currentMessages.map(msg => {
+                      const isMine = msg.senderId === currentUserId
+                      return (
+                        <div
+                          key={msg.id}
+                          className={`chat-bubble ${isMine ? 'mine' : 'theirs'}`}
+                        >
+                          {!isMine && (
+                            <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#2563eb', marginBottom: '0.2rem' }}>
+                              {msg.senderName || selectedContact?.contactName}
+                            </div>
+                          )}
+                          <div>{msg.message}</div>
+                          <div className="chat-bubble-time">
+                            {new Date(msg.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                            {isMine && ' - Terkirim'}
+                          </div>
+                        </div>
+                      )
+                    })
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+
+                {/* Input Bar Pesan */}
+                <form className="chat-input-bar" onSubmit={handleSendMessage}>
+                  <input
+                    type="text"
+                    placeholder={`Tulis pesan untuk ${selectedContact?.contactName || 'kontak'}...`}
+                    value={inputText}
+                    onChange={e => setInputText(e.target.value)}
+                  />
+                  <button
+                    type="submit"
+                    className="btn-action primary"
+                    style={{ borderRadius: '9999px', padding: '0.65rem 1.25rem' }}
+                    disabled={!inputText.trim()}
+                  >
+                    Kirim
+                  </button>
+                </form>
+              </>
+            )}
           </main>
         </section>
       )}

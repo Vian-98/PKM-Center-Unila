@@ -63,7 +63,7 @@ function Ecosystem() {
       title: 'Uji kekuatan idemu',
       copy: 'Dapatkan analisis kebaruan, dampak, dan kelayakan ide sebelum menyusun proposal.',
       link: 'Coba PKMATE',
-      href: '#mahasiswa/pkmate',
+      href: '#pkmate',
 
       dark: true,
       icon: (
