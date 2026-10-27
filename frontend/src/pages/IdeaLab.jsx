@@ -16,11 +16,76 @@ import {
   Info,
   Lock,
   ShieldCheck,
-  AlertTriangle
+  AlertTriangle,
+  FileText,
+  Printer,
+  Sliders
 } from 'lucide-react'
 import { api } from '../lib/content'
-
 import { getToken } from '../lib/studentApi'
+import { PKMStrategyCanvasModal, printCanvasToPdf } from '../components/PKMStrategyCanvasModal'
+
+// Data draf awal PKM Strategy Canvas (PSC)
+const initialCanvasData = {
+  title: 'Inovasi Strategis PKM Belmawa Berkelanjutan',
+  scheme: 'PKM-KC',
+  university: 'Universitas Lampung',
+  leader: 'Nama Ketua Tim',
+  members: [
+    'Nama Anggota 1',
+    'Nama Anggota 2',
+    'Nama Anggota 3'
+  ],
+  problem: [
+    'Urgensi latar belakang masalah riil di masyarakat atau industri yang perlu diselesaikan.',
+    'Keterbatasan solusi atau metode konvensional yang ada saat ini.'
+  ],
+  purpose: [
+    'Tujuan spesifik pengembangan inovasi sebagai pemecahan masalah yang terukur.',
+    'Manfaat aplikatif bagi pemangku kepentingan, mitra, atau kemajuan iptek.'
+  ],
+  idea: [
+    'Konsep gagasan atau pendekatan kreatif yang ditawarkan tim.',
+    'Rancangan inovasi terpadu yang adaptif terhadap kondisi lapangan.'
+  ],
+  method: [
+    'Tahap 1: Studi literatur dan analisis kebutuhan spesifikasi teknis.',
+    'Tahap 2: Eksekusi teknis / fabrikasi / formulasi purwarupa.',
+    'Tahap 3: Pengujian performa, validasi efektivitas, dan evaluasi.'
+  ],
+  uniqueValue: [
+    'Keunggulan komparatif dibanding produk atau metode sejenis yang telah ada.',
+    'Nilai kemanfaatan yang berdaya saing, efisien, dan aplikatif.'
+  ],
+  keyActivities: [
+    'Riset pendahuluan dan pengadaan komponen/bahan baku.',
+    'Pembuatan dan pengujian bertahap.',
+    'Penyusunan naskah luaran wajib dan pendaftaran Hak Cipta (HaKI).'
+  ],
+  novelty: [
+    'Unsur kebaruan dan orisinalitas konsep yang membedakan dengan riset terdahulu.',
+    'Peningkatan efisiensi atau performa yang dihasilkan secara nyata.'
+  ],
+  output: [
+    'Laporan Kemajuan dan Laporan Akhir PKM Belmawa',
+    'Luaran Wajib Sesuai Skema',
+    'Hak Cipta (HaKI) / Paten Sederhana',
+    'Artikel Ilmiah Terpublikasi'
+  ]
+}
+
+function extractPscData(content) {
+  if (!content) return { cleanText: content, pscData: null }
+  const match = content.match(/\[PSC_DATA\]([\s\S]*?)\[\/PSC_DATA\]/)
+  if (!match) return { cleanText: content, pscData: null }
+  try {
+    const pscData = JSON.parse(match[1])
+    const cleanText = content.replace(/\[PSC_DATA\][\s\S]*?\[\/PSC_DATA\]/, '').trim()
+    return { cleanText, pscData }
+  } catch (err) {
+    return { cleanText: content, pscData: null }
+  }
+}
 
 const SUGGESTIONS = [
   'Uji kebaruan ide pemantauan kualitas tanah dengan Edge AI dan LoRa',
@@ -256,6 +321,30 @@ export function IdeaLab({ user, onLogin }) {
   const [loading, setLoading] = useState(false)
   const [copiedIndex, setCopiedIndex] = useState(null)
 
+  // State Mode Interaksi: 'tanya' (Konsultasi Bebas) | 'canvas' (PKM Strategy Canvas)
+  const [activeMode, setActiveMode] = useState('tanya')
+  const [canvasModalOpen, setCanvasModalOpen] = useState(false)
+
+  // State Data PKM Strategy Canvas (PSC)
+  const [canvasData, setCanvasData] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`pkm_strategy_canvas_data_${userKey}`)
+      if (saved) return JSON.parse(saved)
+    } catch {}
+    return {
+      ...initialCanvasData,
+      leader: user?.name || initialCanvasData.leader,
+      university: 'Universitas Lampung'
+    }
+  })
+
+  // Sinkronisasi data canvas ke localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(`pkm_strategy_canvas_data_${userKey}`, JSON.stringify(canvasData))
+    } catch {}
+  }, [canvasData, userKey])
+
   const chatEndRef = useRef(null)
   const inputRef = useRef(null)
 
@@ -348,6 +437,42 @@ export function IdeaLab({ user, onLogin }) {
     const q = (text || input).trim()
     if (!q || loading) return
 
+    // Penanganan Command /canvas dan /tanya secara instan
+    const lowerQ = q.toLowerCase()
+    if (lowerQ === '/canvas') {
+      setActiveMode('canvas')
+      const userMsg = { role: 'user', content: '/canvas', time: new Date() }
+      const aiMsg = {
+        role: 'ai',
+        content: `Selamat datang di penyusunan **PKM Strategy Canvas (PSC)**! 🎯\n\nFramework ini dirancang untuk memetakan ide PKM Anda ke dalam 8 pilar strategis hingga siap lolos PIMNAS:\n1. **Masalah (Problem)**: Urgensi latar belakang dan fakta lapangan\n2. **Tujuan (Purpose)**: Target spesifik penyelesaian masalah\n3. **Gagasan (Idea)**: Inovasi & pendekatan solusi kreatif\n4. **Metode (Method)**: Tahapan dan alur eksekusi ilmiah\n5. **Keunikan (Unique Value)**: Nilai lebih dibanding alternatif lain\n6. **Kegiatan Utama (Key Activities)**: Agenda kerja kunci selama PKM\n7. **Kebaharuan (Novelty)**: Aspek orisinalitas & kebaruan konsep\n8. **Luaran (Output)**: Target luaran wajib & tambahan berstandar Belmawa\n\n**Silakan ceritakan ide usulan Anda, atau sebutkan judul/skema (misal PKM-VGK, PKM-KC, PKM-RE) beserta masalah yang ingin dipecahkan.** PKMATE akan langsung memandu dan memetakannya ke dalam kanvas resmi!`,
+        time: new Date()
+      }
+      setMessages(prev => [...prev, userMsg, aiMsg])
+      setInput('')
+      if (inputRef.current) inputRef.current.style.height = 'auto'
+      return
+    }
+
+    if (lowerQ === '/tanya') {
+      setActiveMode('tanya')
+      const userMsg = { role: 'user', content: '/tanya', time: new Date() }
+      const aiMsg = {
+        role: 'ai',
+        content: `Mode **Konsultasi Bebas PKMATE** aktif! 💡\n\nSilakan ajukan pertanyaan seputar skema PKM Belmawa, aturan administrasi proposal, pencarian mitra, perhitungan anggaran, hingga strategi lolos PIMNAS.`,
+        time: new Date()
+      }
+      setMessages(prev => [...prev, userMsg, aiMsg])
+      setInput('')
+      if (inputRef.current) inputRef.current.style.height = 'auto'
+      return
+    }
+
+    if (lowerQ.startsWith('/canvas ')) {
+      setActiveMode('canvas')
+    } else if (lowerQ.startsWith('/tanya ')) {
+      setActiveMode('tanya')
+    }
+
     // Validasi kuota chat sebelum mengirim
     if (isQuotaExceeded) {
       if (!isMahasiswa) {
@@ -362,6 +487,7 @@ export function IdeaLab({ user, onLogin }) {
     const updatedMessages = [...messages, userMsg]
     setMessages(updatedMessages)
     setInput('')
+    if (inputRef.current) inputRef.current.style.height = 'auto'
     setLoading(true)
 
     // Perbarui kuota chat
@@ -394,11 +520,16 @@ export function IdeaLab({ user, onLogin }) {
           content: m.content
         }))
 
+      // Sertakan arahan mode canvas jika sedang dalam mode canvas
+      const queryPayload = activeMode === 'canvas' && !q.toLowerCase().includes('/canvas')
+        ? `/canvas ${q}`
+        : q
+
       const response = await fetch(`${api}/ai/brainstorm`, {
         method: 'POST',
         headers,
         body: JSON.stringify({
-          message: q,
+          message: queryPayload,
           history: historyPayload
         })
       })
@@ -409,6 +540,19 @@ export function IdeaLab({ user, onLogin }) {
       }
 
       const aiReply = result.data.reply
+
+      // Periksa apakah balasan memuat data PSC terstruktur
+      const { pscData } = extractPscData(aiReply)
+      if (pscData) {
+        setCanvasData(prev => ({
+          ...prev,
+          ...pscData,
+          leader: prev.leader || user?.name || 'Devynta Syabrina',
+          members: (pscData.members && pscData.members.length) ? pscData.members : prev.members,
+          university: pscData.university || prev.university || 'Universitas Lampung'
+        }))
+        setActiveMode('canvas')
+      }
 
       setMessages(prev => [
         ...prev,
@@ -590,6 +734,48 @@ export function IdeaLab({ user, onLogin }) {
               <Bot size={14} color="#0071e3" />
               Ruang Brainstorming PKMATE
             </span>
+
+            {/* Badge Mode Aktif */}
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.3rem',
+                fontSize: '0.72rem',
+                fontWeight: 700,
+                color: activeMode === 'canvas' ? '#0284c7' : '#475569',
+                background: activeMode === 'canvas' ? '#e0f2fe' : '#f1f5f9',
+                border: `1px solid ${activeMode === 'canvas' ? '#bae6fd' : '#e2e8f0'}`,
+                padding: '0.15rem 0.55rem',
+                borderRadius: '9999px'
+              }}
+            >
+              {activeMode === 'canvas' ? '📋 Mode: Strategy Canvas' : '💬 Mode: Konsultasi Bebas'}
+            </span>
+
+            {activeMode === 'canvas' && (
+              <button
+                type="button"
+                onClick={() => setCanvasModalOpen(true)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.3rem',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  color: '#ffffff',
+                  background: 'linear-gradient(135deg, #0284c7, #0369a1)',
+                  border: 'none',
+                  padding: '0.18rem 0.65rem',
+                  borderRadius: '9999px',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(2, 132, 199, 0.25)'
+                }}
+              >
+                <FileText size={11} />
+                <span>Lihat & Cetak Canvas (PDF)</span>
+              </button>
+            )}
 
 
             {isMahasiswa ? (
@@ -806,7 +992,104 @@ export function IdeaLab({ user, onLogin }) {
                   }}
                 >
                   {msg.role === 'ai' ? (
-                    renderFormattedContent(msg.content)
+                    (() => {
+                      const { cleanText, pscData: itemPscData } = extractPscData(msg.content)
+                      return (
+                        <>
+                          {renderFormattedContent(cleanText)}
+
+                          {itemPscData && (
+                            <div
+                              style={{
+                                marginTop: '0.85rem',
+                                padding: '0.85rem 1rem',
+                                background: 'linear-gradient(135deg, #f0f9ff, #e0f2fe)',
+                                border: '1px solid #bae6fd',
+                                borderRadius: '14px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '0.65rem'
+                              }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
+                                  <div
+                                    style={{
+                                      width: 32,
+                                      height: 32,
+                                      borderRadius: '8px',
+                                      background: '#0284c7',
+                                      color: '#ffffff',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center'
+                                    }}
+                                  >
+                                    <FileText size={17} />
+                                  </div>
+                                  <div>
+                                    <div style={{ fontWeight: 800, fontSize: '0.82rem', color: '#0369a1' }}>
+                                      PKM STRATEGY CANVAS (PSC) SIAP
+                                    </div>
+                                    <div style={{ fontSize: '0.73rem', color: '#0f172a', fontWeight: 600 }}>
+                                      {itemPscData.title || canvasData.title} ({itemPscData.scheme || canvasData.scheme})
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap' }}>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setCanvasData(prev => ({ ...prev, ...itemPscData }))
+                                      setCanvasModalOpen(true)
+                                    }}
+                                    style={{
+                                      padding: '0.4rem 0.75rem',
+                                      fontSize: '0.74rem',
+                                      fontWeight: 600,
+                                      borderRadius: '8px',
+                                      border: '1px solid #0284c7',
+                                      background: '#ffffff',
+                                      color: '#0284c7',
+                                      cursor: 'pointer',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '0.3rem'
+                                    }}
+                                  >
+                                    <FileText size={13} />
+                                    <span>Buka / Edit Canvas</span>
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => printCanvasToPdf({ ...canvasData, ...itemPscData })}
+                                    style={{
+                                      padding: '0.4rem 0.85rem',
+                                      fontSize: '0.74rem',
+                                      fontWeight: 600,
+                                      borderRadius: '8px',
+                                      border: 'none',
+                                      background: 'linear-gradient(135deg, #0284c7, #0369a1)',
+                                      color: '#ffffff',
+                                      cursor: 'pointer',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '0.3rem',
+                                      boxShadow: '0 2px 6px rgba(2, 132, 199, 0.3)'
+                                    }}
+                                  >
+                                    <Printer size={13} />
+                                    <span>Unduh / Cetak PDF</span>
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )
+                    })()
                   ) : (
                     <div style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</div>
                   )}
@@ -937,76 +1220,221 @@ export function IdeaLab({ user, onLogin }) {
           </div>
         )}
 
+        {/* Command Chips / Mode Selector Bar */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.85rem' }}>
+          <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveMode('tanya')
+                sendIdea('/tanya')
+              }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                padding: '0.35rem 0.75rem',
+                borderRadius: '8px',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                background: activeMode === 'tanya' ? '#eff6ff' : '#f8fafc',
+                border: `1px solid ${activeMode === 'tanya' ? '#3b82f6' : '#cbd5e1'}`,
+                color: activeMode === 'tanya' ? '#1d4ed8' : '#475569',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <span>💬 /tanya (Konsultasi Bebas)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setActiveMode('canvas')
+                sendIdea('/canvas')
+              }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                padding: '0.35rem 0.75rem',
+                borderRadius: '8px',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                background: activeMode === 'canvas' ? '#e0f2fe' : '#f8fafc',
+                border: `1px solid ${activeMode === 'canvas' ? '#0284c7' : '#cbd5e1'}`,
+                color: activeMode === 'canvas' ? '#0369a1' : '#475569',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <span>📋 /canvas (PKM Strategy Canvas)</span>
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', gap: '0.45rem' }}>
+            <button
+              type="button"
+              onClick={() => setCanvasModalOpen(true)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                padding: '0.35rem 0.75rem',
+                borderRadius: '8px',
+                fontSize: '0.74rem',
+                fontWeight: 600,
+                background: '#ffffff',
+                border: '1px solid #cbd5e1',
+                color: '#0f172a',
+                cursor: 'pointer'
+              }}
+            >
+              <FileText size={13} color="#0284c7" />
+              <span>Pratinjau Canvas</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => printCanvasToPdf(canvasData)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                padding: '0.35rem 0.75rem',
+                borderRadius: '8px',
+                fontSize: '0.74rem',
+                fontWeight: 600,
+                background: 'linear-gradient(135deg, #0284c7, #0369a1)',
+                border: 'none',
+                color: '#ffffff',
+                cursor: 'pointer'
+              }}
+            >
+              <Printer size={13} />
+              <span>Cetak PDF</span>
+            </button>
+          </div>
+        </div>
+
         {/* Chat Input Bar */}
         <form
           onSubmit={handleSubmit}
           style={{
             display: 'flex',
-            gap: '0.75rem',
-            marginTop: '1rem',
+            flexDirection: 'column',
+            gap: '0.45rem',
+            marginTop: '0.65rem',
             borderTop: '1px solid rgba(226, 232, 240, 0.85)',
-            paddingTop: '1rem'
+            paddingTop: '0.85rem'
           }}
         >
-          <input
-            ref={inputRef}
-            type="text"
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            placeholder={
-              isQuotaExceeded
-                ? (!isMahasiswa
-                    ? 'Batas kuota 10 chat sesi tamu telah tercapai. Silakan masuk akun mahasiswa...'
-                    : 'Batas kuota 50 chat hari ini telah tercapai. Kuota direset besok pukul 00:00 WIB...')
-                : 'Tuliskan gagasan, masalah lapangan, atau rancangan teknologi PKM-mu...'
-            }
-            disabled={loading || isQuotaExceeded}
-            style={{
-              flex: 1,
-              padding: '0.85rem 1.25rem',
-              borderRadius: '16px',
-              border: '1px solid rgba(203, 213, 225, 0.95)',
-              background: isQuotaExceeded ? '#f8fafc' : '#ffffff',
-              fontSize: '0.9rem',
-              outline: 'none',
-              boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.03)',
-              transition: 'border-color 0.15s ease, box-shadow 0.15s ease'
-            }}
-            onFocus={e => {
-              if (!isQuotaExceeded) {
-                e.currentTarget.style.borderColor = '#0071e3'
-                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(0, 113, 227, 0.12)'
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-end' }}>
+            <textarea
+              ref={inputRef}
+              rows={1}
+              value={input}
+              onChange={e => {
+                setInput(e.target.value)
+                e.target.style.height = 'auto'
+                e.target.style.height = `${Math.min(e.target.scrollHeight, 180)}px`
+              }}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  if (e.shiftKey) {
+                    // Shift + Enter: biarkan default browser (membuat baris baru / enter)
+                    return
+                  }
+                  // Enter biasa: Kirim pesan
+                  e.preventDefault()
+                  if (input.trim() && !loading && !isQuotaExceeded) {
+                    sendIdea()
+                  }
+                }
+              }}
+              placeholder={
+                isQuotaExceeded
+                  ? (!isMahasiswa
+                      ? 'Batas kuota 10 chat sesi tamu telah tercapai. Silakan masuk akun mahasiswa...'
+                      : 'Batas kuota 50 chat hari ini telah tercapai. Kuota direset besok pukul 00:00 WIB...')
+                  : activeMode === 'canvas'
+                    ? 'Ketik /canvas atau ceritakan ide usulan Anda (Shift + Enter untuk baris baru)...'
+                    : 'Ketik /tanya, /canvas, atau tuliskan pertanyaan / gagasan inovasi (Shift + Enter untuk baris baru)...'
               }
-            }}
-            onBlur={e => {
-              e.currentTarget.style.borderColor = 'rgba(203, 213, 225, 0.95)'
-              e.currentTarget.style.boxShadow = 'inset 0 1px 2px rgba(0, 0, 0, 0.03)'
-            }}
-          />
-          <button
-            type="submit"
-            disabled={!input.trim() || loading || isQuotaExceeded}
-            className="btn-action primary"
-            style={{
-              padding: '0.85rem 1.5rem',
-              borderRadius: '16px',
-              gap: '0.45rem',
-              background: !input.trim() || loading || isQuotaExceeded ? '#94a3b8' : 'linear-gradient(135deg, #0071e3, #0284c7)',
-              cursor: !input.trim() || loading || isQuotaExceeded ? 'not-allowed' : 'pointer',
-              border: 'none',
-              color: '#ffffff',
-              fontWeight: 600,
-              display: 'inline-flex',
-              alignItems: 'center',
-              boxShadow: !input.trim() || loading || isQuotaExceeded ? 'none' : '0 4px 14px rgba(0, 113, 227, 0.35)',
-              transition: 'all 0.15s ease'
-            }}
-          >
-            <span>Kirim Ide</span>
-            <Send size={15} />
-          </button>
+              disabled={loading || isQuotaExceeded}
+              style={{
+                flex: 1,
+                minHeight: '48px',
+                maxHeight: '180px',
+                padding: '0.8rem 1.15rem',
+                borderRadius: '16px',
+                border: '1px solid rgba(203, 213, 225, 0.95)',
+                background: isQuotaExceeded ? '#f8fafc' : '#ffffff',
+                fontSize: '0.9rem',
+                lineHeight: '1.45',
+                fontFamily: 'inherit',
+                resize: 'none',
+                outline: 'none',
+                boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.03)',
+                transition: 'border-color 0.15s ease, box-shadow 0.15s ease'
+              }}
+              onFocus={e => {
+                if (!isQuotaExceeded) {
+                  e.currentTarget.style.borderColor = '#0071e3'
+                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(0, 113, 227, 0.12)'
+                }
+              }}
+              onBlur={e => {
+                e.currentTarget.style.borderColor = 'rgba(203, 213, 225, 0.95)'
+                e.currentTarget.style.boxShadow = 'inset 0 1px 2px rgba(0, 0, 0, 0.03)'
+              }}
+            />
+            <button
+              type="submit"
+              disabled={!input.trim() || loading || isQuotaExceeded}
+              className="btn-action primary"
+              style={{
+                height: '48px',
+                padding: '0 1.4rem',
+                borderRadius: '16px',
+                gap: '0.45rem',
+                background: !input.trim() || loading || isQuotaExceeded ? '#94a3b8' : 'linear-gradient(135deg, #0071e3, #0284c7)',
+                cursor: !input.trim() || loading || isQuotaExceeded ? 'not-allowed' : 'pointer',
+                border: 'none',
+                color: '#ffffff',
+                fontWeight: 600,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: !input.trim() || loading || isQuotaExceeded ? 'none' : '0 4px 14px rgba(0, 113, 227, 0.35)',
+                transition: 'all 0.15s ease',
+                flexShrink: 0
+              }}
+            >
+              <span>Kirim Ide</span>
+              <Send size={15} />
+            </button>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 0.4rem' }}>
+            <span style={{ fontSize: '0.71rem', color: '#94a3b8' }}>
+              Tekan <b>Enter</b> untuk kirim • <b>Shift + Enter</b> untuk baris baru
+            </span>
+            {input.trim() && (
+              <span style={{ fontSize: '0.71rem', color: '#94a3b8' }}>
+                {input.length} karakter
+              </span>
+            )}
+          </div>
         </form>
       </div>
+
+      {/* Modal Pratinjau & Edit PKM Strategy Canvas (PSC) */}
+      <PKMStrategyCanvasModal
+        isOpen={canvasModalOpen}
+        onClose={() => setCanvasModalOpen(false)}
+        canvasData={canvasData}
+        onUpdateCanvas={(updated) => setCanvasData(updated)}
+      />
     </div>
   )
 }
