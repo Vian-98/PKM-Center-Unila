@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   Layers, Users, GraduationCap, BookOpen, Bell, ArrowRight,
   CheckCircle2, Clock, Sparkles, FileText, ChevronRight,
@@ -28,6 +28,7 @@ function NotificationBell() {
   const [open, setOpen] = useState(false)
   const [items, setItems] = useState([])
   const [unread, setUnread] = useState(0)
+  const bellRef = useRef(null)
 
   const load = async () => {
     try {
@@ -40,6 +41,20 @@ function NotificationBell() {
   }
 
   useEffect(() => { load() }, [])
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (bellRef.current && !bellRef.current.contains(e.target)) {
+        setOpen(false)
+      }
+    }
+    if (open) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [open])
 
   const toggle = async () => {
     const next = !open
@@ -54,8 +69,14 @@ function NotificationBell() {
   }
 
   return (
-    <div className="student-bell-wrap">
-      <button type="button" className="student-bell-btn" onClick={toggle} aria-label="Notifikasi" title="Notifikasi">
+    <div className="student-bell-wrap" ref={bellRef}>
+      <button
+        type="button"
+        className={`student-bell-btn ${open ? 'active' : ''}`}
+        onClick={toggle}
+        aria-label="Notifikasi"
+        title="Notifikasi"
+      >
         <Bell size={18} />
         {unread > 0 && <span className="student-bell-count">{unread}</span>}
       </button>
@@ -67,7 +88,7 @@ function NotificationBell() {
           </div>
           <div className="student-bell-list">
             {items.length === 0 ? (
-              <div className="student-bell-empty">Belum ada notifikasi.</div>
+              <div className="student-bell-empty">Belum ada notifikasi baru.</div>
             ) : (
               items.map(n => (
                 <div key={n.id} className={`student-bell-item ${n.isRead ? '' : 'unread'}`}>
