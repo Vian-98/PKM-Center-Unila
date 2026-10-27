@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { api } from '../lib/content'
+import { getAuthToken } from '../lib/authSession'
 import {
   loadStore,
   saveStore,
@@ -132,7 +133,7 @@ export function DosenDashboard({ user, onSwitchRole }) {
     },
   })
 
-  const token = localStorage.getItem('pkm_token')
+  const token = getAuthToken()
 
   // Sinkronisasi otomatis ke LocalStorage setiap ada perubahan state
   useEffect(() => { saveStore('pkm_dosen_overview', overview) }, [overview])

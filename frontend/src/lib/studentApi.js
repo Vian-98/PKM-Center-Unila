@@ -1,4 +1,5 @@
 import { api } from './content'
+import { getAuthToken } from './authSession'
 
 // Helper bersama untuk modul Portal Mahasiswa (Anggota 2 — Favian).
 
@@ -14,7 +15,7 @@ export function resolveAssetUrl(url) {
 }
 
 export function getToken() {
-  return localStorage.getItem('pkm_token')
+  return getAuthToken()
 }
 
 // authFetch mengirim permintaan ke backend dengan token JWT bila tersedia.

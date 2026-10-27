@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { Trash2 } from 'lucide-react'
 import { api } from '../lib/content'
+import { getAuthToken } from '../lib/authSession'
 import {
   loadStore,
   saveStore,
@@ -163,7 +164,7 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
   })
 
   const messagesEndRef = useRef(null)
-  const token = localStorage.getItem('pkm_token')
+  const token = getAuthToken()
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })

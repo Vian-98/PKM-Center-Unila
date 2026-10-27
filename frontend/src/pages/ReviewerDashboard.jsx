@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { api } from '../lib/content'
+import { getAuthToken } from '../lib/authSession'
 import {
   loadStore,
   saveStore,
@@ -210,7 +211,7 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [docModal.isOpen, scoringModal.isOpen, closeReviewWorkspace])
 
-  const token = localStorage.getItem('pkm_token')
+  const token = getAuthToken()
 
   // Sinkronisasi otomatis ke LocalStorage
   useEffect(() => { saveStore('pkm_reviewer_overview', overview) }, [overview])

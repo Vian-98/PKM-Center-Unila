@@ -18,6 +18,7 @@ import {
   Camera,
 } from 'lucide-react'
 import { api } from '../lib/content'
+import { getAuthToken, updateAuthUser } from '../lib/authSession'
 
 const FAKULTAS_OPTIONS = [
   'Fakultas Teknik',
@@ -135,7 +136,7 @@ export function ProfilePage({ user, onUpdateUser, onSwitchRole, onLogout }) {
     }
 
     // Sinkronisasi backend jika token tersedia
-    const token = localStorage.getItem('pkm_token')
+    const token = getAuthToken()
     if (token && !token.startsWith('token-')) {
       try {
         await fetch(`${api}/auth/profile`, {
@@ -151,7 +152,7 @@ export function ProfilePage({ user, onUpdateUser, onSwitchRole, onLogout }) {
       }
     }
 
-    localStorage.setItem('pkm_user', JSON.stringify(updatedUser))
+    updateAuthUser(updatedUser)
     if (onUpdateUser) onUpdateUser(updatedUser)
 
     setSaving(false)

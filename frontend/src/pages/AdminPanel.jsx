@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import { PageIntro } from '../components/PageIntro'
 import { api, schemeNames } from '../lib/content'
+import { getAuthToken } from '../lib/authSession'
 
 const blankContent = { type: 'news', title: '', category: '', description: '', body: '', mediaUrl: '', thumbnailUrl: '', color: 'gold' }
 
 function useAdminList(path) {
   const [items, setItems] = useState([])
   const [message, setMessage] = useState('')
-  const token = localStorage.getItem('pkm_token')
+  const token = getAuthToken()
   const load = () => fetch(`${api}/admin${path}`, { headers: { Authorization: `Bearer ${token}` } })
     .then(async (response) => {
       const result = await response.json().catch(() => null)
@@ -306,7 +307,7 @@ function StatsView() {
 /* ---------------- Kontak ---------------- */
 
 function ContactView() {
-  const token = localStorage.getItem('pkm_token')
+  const token = getAuthToken()
   const [form, setForm] = useState(null)
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
@@ -361,7 +362,7 @@ function AIGatewayView() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
-  const token = localStorage.getItem('pkm_token')
+  const token = getAuthToken()
 
   const fetchStatus = () => {
     setRefreshing(true)

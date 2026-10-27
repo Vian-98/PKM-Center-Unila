@@ -16,6 +16,7 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { api } from '../lib/content'
+import { getAuthToken, updateAuthUser } from '../lib/authSession'
 
 const FAKULTAS_OPTIONS = [
   'Fakultas Teknik',
@@ -84,7 +85,7 @@ export function ProfileModal({ user, onUpdateUser, onSwitchRole, onLogout, close
     }
 
     // Coba simpan ke backend jika token tersedia
-    const token = localStorage.getItem('pkm_token')
+    const token = getAuthToken()
     if (token && !token.startsWith('token-')) {
       try {
         await fetch(`${api}/auth/profile`, {
@@ -100,8 +101,8 @@ export function ProfileModal({ user, onUpdateUser, onSwitchRole, onLogout, close
       }
     }
 
-    // Simpan ke localStorage & React state
-    localStorage.setItem('pkm_user', JSON.stringify(updatedUser))
+    // Simpan ke storage aktif & React state
+    updateAuthUser(updatedUser)
     if (onUpdateUser) onUpdateUser(updatedUser)
 
     setSaving(false)

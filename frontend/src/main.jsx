@@ -21,6 +21,16 @@ import { AppleMobileDock } from './components/AppleMobileDock'
 import { DesktopSidebarLayout } from './components/DesktopSidebarLayout'
 import { ProfilePage } from './pages/ProfilePage'
 import { api } from './lib/content'
+import {
+  getAuthToken,
+  getAuthUser,
+  setAuthSession,
+  updateAuthUser,
+  updateAuthToken,
+  clearAuthSession,
+  recordAuthActivity,
+  checkAuthInactivity,
+} from './lib/authSession'
 import './styles.css'
 import './ref.css'
 import './modules.css'
@@ -264,6 +274,7 @@ function LoginModal({ close, complete }) {
     }
     setState({ loading: true, error: '' })
     let loggedUser = null
+    let authToken = ''
 
     try {
       const response = await fetch(`${api}/auth/login`, {
@@ -274,7 +285,7 @@ function LoginModal({ close, complete }) {
       const result = await response.json()
       if (response.ok && result?.user) {
         loggedUser = result.user
-        localStorage.setItem('pkm_token', result.token)
+        authToken = result.token
       } else {
         throw new Error(result?.message || 'Login gagal')
       }
@@ -339,7 +350,7 @@ function LoginModal({ close, complete }) {
         role,
         roles,
       }
-      localStorage.setItem('pkm_token', `token-${safeId}`)
+      authToken = `token-${safeId}`
     }
 
     if (loggedUser) {
@@ -347,8 +358,8 @@ function LoginModal({ close, complete }) {
       if (!loggedUser.roles) {
         loggedUser.roles = [loggedUser.role]
       }
-      localStorage.setItem('pkm_user', JSON.stringify(loggedUser))
-      if (!remember) sessionStorage.setItem('pkm_session_only', '1')
+      // Opsi C: Jika "Ingat Saya" dicentang -> localStorage. Jika tidak -> sessionStorage (bersih saat browser ditutup)
+      setAuthSession(loggedUser, authToken, remember)
       complete(loggedUser)
       close()
 
@@ -461,9 +472,14 @@ function App() {
   const [modal, setModal] = useState(false)
   const [user, setUser] = useState(() => {
     try {
-      const saved = localStorage.getItem('pkm_user')
-      if (!saved) return null
-      const parsed = JSON.parse(saved)
+      // Pengecekan inaktivitas 30 menit saat aplikasi dimuat
+      if (checkAuthInactivity(30)) {
+        clearAuthSession()
+        return null
+      }
+      // Ambil user dari sessionStorage (jika tidak ingat saya) atau localStorage (jika ingat saya dicentang)
+      const parsed = getAuthUser()
+      if (!parsed) return null
       if (!parsed.roles) {
         if (parsed.role === 'dosen') {
           parsed.roles = (parsed.email?.includes('dosen.reviewer') || parsed.email?.includes('sri'))
@@ -563,17 +579,48 @@ function App() {
   }, [])
 
   const logout = () => {
-    localStorage.removeItem('pkm_user')
-    localStorage.removeItem('pkm_token')
+    clearAuthSession()
     setUser(null)
     window.location.hash = '#beranda'
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
   }
 
+  // Timer inaktivitas 30 menit otomatis logout jika pengguna menganggur
+  useEffect(() => {
+    if (!user) return
+
+    recordAuthActivity()
+
+    const checkTimer = () => {
+      if (checkAuthInactivity(30)) {
+        clearAuthSession()
+        setUser(null)
+        window.location.hash = '#beranda'
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+        alert('Sesi Anda telah berakhir karena tidak ada aktivitas selama 30 menit.')
+      }
+    }
+
+    // Interval cek setiap 30 detik
+    const interval = setInterval(checkTimer, 30 * 1000)
+
+    const handleActivity = () => {
+      recordAuthActivity()
+    }
+
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart']
+    events.forEach(evt => window.addEventListener(evt, handleActivity, { passive: true }))
+
+    return () => {
+      clearInterval(interval)
+      events.forEach(evt => window.removeEventListener(evt, handleActivity))
+    }
+  }, [user])
+
   // Fungsi beralih peran aktif pengguna (Switch Role)
   const switchRole = async (targetRole) => {
     if (!user || user.role === targetRole) return
-    const token = localStorage.getItem('pkm_token')
+    const token = getAuthToken()
     const updatedUser = { ...user, role: targetRole }
 
     try {
@@ -588,7 +635,7 @@ function App() {
         })
         const result = await response.json()
         if (response.ok && result?.token) {
-          localStorage.setItem('pkm_token', result.token)
+          updateAuthToken(result.token)
           if (result.user?.role) updatedUser.role = result.user.role
           if (result.user?.roles) {
             // Jangan biarkan backend mengurangi roles admin/multi-role menjadi satu role saja,
@@ -607,7 +654,7 @@ function App() {
       console.warn('Sinkronisasi switch-role online tidak tersedia, beralih secara lokal:', err)
     }
 
-    localStorage.setItem('pkm_user', JSON.stringify(updatedUser))
+    updateAuthUser(updatedUser)
     setUser(updatedUser)
 
     if (targetRole === 'dosen') window.location.hash = '#dosen'
