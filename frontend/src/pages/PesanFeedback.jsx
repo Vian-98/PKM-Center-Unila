@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
-import { Trash2 } from 'lucide-react'
+import { ArrowLeft, Info, Trash2 } from 'lucide-react'
 import { loadStore, saveStore } from '../lib/dosenReviewerData'
 import { authFetch } from '../lib/studentApi'
 
@@ -39,6 +39,13 @@ export function PesanFeedback({ user, onLogin }) {
     }
     return ''
   })
+
+  // Layar sempit (<= 840px) menampilkan daftar kontak ATAU jendela chat secara bergantian
+  const [mobileView, setMobileView] = useState(() => (selectedContactId ? 'chat' : 'list'))
+  const openContact = (contactId) => {
+    setSelectedContactId(contactId)
+    setMobileView('chat')
+  }
 
   const loadConversations = useCallback(async () => {
     try {
@@ -190,7 +197,7 @@ export function PesanFeedback({ user, onLogin }) {
     if (activeTab === 'chat') {
       scrollToBottom()
     }
-  }, [selectedContactId, messages, activeTab])
+  }, [selectedContactId, messages, activeTab, mobileView])
 
   // Kontak terpilih saat ini
   const selectedContact = contactsList.find(c => c.contactId === selectedContactId)
@@ -209,6 +216,7 @@ export function PesanFeedback({ user, onLogin }) {
       await authFetch(`/messages/thread/${selectedContactId}`, { method: 'DELETE' })
       setMessages([])
       setSelectedContactId('')
+      setMobileView('list')
       loadConversations()
     } catch (err) {
       alert(`Gagal menghapus riwayat chat: ${err.message}`)
@@ -260,7 +268,7 @@ export function PesanFeedback({ user, onLogin }) {
     }
 
     if (targetId === selectedContactId) loadThread(targetId)
-    setSelectedContactId(targetId)
+    openContact(targetId)
     setNewContactModal({
       isOpen: false,
       selectedSystemUser: '',
@@ -370,7 +378,8 @@ export function PesanFeedback({ user, onLogin }) {
     <div
       className={`module-container ${activeTab === 'chat' ? 'chat-page-fullscreen' : ''}`}
       style={activeTab === 'chat' ? {
-        height: 'calc(100vh - 4.5rem - 3.5rem)',
+        // Tinggi area konten dashboard; --bo-dock-space hanya terisi saat dock mobile tampil
+        height: 'calc(100vh - var(--bo-topbar-h, 56px) - var(--bo-dock-space, 0px))',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
@@ -388,7 +397,7 @@ export function PesanFeedback({ user, onLogin }) {
               {currentUserRole} — {currentUserName}
             </span>
           </div>
-          <p style={{ fontSize: '0.8rem', color: '#64748b', margin: '0.15rem 0 0 0' }}>
+          <p className="chat-page-subtitle" style={{ fontSize: '0.8rem', color: '#64748b', margin: '0.15rem 0 0 0' }}>
             Komunikasi substansi dan klarifikasi bimbingan PKM terhubung langsung antar-akun tanpa bot demo.
           </p>
         </div>
@@ -424,7 +433,7 @@ export function PesanFeedback({ user, onLogin }) {
         </div>
       )}
       {activeTab === 'chat' && (
-        <section className="chat-wrapper" style={{ flex: 1, minHeight: 0, height: 'auto', maxHeight: 'none', marginBottom: 0 }}>
+        <section className={`chat-wrapper chat-view-${mobileView}`} style={{ flex: 1, minHeight: 0, height: 'auto', maxHeight: 'none', marginBottom: 0 }}>
           {/* Kolom Kiri: Daftar Kontak Percakapan Terhubung */}
           <aside className="chat-contacts-sidebar">
             <div className="chat-sidebar-search" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
@@ -529,7 +538,7 @@ export function PesanFeedback({ user, onLogin }) {
                     <div
                       key={c.contactId}
                       className={`chat-contact-item ${isSelected ? 'active' : ''}`}
-                      onClick={() => setSelectedContactId(c.contactId)}
+                      onClick={() => openContact(c.contactId)}
                     >
                       <div className="contact-avatar">
                         {c.avatar}
@@ -580,19 +589,27 @@ export function PesanFeedback({ user, onLogin }) {
                 {/* Header Chat Aktif */}
                 <div className="chat-header">
                   <div className="chat-header-user">
+                    <button
+                      type="button"
+                      className="chat-back-btn"
+                      onClick={() => setMobileView('list')}
+                      aria-label="Kembali ke daftar kontak"
+                    >
+                      <ArrowLeft size={18} />
+                    </button>
                     <div className="contact-avatar">
                       {selectedContact?.avatar || 'PK'}
                     </div>
-                    <div>
-                      <div style={{ fontWeight: 800, fontSize: '1rem', color: '#0f172a' }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div className="chat-header-name" style={{ fontWeight: 800, fontSize: '1rem', color: '#0f172a' }}>
                         {selectedContact?.contactName || 'Pilih Kontak'}
                       </div>
                       <div style={{ fontSize: '0.8rem', color: '#059669', display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600 }}>
-                        <span>Terhubung - {selectedContact?.contactRole}</span>
+                        <span className="chat-header-name">Terhubung - {selectedContact?.contactRole}</span>
                       </div>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
                     <button
                       type="button"
                       className="btn-action danger"
@@ -601,14 +618,17 @@ export function PesanFeedback({ user, onLogin }) {
                       title="Hapus riwayat chat dengan kontak ini dari tampilan Anda"
                     >
                       <Trash2 size={13} />
-                      <span>Hapus Chat</span>
+                      <span className="chat-header-btn-label">Hapus Chat</span>
                     </button>
                     <button
+                      type="button"
                       className="btn-action secondary"
-                      style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem' }}
+                      style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
                       onClick={() => setContactInfoModal({ isOpen: true, contact: selectedContact })}
+                      title="Info kontak"
                     >
-                      Info Kontak
+                      <Info size={13} />
+                      <span className="chat-header-btn-label">Info Kontak</span>
                     </button>
                   </div>
                 </div>
