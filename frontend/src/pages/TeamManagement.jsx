@@ -1333,7 +1333,7 @@ export function TeamManagement({ user, initialTab = 'tim' }) {
                   <button
                     type="button"
                     onClick={() => {
-                      localStorage.setItem('pkm_target_chat_contact', d.id)
+                      localStorage.setItem('pkm_target_chat_contact', d.email || d.id)
                       window.location.hash = '#mahasiswa/pesan'
                     }}
                     className="btn-action secondary"
@@ -1465,14 +1465,8 @@ export function TeamManagement({ user, initialTab = 'tim' }) {
                   <button
                     type="button"
                     onClick={() => {
-                      const mName = (m.name || '').toLowerCase()
-                      let targetId = 'user-mhs-nadia'
-                      if (mName.includes('favian') || mName.includes('rifqi') || m.id === 'mhs-1') targetId = 'user-mhs-favian'
-                      else if (mName.includes('ahmad') || mName.includes('fauzi') || m.id === 'mhs-2') targetId = 'user-mhs-ahmad'
-                      else if (mName.includes('siti') || mName.includes('nurhaliza') || m.id === 'mhs-3') targetId = 'user-mhs-siti'
-                      else if (mName.includes('bima')) targetId = 'user-mhs-bima'
-                      else if (mName.includes('rian')) targetId = 'user-mhs-rian'
-                      localStorage.setItem('pkm_target_chat_contact', targetId)
+                      // Email dipetakan ke UUID akun oleh halaman Pesan
+                      localStorage.setItem('pkm_target_chat_contact', m.email || m.id)
                       window.location.hash = '#mahasiswa/pesan'
                     }}
                     className="btn-action secondary"

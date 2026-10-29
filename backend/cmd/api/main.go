@@ -110,8 +110,10 @@ func main() {
 
 	// --- Modul Pesan & Feedback ---
 	authGroup := api.Group("", middleware.RequireAuth(secret))
+	authGroup.GET("/messages/contacts", msgFeedback.GetContacts)
 	authGroup.GET("/messages/conversations", msgFeedback.GetConversations)
 	authGroup.GET("/messages/thread/:contactId", msgFeedback.GetThread)
+	authGroup.DELETE("/messages/thread/:contactId", msgFeedback.HideThread)
 	authGroup.POST("/messages/send", msgFeedback.SendMessage)
 	authGroup.GET("/feedback/proposal/:proposalId", msgFeedback.GetProposalFeedback)
 	authGroup.POST("/feedback/proposal/:proposalId", msgFeedback.CreateProposalFeedback)

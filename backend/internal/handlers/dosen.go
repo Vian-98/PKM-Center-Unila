@@ -103,6 +103,7 @@ func (h DosenHandler) GetProposals(c *gin.Context) {
 		SchemeCode    string     `json:"schemeCode"`
 		SchemeName    string     `json:"schemeName"`
 		TeamName      string     `json:"teamName"`
+		LeaderID      string     `json:"leaderId"`
 		LeaderName    string     `json:"leaderName"`
 		LeaderFaculty string     `json:"leaderFaculty"`
 		IsFunded      bool       `json:"isFunded"`
@@ -114,7 +115,7 @@ func (h DosenHandler) GetProposals(c *gin.Context) {
 	var items []ProposalItem
 	rows, err := h.DB.Table("proposal_supervisors ps").
 		Select(`p.id, p.title, p.abstract, p.status, s.code as scheme_code, s.name as scheme_name,
-		        t.name as team_name, u.full_name as leader_name, sp.faculty as leader_faculty,
+		        t.name as team_name, u.id as leader_id, u.full_name as leader_name, sp.faculty as leader_faculty,
 		        p.is_funded, p.submitted_at, p.created_at,
 		        (SELECT COUNT(*) FROM logbook_entries le WHERE le.proposal_id = p.id) as logbook_count`).
 		Joins("JOIN proposals p ON p.id = ps.proposal_id").

@@ -750,14 +750,8 @@ export function DosenDashboard({ user, onSwitchRole }) {
                     <button
                       type="button"
                       onClick={() => {
-                        let targetId = 'user-mhs-nadia'
-                        const leader = (prop.leaderName || '').toLowerCase()
-                        if (leader.includes('fajar') || leader.includes('bima')) targetId = 'user-mhs-bima'
-                        else if (leader.includes('rian')) targetId = 'user-mhs-rian'
-                        else if (leader.includes('ahmad') || leader.includes('zaki')) targetId = 'user-mhs-ahmad'
-                        else if (leader.includes('siti')) targetId = 'user-mhs-siti'
-                        else if (leader.includes('favian')) targetId = 'user-mhs-favian'
-                        localStorage.setItem('pkm_target_chat_contact', targetId)
+                        // leaderId = UUID akun ketua tim dari /dosen/proposals
+                        if (prop.leaderId) localStorage.setItem('pkm_target_chat_contact', prop.leaderId)
                         window.location.hash = '#dosen/pesan'
                       }}
                       className="btn-action secondary"
