@@ -1,6 +1,6 @@
 -- ============================================================================
 -- 0003_student_portal.sql
--- Kolom pendukung Portal Mahasiswa (Anggota 2 — Favian).
+-- Kolom pendukung Portal Mahasiswa (Anggota 2: Favian).
 -- Bersifat aditif & idempoten sehingga aman dijalankan ulang saat startup.
 --   * proposals.field_of_study            : kriteria bidang/jurusan pengusul
 --   * logbook_entries.progress_percentage : persentase capaian kegiatan (0-100)

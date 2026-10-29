@@ -80,8 +80,8 @@ export const fallbackPedoman = [
     source: 'Ditjen Diktisaintek · SIMBELMAWA',
     fileUrl: pdf2026('PKM-Panduan-Umum-2026_fix.pdf'),
     localDocUrl: '/docs/panduan-format-sistematika-proposal-belmawa.txt',
-    funding: 'Rp 6.000.000 — Rp 8.000.000',
-    teamSize: '3 — 5 Mahasiswa',
+    funding: 'Rp 6.000.000 - Rp 8.000.000',
+    teamSize: '3-5 Mahasiswa',
     note: 'Pedoman induk resmi PKM 2026: kriteria, karakteristik 10 bidang, ketentuan GenAI, uji similaritas, penilaian, pendanaan, dan PIMNAS.',
   },
   {
@@ -93,8 +93,8 @@ export const fallbackPedoman = [
     source: 'Ditjen Diktisaintek · SIMBELMAWA',
     fileUrl: pedoman2025Portal,
     localDocUrl: '/docs/panduan-format-sistematika-proposal-belmawa.txt',
-    funding: 'Rp 6.000.000 — Rp 10.000.000',
-    teamSize: '3 — 5 Mahasiswa',
+    funding: 'Rp 6.000.000 - Rp 10.000.000',
+    teamSize: '3-5 Mahasiswa',
     note: 'Panduan tata kelola, format usulan, kriteria penilaian, dan jadwal pelaksanaan PKM Pendanaan & Insentif tahun 2025.',
   },
   {
@@ -106,8 +106,8 @@ export const fallbackPedoman = [
     source: 'Ditjen Diktisaintek · SIMBELMAWA',
     fileUrl: pedoman2024Portal,
     localDocUrl: '/docs/panduan-format-sistematika-proposal-belmawa.txt',
-    funding: 'Rp 6.000.000 — Rp 10.000.000',
-    teamSize: '3 — 5 Mahasiswa',
+    funding: 'Rp 6.000.000 - Rp 10.000.000',
+    teamSize: '3-5 Mahasiswa',
     note: 'Dokumen acuan penetapan 10 skema PKM, ketentuan RAB 4 komponen, dan petunjuk penulisan tanpa cover proposal.',
   },
   {
@@ -119,8 +119,8 @@ export const fallbackPedoman = [
     source: 'Ditjen Diktisaintek · SIMBELMAWA',
     fileUrl: pdf2026('PANDUAN-PKM-2026_versi_full.pdf'),
     localDocUrl: '/docs/panduan-format-sistematika-proposal-belmawa.txt',
-    funding: 'Rp 6.000.000 — Rp 8.000.000',
-    teamSize: '3 — 5 Mahasiswa',
+    funding: 'Rp 6.000.000 - Rp 8.000.000',
+    teamSize: '3-5 Mahasiswa',
     note: 'Kompilasi lengkap Panduan PKM 2026 untuk seluruh bidang (skema pendanaan & insentif) dalam satu berkas PDF resmi.',
   },
   {
@@ -132,8 +132,8 @@ export const fallbackPedoman = [
     source: 'Ditjen Diktisaintek · No. 5/DST/B2/R/DT.01.00/2026',
     fileUrl: pdf2026('PKM-2026-Tawaran-PKM-2026-hn.pdf'),
     localDocUrl: '/docs/panduan-format-sistematika-proposal-belmawa.txt',
-    funding: '—',
-    teamSize: '3 — 5 Mahasiswa',
+    funding: '-',
+    teamSize: '3-5 Mahasiswa',
     note: 'Surat tawaran resmi PKM 2026: bidang yang dapat diikuti, persyaratan pengusul, lini masa penyelenggaraan, dan tautan pendaftaran.',
   },
   {
@@ -145,8 +145,8 @@ export const fallbackPedoman = [
     source: 'SIMBELMAWA · Riset Laboratorium & Alam',
     fileUrl: pdf2026('PKM-RE-2026_fix.pdf'),
     localDocUrl: '/docs/proposal-nanomarine-pkm-re.pdf',
-    funding: 'Rp 6.000.000 — Rp 8.000.000',
-    teamSize: '3 — 5 Mahasiswa',
+    funding: 'Rp 6.000.000 - Rp 8.000.000',
+    teamSize: '3-5 Mahasiswa',
     note: 'Riset eksakta: mengungkap hubungan sebab-akibat pada bidang sains, teknologi, kesehatan, dan keteknikan.',
   },
   {
@@ -158,8 +158,8 @@ export const fallbackPedoman = [
     source: 'SIMBELMAWA · Sosial & Humaniora',
     fileUrl: pdf2026('PKM-RSH-2026_fix.pdf'),
     localDocUrl: '/docs/proposal-finsmart-pkm-pm.pdf',
-    funding: 'Rp 6.000.000 — Rp 8.000.000',
-    teamSize: '3 — 5 Mahasiswa',
+    funding: 'Rp 6.000.000 - Rp 8.000.000',
+    teamSize: '3-5 Mahasiswa',
     note: 'Mengkaji dinamika sosial, budaya, seni, hukum, psikologi, ekonomi, kearifan lokal, dan perilaku masyarakat kontemporer.',
   },
   {
@@ -171,8 +171,8 @@ export const fallbackPedoman = [
     source: 'SIMBELMAWA · Pemberdayaan Mitra',
     fileUrl: pdf2026('PKM-PM-2026_fix.pdf'),
     localDocUrl: '/docs/proposal-finsmart-pkm-pm.pdf',
-    funding: 'Rp 6.000.000 — Rp 8.000.000',
-    teamSize: '3 — 5 Mahasiswa',
+    funding: 'Rp 6.000.000 - Rp 8.000.000',
+    teamSize: '3-5 Mahasiswa',
     note: 'Pemberdayaan mitra non-profit (karang taruna, panti asuhan, kelompok tani, desa) melalui transfer inovasi dan pemecahan masalah sosial.',
   },
   {
@@ -184,8 +184,8 @@ export const fallbackPedoman = [
     source: 'SIMBELMAWA · Mitra Usaha Profit',
     fileUrl: pdf2026('PKM-PI-2026_fix.pdf'),
     localDocUrl: '/docs/proposal-agrosense-pkm-kc.pdf',
-    funding: 'Rp 6.000.000 — Rp 8.000.000',
-    teamSize: '3 — 5 Mahasiswa',
+    funding: 'Rp 6.000.000 - Rp 8.000.000',
+    teamSize: '3-5 Mahasiswa',
     note: 'Penerapan teknologi atau manajemen mutu untuk meningkatkan produktivitas mitra usaha berskala mikro hingga menengah (UMKM).',
   },
   {
@@ -197,8 +197,8 @@ export const fallbackPedoman = [
     source: 'SIMBELMAWA · Bisnis & Produk Komersial',
     fileUrl: pdf2026('PKM-K-2026_fix.pdf'),
     localDocUrl: '/docs/proposal-telangtea-pkm-k.pdf',
-    funding: 'Rp 6.000.000 — Rp 8.000.000',
-    teamSize: '3 — 5 Mahasiswa',
+    funding: 'Rp 6.000.000 - Rp 8.000.000',
+    teamSize: '3-5 Mahasiswa',
     note: 'Menumbuhkan jiwa wirausaha berbasis komoditas iptek yang berorientasi laba, analisis pasar, serta keberlanjutan usaha rintisan (startup).',
   },
   {
@@ -210,8 +210,8 @@ export const fallbackPedoman = [
     source: 'SIMBELMAWA · Prototipe & Rekayasa Sistem',
     fileUrl: pdf2026('PKM-KC-2026_fix.pdf'),
     localDocUrl: '/docs/proposal-padivision-pkm-kc.pdf',
-    funding: 'Rp 6.000.000 — Rp 8.000.000',
-    teamSize: '3 — 5 Mahasiswa',
+    funding: 'Rp 6.000.000 - Rp 8.000.000',
+    teamSize: '3-5 Mahasiswa',
     note: 'Kreasi konstruktif berbasis nalar ilmiah menghasilkan sistem purwarupa fisik fungsional siap uji (hardware, software, IoT, AI).',
   },
   {
@@ -223,8 +223,8 @@ export const fallbackPedoman = [
     source: 'SIMBELMAWA · Karya Kreatif & Kekayaan Intelektual',
     fileUrl: pdf2026('PKM-KI-2026_fix.pdf'),
     localDocUrl: '/docs/proposal-padivision-pkm-kc.pdf',
-    funding: 'Rp 6.000.000 — Rp 8.000.000',
-    teamSize: '3 — 5 Mahasiswa',
+    funding: 'Rp 6.000.000 - Rp 8.000.000',
+    teamSize: '3-5 Mahasiswa',
     note: 'Karya kreatif dengan nilai kebaruan serta potensi kekayaan intelektual dan komersialisasi.',
   },
   {
@@ -236,8 +236,8 @@ export const fallbackPedoman = [
     source: 'SIMBELMAWA · Media Digital & Gagasan',
     fileUrl: pdf2026('PKM-VGK-2026_fix.pdf'),
     localDocUrl: '/docs/panduan-format-sistematika-proposal-belmawa.txt',
-    funding: 'Rp 6.000.000 — Rp 8.000.000',
-    teamSize: '3 — 5 Mahasiswa',
+    funding: 'Rp 6.000.000 - Rp 8.000.000',
+    teamSize: '3-5 Mahasiswa',
     note: 'Mengomunikasikan isu pembangunan dan SDGs dalam video kreatif dengan konsep gagasan konstruktif yang berdampak.',
   },
   {
@@ -250,7 +250,7 @@ export const fallbackPedoman = [
     fileUrl: pdf2026('PKM-AI-2026_fix.pdf'),
     localDocUrl: '/docs/panduan-format-sistematika-proposal-belmawa.txt',
     funding: 'Insentif Rp 1.500.000',
-    teamSize: '3 — 5 Mahasiswa',
+    teamSize: '3-5 Mahasiswa',
     note: 'Artikel ilmiah berbasis kegiatan akademik yang telah selesai dilaksanakan (KKN, magang, tugas akhir, atau riset mandiri).',
   },
   {
@@ -263,7 +263,7 @@ export const fallbackPedoman = [
     fileUrl: pdf2026('PKM-GFT-2026_fix.pdf'),
     localDocUrl: '/docs/panduan-format-sistematika-proposal-belmawa.txt',
     funding: 'Insentif',
-    teamSize: '3 — 5 Mahasiswa',
+    teamSize: '3-5 Mahasiswa',
     note: 'Gagasan visioner futuristik berskala besar untuk menyelesaikan persoalan strategis bangsa dalam jangka panjang.',
   },
   {
@@ -331,7 +331,7 @@ export function useApi(path, fallback) {
 }
 
 export const fallbackTimeline = [
-  // 2026 — Lini masa resmi (Surat Tawaran PKM 2026 No. 5/DST/B2/R/DT.01.00/2026)
+  // 2026: Lini masa resmi (Surat Tawaran PKM 2026 No. 5/DST/B2/R/DT.01.00/2026)
   { id: 101, year: 2026, order: 1, stage: 'Peluncuran PKM 2026', label: '9 Maret 2026', note: 'Peluncuran resmi PKM 2026 melalui portal SIMBELMAWA.' },
   { id: 102, year: 2026, order: 2, stage: 'Sosialisasi program', label: '12 Maret 2026', note: 'Sosialisasi PKM 2026 kepada perguruan tinggi.' },
   { id: 103, year: 2026, order: 3, stage: 'Seleksi internal & pengusulan', label: '9 Maret – 9 April 2026', note: 'Pendaftaran dan pengunggahan proposal melalui SIMBELMAWA.' },
@@ -344,19 +344,19 @@ export const fallbackTimeline = [
   { id: 110, year: 2026, order: 10, stage: 'PIMNAS', label: '19 – 24 Oktober 2026', note: 'Pekan Ilmiah Mahasiswa Nasional.' },
   // 2025
   { id: 201, year: 2025, order: 1, stage: 'Sosialisasi & orientasi skema', label: 'Januari 2025', note: 'Pengenalan skema PKM dan sesi tanya jawab bagi calon pengusul.' },
-  { id: 202, year: 2025, order: 2, stage: 'Pendampingan penyusunan proposal', label: 'Januari — Februari 2025', note: 'Kelas intensif dan klinik proposal.' },
+  { id: 202, year: 2025, order: 2, stage: 'Pendampingan penyusunan proposal', label: 'Januari - Februari 2025', note: 'Kelas intensif dan klinik proposal.' },
   { id: 203, year: 2025, order: 3, stage: 'Pengusulan proposal (submit)', label: 'Maret 2025', note: 'Batas akhir pengajuan proposal.' },
-  { id: 204, year: 2025, order: 4, stage: 'Review & penilaian proposal', label: 'Maret — April 2025', note: 'Penilaian proposal tingkat nasional.' },
+  { id: 204, year: 2025, order: 4, stage: 'Review & penilaian proposal', label: 'Maret - April 2025', note: 'Penilaian proposal tingkat nasional.' },
   { id: 205, year: 2025, order: 5, stage: 'Penetapan proposal didanai', label: 'April 2025', note: 'Pengumuman proposal yang lolos pendanaan.' },
-  { id: 206, year: 2025, order: 6, stage: 'Pelaksanaan & monitoring', label: 'Mei — Oktober 2025', note: 'Pelaksanaan kegiatan dan monitoring pendanaan.' },
-  { id: 207, year: 2025, order: 7, stage: 'PIMNAS', label: 'November 2025', note: 'Pekan Ilmiah Mahasiswa Nasional — tim Unila meraih 12 medali.' },
+  { id: 206, year: 2025, order: 6, stage: 'Pelaksanaan & monitoring', label: 'Mei - Oktober 2025', note: 'Pelaksanaan kegiatan dan monitoring pendanaan.' },
+  { id: 207, year: 2025, order: 7, stage: 'PIMNAS', label: 'November 2025', note: 'Pekan Ilmiah Mahasiswa Nasional, tim Unila meraih 12 medali.' },
   // 2024
   { id: 301, year: 2024, order: 1, stage: 'Sosialisasi & orientasi skema', label: 'Januari 2024', note: 'Pengenalan skema PKM bagi mahasiswa baru.' },
-  { id: 302, year: 2024, order: 2, stage: 'Pendampingan penyusunan proposal', label: 'Januari — Februari 2024', note: 'Kelas intensif dan klinik proposal.' },
+  { id: 302, year: 2024, order: 2, stage: 'Pendampingan penyusunan proposal', label: 'Januari - Februari 2024', note: 'Kelas intensif dan klinik proposal.' },
   { id: 303, year: 2024, order: 3, stage: 'Pengusulan proposal (submit)', label: 'Maret 2024', note: 'Batas akhir pengajuan proposal.' },
-  { id: 304, year: 2024, order: 4, stage: 'Review & penilaian proposal', label: 'Maret — April 2024', note: 'Penilaian proposal tingkat nasional.' },
+  { id: 304, year: 2024, order: 4, stage: 'Review & penilaian proposal', label: 'Maret - April 2024', note: 'Penilaian proposal tingkat nasional.' },
   { id: 305, year: 2024, order: 5, stage: 'Penetapan proposal didanai', label: 'April 2024', note: 'Pengumuman proposal yang lolos pendanaan.' },
-  { id: 306, year: 2024, order: 6, stage: 'Pelaksanaan & monitoring', label: 'Mei — Oktober 2024', note: 'Pelaksanaan kegiatan dan monitoring pendanaan.' },
+  { id: 306, year: 2024, order: 6, stage: 'Pelaksanaan & monitoring', label: 'Mei - Oktober 2024', note: 'Pelaksanaan kegiatan dan monitoring pendanaan.' },
   { id: 307, year: 2024, order: 7, stage: 'PIMNAS', label: 'November 2024', note: 'Pekan Ilmiah Mahasiswa Nasional.' },
 ]
 

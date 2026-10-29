@@ -15,7 +15,7 @@ import (
 	"pkm-center/backend/internal/models"
 )
 
-// StudentHandler menangani modul Portal Mahasiswa (Anggota 2 — Favian):
+// StudentHandler menangani modul Portal Mahasiswa (Anggota 2: Favian):
 // dashboard progres usulan, pengajuan proposal multi-step, dokumen proposal,
 // logbook kegiatan, direktori pembimbing, dan pelacakan status usulan publik.
 type StudentHandler struct {

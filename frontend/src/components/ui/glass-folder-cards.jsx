@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useId, useCallback } from 'react'
 
 /**
- * Glass Folder Cards — Komponen folder interaktif 3 layer untuk PKM Center Unila.
+ * Glass Folder Cards: Komponen folder interaktif 3 layer untuk PKM Center Unila.
  * Diadaptasi ke Plain React + Vite (Vanilla JSX + self-contained canvas liquid art).
  *
  * Tiga lapisan:

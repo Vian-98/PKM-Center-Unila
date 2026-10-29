@@ -4,23 +4,23 @@
 
 ---
 
-## 1. Home — **PIC: Radhit** ✅
+## 1. Home: **PIC: Radhit** ✅
 
 > **Status: selesai** (dikerjakan bersamaan dengan bagian lain; lihat catatan di bawah).
 
 - [x] Hero/banner utama
 - [x] Ringkasan "Tentang Kami" (deskripsi singkat PKM Center)
-- [x] Statistik jumlah usulan proposal per skema PKM (PKM-K, PKM-PI, PKM-PM, PKM-KC, PKM-GFT, PKM-KI, PKM-AI, PKM-RE, PKM-RSH) — *turunan otomatis dari data proposal; seksi Statistik di panel admin hanya-baca (v3)*
+- [x] Statistik jumlah usulan proposal per skema PKM (PKM-K, PKM-PI, PKM-PM, PKM-KC, PKM-GFT, PKM-KI, PKM-AI, PKM-RE, PKM-RSH): *turunan otomatis dari data proposal; seksi Statistik di panel admin hanya-baca (v3)*
 - [x] Preview berita/update terbaru (beberapa item + tombol "lihat semua")
 - [x] Section "Apa yang Kami Lakukan" (poin-poin layanan/peran PKM Center)
 - [x] Preview galeri foto kegiatan
-- [x] Form Kritik & Saran (feedback pengunjung) — *masuk ke panel admin (seksi Masukan)*
+- [x] Form Kritik & Saran (feedback pengunjung): *masuk ke panel admin (seksi Masukan)*
 - [x] About PKM (latar belakang, tujuan, sejarah + daftar jenis skema PKM)
-- [x] Timeline PKM (per tahun, tahapan submit–review–pengumuman–PIMNAS) — *diatur lewat panel admin (seksi Timeline)*
+- [x] Timeline PKM (per tahun, tahapan submit–review–pengumuman–PIMNAS): *diatur lewat panel admin (seksi Timeline)*
 
 ---
 
-## 2. Pedoman + Portofolio — **PIC: Dimas** ✅
+## 2. Pedoman + Portofolio: **PIC: Dimas** ✅
 
 > **Status: selesai.** Halaman publik `/#pedoman` (dengan pencarian) dan `/#portofolio` (filter tahun + skema, ringkasan dapat dibuka) sudah berjalan; data dikelola lewat panel admin seksi Pedoman & Portofolio.
 
@@ -36,7 +36,7 @@
 
 ---
 
-## 3. Berita & Galeri — **PIC: Favian** ✅
+## 3. Berita & Galeri: **PIC: Favian** ✅
 
 > **Status: selesai.** Menampilkan gambar nyata dan isi artikel lengkap (data contoh), semua URL gambar terverifikasi termuat di browser. Sumber data: seed `backend/cmd/api/main.go` (server) dan `frontend/src/lib/content.js` (fallback offline).
 
@@ -58,17 +58,17 @@
 - [x] Navigasi keyboard: `Esc` menutup, panah kiri/kanan berpindah foto
 
 ### Catatan
-- Konten saat ini data contoh UI (termasuk gambar Unsplash) — dapat diubah melalui panel admin di `/#admin`.
+- Konten saat ini data contoh UI (termasuk gambar Unsplash): dapat diubah melalui panel admin di `/#admin`.
 - Item galeri milik pengguna (misal "test") yang dibuat lewat panel admin tetap dipertahankan karena seed bersifat non-destruktif.
 
 ---
 
-## 4. Kontak + Halaman Login — **PIC: Aidil** ✅
+## 4. Kontak + Halaman Login: **PIC: Aidil** ✅
 
 > **Status: selesai.** Halaman publik `/#kontak` lengkap; login tetap berupa modal di header (bukan halaman terpisah) dan masuk ke panel admin `/#admin`.
 
 ### Kontak
-- [x] Info kontak (alamat, email, telepon/WhatsApp, media sosial) — *diatur lewat panel admin (seksi Kontak)*
+- [x] Info kontak (alamat, email, telepon/WhatsApp, media sosial): *diatur lewat panel admin (seksi Kontak)*
 - [x] Peta lokasi (embed Google Maps tanpa API key, URL embed editable di admin)
 - [x] Form kontak (pesan masuk ke panel admin seksi Masukan, terpisah dari Kritik & Saran via `kind`)
 
@@ -76,13 +76,13 @@
 - [x] Form login admin/pengelola (modal di header; validasi email & kata sandi)
 - [x] Validasi & auth (JWT 24 jam; sesi kadaluarsa → otomatis ke halaman akses terbatas + prompt login)
 - [x] Redirect ke dashboard admin setelah login berhasil (link "Kelola konten" muncul di header; halaman `/#admin`)
-- [ ] Halaman lupa password (opsional — belum dikerjakan)
+- [ ] Halaman lupa password (opsional, belum dikerjakan)
 
 ---
 
 ## Catatan
-- Dokumen ini pelengkap dari `rencana-awal-proyek-pkm-center-unila.md` — detail teknis (tech stack, folder, fase pengerjaan) tetap merujuk ke dokumen tersebut.
-- Fitur admin CRUD (kelola berita, timeline, pedoman, portofolio, masukan, kontak) sudah diimplementasikan sebagai seksi-seksi pada panel admin `/#admin` — daftar per fitur ada di `daftar-fitur-pkm-center-unila.md`. Statistik tidak lagi CRUD: kini turunan otomatis dari data proposal (read-only).
+- Dokumen ini pelengkap dari `rencana-awal-proyek-pkm-center-unila.md`: detail teknis (tech stack, folder, fase pengerjaan) tetap merujuk ke dokumen tersebut.
+- Fitur admin CRUD (kelola berita, timeline, pedoman, portofolio, masukan, kontak) sudah diimplementasikan sebagai seksi-seksi pada panel admin `/#admin`: daftar per fitur ada di `daftar-fitur-pkm-center-unila.md`. Statistik tidak lagi CRUD: kini turunan otomatis dari data proposal (read-only).
 - Update 09-10-2026: skema database v2 diterapkan (migrasi SQL otomatis + model GORM baru). Statistik per skema dihitung dari `proposals` (`v_scheme_stats`). Lihat `docs/revisi-struktur-db-pkm-center.md`.
 - Update 09-10-2026: perbaikan layout responsif (header, modal login, panel admin) agar tidak terpotong di mobile maupun desktop. Lihat `docs/perbaikan-layout-responsif-2026-10-09.md`.
 - Update 13-10-2026: halaman baru **#dosen** (Dashboard Dosen), **#reviewer** (Dashboard Reviewer), dan **#pesan** (Pesan & Revisi) + perbaikan bug auth endpoint dosen/reviewer/pesan serta regresi header saat login. Lihat `docs/integrasi-modul-dosen-reviewer-2026-10-13.md`.

@@ -32,7 +32,7 @@ class NumberedCanvas(canvas.Canvas):
             self.setFillColor(colors.HexColor("#64748b"))
             
             # Running header
-            self.drawString(2.5 * cm, 28.2 * cm, "PKM CENTER UNIVERSITAS LAMPUNG — SIMBELMAWA 2026")
+            self.drawString(2.5 * cm, 28.2 * cm, "PKM CENTER UNIVERSITAS LAMPUNG · SIMBELMAWA 2026")
             self.setStrokeColor(colors.HexColor("#cbd5e1"))
             self.setLineWidth(0.5)
             self.line(2.5 * cm, 28.0 * cm, 18.5 * cm, 28.0 * cm)

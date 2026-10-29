@@ -1,5 +1,5 @@
 # Acuan Desain & Sistem UI PKM-Center Unila
-*(Dokumen Acuan Resmi & Terkini — Single Source of Truth)*
+*(Dokumen Acuan Resmi & Terkini: Single Source of Truth)*
 
 > **Status Dokumen:** Terakhir diperbarui Oktober 2026.  
 > Menggabungkan identitas resmi **Statuta Universitas Lampung (Unila)**, implementasi referensi **Digitalisasi Manajemen PKM**, serta modul operasional **Dosen, Reviewer, Pesan, dan Admin**.  
@@ -176,7 +176,7 @@ Untuk memberikan pengalaman visual modern yang memukau tanpa menambah beban depe
 * **File:** [frontend/src/components/ui/spotlight-card.jsx](file:///Users/favian/Proyek%20/PKM-Center/frontend/src/components/ui/spotlight-card.jsx) (Re-export: [frontend/src/components/GlowCard.jsx](file:///Users/favian/Proyek%20/PKM-Center/frontend/src/components/GlowCard.jsx))
 * **Fungsi:** Kartu interaktif beraksen cahaya yang melacak pergerakan kursor mouse melalui variabel CSS `--x`, `--y` dan efek *border-mask*.
 * **Palet Warna Terintegrasi Unila:**
-  * `gold`: Kuning keemasan resmi Unila (`#FFD700`, Hue 51) — default.
+  * `gold`: Kuning keemasan resmi Unila (`#FFD700`, Hue 51): default.
   * `blue`: Biru Navy portal (`#123B66` / `#175B91`, Hue 210).
   * `green`: Hijau daun lada / status disetujui (`#0F6B32`, Hue 135).
   * `red`: Merah semangat / tenggat waktu (`#C1121F`, Hue 0).

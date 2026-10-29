@@ -16,7 +16,7 @@ Konteks: setelah `git pull` masuk commit `8983ac2` (modul dashboard dosen/review
 
 **Akar masalah**
 - `middleware.RequireAuth` menyimpan klaim ke context sebagai `jwt.MapClaims`.
-- Helper `getUserIDFromContext` (dipakai semua handler dosen/reviewer/pesan) meng-assert nilai itu ke tipe `gin.H` — tipe bernama yang **berbeda** dari `jwt.MapClaims` — sehingga assertion selalu gagal.
+- Helper `getUserIDFromContext` (dipakai semua handler dosen/reviewer/pesan) meng-assert nilai itu ke tipe `gin.H`: tipe bernama yang **berbeda** dari `jwt.MapClaims`: sehingga assertion selalu gagal.
 - Selain itu helper membaca key `"id"`, padahal ID pengguna ada pada klaim **`"sub"`**.
 
 **Perbaikan**
@@ -41,7 +41,7 @@ Konteks: setelah `git pull` masuk commit `8983ac2` (modul dashboard dosen/review
 
 **Perbaikan**
 - `frontend/src/ref.css`
-  - `.site-header.topnav .brand { flex: 0 0 auto; }` — brand tidak lagi menyusut.
+  - `.site-header.topnav .brand { flex: 0 0 auto; }`: brand tidak lagi menyusut.
   - Titik muncul menu penuh digeser **900px → 1100px**; di bawahnya pakai burger.
   - Chip akun diringkas di `<1100px` (sembunyikan nama+role), tombol switch dashboard disembunyikan `<1100px` dengan `!important` (karena inline style), teks tombol "Keluar" disembunyikan `≤420px`.
 - `frontend/src/main.jsx`

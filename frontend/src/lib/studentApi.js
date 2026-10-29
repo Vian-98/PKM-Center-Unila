@@ -1,7 +1,7 @@
 import { api } from './content'
 import { getAuthToken } from './authSession'
 
-// Helper bersama untuk modul Portal Mahasiswa (Anggota 2 — Favian).
+// Helper bersama untuk modul Portal Mahasiswa (Anggota 2: Favian).
 
 // apiOrigin adalah origin backend tanpa suffix "/api" (untuk berkas statis).
 export const apiOrigin = api.replace(/\/api\/?$/, '')

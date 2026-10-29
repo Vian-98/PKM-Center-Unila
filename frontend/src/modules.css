@@ -1,5 +1,5 @@
 /* ==========================================================================
-   PKM Center Unila — Stylesheet Khusus Modul Anggota 4
+   PKM Center Unila: Stylesheet Khusus Modul Anggota 4
    - Modul Dosen Pembimbing (Dashboard, ACC/Reject, Slot Bimbingan)
    - Modul Reviewer (Dashboard, Antrean Penilaian, Form Scoring, Rekomendasi Lolos)
    - Modul Pesan & Feedback (Sistem Chat Direct Message, Rekap Catatan Revisi)
@@ -901,8 +901,112 @@
 .chat-back-btn {
   display: none;
 }
-.chat-page-fullscreen .modern-tabs {
+/* Override margin-bottom !important bawaan .modern-tabs (didefinisikan ulang di bawah) */
+.pesan-page-header .modern-tabs,
+.feedback-toolbar .feedback-filter {
   margin-bottom: 0 !important;
+}
+
+/* Tab Catatan Revisi: judul, toolbar (cari + filter + tombol), kartu */
+.feedback-panel-head {
+  margin: 0.5rem 0 1rem;
+}
+.feedback-panel-head h2 {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #0b2149;
+  margin: 0;
+}
+.feedback-panel-head p {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0.25rem 0 0;
+}
+.feedback-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+.feedback-search {
+  flex: 1;
+  min-width: 0;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 9999px;
+  background: #ffffff;
+  font-size: 0.85rem;
+}
+.feedback-toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+.feedback-filter .tab-btn {
+  white-space: nowrap;
+}
+.btn-action.feedback-add-btn {
+  flex-shrink: 0;
+  height: 2.5rem;
+  padding: 0 1rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+.feedback-empty {
+  text-align: center;
+  padding: 2.25rem 1.25rem;
+  background: #ffffff;
+  border-radius: 1rem;
+  border: 1px dashed #cbd5e1;
+}
+.feedback-empty p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+.feedback-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+/* Toolbar turun jadi dua baris: pencarian penuh di atas, filter + tombol di bawah */
+@media (max-width: 1100px) {
+  .feedback-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .feedback-toolbar-row {
+    justify-content: space-between;
+  }
+}
+@media (max-width: 560px) {
+  .feedback-panel-head h2 {
+    font-size: 1.05rem;
+  }
+  .feedback-toolbar-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .feedback-filter {
+    overflow-x: auto;
+  }
+  .feedback-filter .tab-btn {
+    flex: 1;
+    padding-left: 0.6rem !important;
+    padding-right: 0.6rem !important;
+  }
+  .feedback-card {
+    padding: 1rem;
+  }
+  .feedback-card-head {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
 }
 
 /* Layar sempit: pola daftar-lalu-chat (seperti aplikasi pesan di ponsel).
@@ -1173,13 +1277,13 @@
 
 
 /* ==========================================================================
-   Portal Mahasiswa (Anggota 2 — Favian)
+   Portal Mahasiswa (Anggota 2: Favian)
    Dashboard, Form Ajukan Proposal Multi-Step, Logbook PKM, & Cek Status.
    Mobile-first, selaras dengan bahasa desain modul Dosen/Reviewer.
    ========================================================================== */
 
 /* ==========================================================================
-   PORTAL MAHASISWA — APPLE CUPERTINO DESIGN SYSTEM & MOBILE POLISH
+   PORTAL MAHASISWA: APPLE CUPERTINO DESIGN SYSTEM & MOBILE POLISH
    ========================================================================== */
 
 /* Header Mobile & Container */
@@ -2793,7 +2897,7 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 /* ==========================================================================
-   PELACAKAN STATUS USULAN PUBLIK — NEO-GLASSMORPHISM & SPOTLIGHT SUITE
+   PELACAKAN STATUS USULAN PUBLIK: NEO-GLASSMORPHISM & SPOTLIGHT SUITE
    ========================================================================== */
 
 /* Hero Container */
@@ -3574,7 +3678,7 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 /* ==========================================================================
-   PORTAL MAHASISWA — MODERN OPEN SAAS DASHBOARD & 4-COLUMN LIGHT SPOTLIGHT CARDS
+   PORTAL MAHASISWA: MODERN OPEN SAAS DASHBOARD & 4-COLUMN LIGHT SPOTLIGHT CARDS
    ========================================================================== */
 
 /* Container Breathing Room on Desktop */
@@ -5040,5 +5144,89 @@ input[type="range"]::-webkit-slider-thumb {
     width: 100%;
     max-width: 100%;
     z-index: 30;
+  }
+}
+
+/* ==========================================================
+   Halaman Profil & Identitas Pengguna (ProfilePage.jsx)
+   ========================================================== */
+.profile-title {
+  font-size: 1.65rem;
+}
+.profile-layout {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 1.75rem;
+  align-items: start;
+}
+.profile-main {
+  min-width: 0;
+  padding: 2rem;
+}
+.profile-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+.profile-field-wide {
+  grid-column: 1 / -1;
+}
+.profile-form-grid input,
+.profile-form-grid select,
+.profile-form-grid textarea {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+.profile-tab-menu {
+  flex-direction: column;
+}
+.profile-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 1.25rem;
+}
+
+/* Tablet: kartu identitas di atas, form di bawah */
+@media (max-width: 1024px) {
+  .profile-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+  }
+  .profile-tab-menu {
+    flex-direction: row;
+  }
+  .profile-tab-menu > button {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+/* Ponsel: form satu kolom, tombol penuh */
+@media (max-width: 640px) {
+  .profile-title {
+    font-size: 1.3rem;
+  }
+  .profile-back-label {
+    display: none;
+  }
+  .profile-back-btn {
+    padding: 0.55rem 0.7rem !important;
+  }
+  .profile-main {
+    padding: 1.25rem;
+  }
+  .profile-form-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+  .profile-form-actions {
+    flex-direction: column-reverse;
+  }
+  .profile-form-actions > * {
+    width: 100%;
+    justify-content: center;
   }
 }

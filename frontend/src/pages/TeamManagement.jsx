@@ -615,7 +615,7 @@ export function TeamManagement({ user, initialTab = 'tim' }) {
       leaderName: team.leader || user?.name || 'Mahasiswa',
       leaderEmail: user?.email || '',
       scheme: team.scheme || 'PKM-KC',
-      title: `${team.name} — Rekrutmen Terbuka`,
+      title: `${team.name} · Rekrutmen Terbuka`,
       targetFaculty: newVac.targetFaculty,
       targetMajor: newVac.targetMajor || 'Semua Program Studi Terkait',
       roleName: newVac.roleName,

@@ -748,7 +748,7 @@ export function MahasiswaDashboard({ user }) {
                 <div key={s.id} className="guidance-card">
                   <div className="guidance-card-date">Tahap {s.stageOrder}</div>
                   <div className="guidance-card-agenda">{s.name}</div>
-                  <div className="guidance-card-loc">{formatDateID(s.startDate)} — {formatDateID(s.endDate)}</div>
+                  <div className="guidance-card-loc">{formatDateID(s.startDate)} - {formatDateID(s.endDate)}</div>
                   <span className={`status-pill ${s.status === 'active' ? 'in_progress' : s.status === 'completed' ? 'completed' : 'pending'}`}>
                     {s.status === 'active' ? 'Sedang Berjalan' : s.status === 'completed' ? 'Selesai' : 'Menunggu'}
                   </span>

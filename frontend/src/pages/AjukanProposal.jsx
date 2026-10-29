@@ -255,7 +255,7 @@ export function AjukanProposal({ user }) {
               <label className="student-label">Skema PKM</label>
               <select className="student-select" value={form.scheme} onChange={e => update({ scheme: e.target.value })}>
                 <option value="">-- Pilih Skema PKM --</option>
-                {schemes.map(s => <option key={s.code} value={s.code}>{s.code} — {s.name}</option>)}
+                {schemes.map(s => <option key={s.code} value={s.code}>{s.code} · {s.name}</option>)}
               </select>
               {currentScheme && <p className="student-hint">Skema terpilih: <strong>{currentScheme.name}</strong></p>}
             </div>
@@ -299,7 +299,7 @@ export function AjukanProposal({ user }) {
                 }}>
                 <option value="">-- Pilih Dosen Pembimbing --</option>
                 {supervisors.map(s => (
-                  <option key={s.id} value={s.id}>{s.name} — {s.studyProgram || s.department || 'Unila'}</option>
+                  <option key={s.id} value={s.id}>{s.name} · {s.studyProgram || s.department || 'Unila'}</option>
                 ))}
               </select>
               {!supervisors.length && <p className="student-hint">Direktori dosen sedang dimuat atau belum tersedia.</p>}
@@ -421,7 +421,7 @@ export function AjukanProposal({ user }) {
                             const isChosenElsewhere = form.members.some((other, oi) => oi !== idx && other.npm === s.npm)
                             return (
                               <option key={s.id || s.npm} value={s.npm} disabled={isChosenElsewhere}>
-                                {s.npm} — {s.name} ({s.studyProgram || s.faculty || 'Unila'}){isChosenElsewhere ? ' (Sudah dipilih)' : ''}
+                                {s.npm} · {s.name} ({s.studyProgram || s.faculty || 'Unila'}){isChosenElsewhere ? ' (Sudah dipilih)' : ''}
                               </option>
                             )
                           })}
@@ -630,7 +630,7 @@ export function AjukanProposal({ user }) {
 
             <div className="student-summary">
               <h4 className="student-panel-title" style={{ marginBottom: '0.5rem' }}>Ringkasan Usulan</h4>
-              <div className="student-summary-row"><strong>Skema</strong><span>{currentScheme ? `${currentScheme.code} — ${currentScheme.name}` : '-'}</span></div>
+              <div className="student-summary-row"><strong>Skema</strong><span>{currentScheme ? `${currentScheme.code} · ${currentScheme.name}` : '-'}</span></div>
               <div className="student-summary-row"><strong>Judul</strong><span>{form.title || '-'}</span></div>
               <div className="student-summary-row"><strong>Bidang</strong><span>{form.fieldOfStudy || '-'}</span></div>
               <div className="student-summary-row"><strong>Pembimbing</strong><span>{form.supervisor || 'Belum dipilih'}</span></div>

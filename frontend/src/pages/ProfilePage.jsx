@@ -176,21 +176,22 @@ export function ProfilePage({ user, onUpdateUser, onSwitchRole, onLogout }) {
   }
 
   return (
-    <div className="module-container" style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 0 3rem' }}>
+    <div className="module-container profile-page" style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 0 3rem' }}>
       {/* Top Header Bar & Back Button */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+      <div className="profile-head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+        <div className="profile-head-main" style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
           <a
             href={getBackHash()}
-            className="btn-action secondary"
+            className="btn-action secondary profile-back-btn"
             style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.45rem', padding: '0.55rem 1rem', borderRadius: '0.65rem' }}
+            aria-label="Kembali ke Dashboard"
           >
             <ArrowLeft size={16} />
-            <span>Kembali ke Dashboard</span>
+            <span className="profile-back-label">Kembali ke Dashboard</span>
           </a>
-          <div>
+          <div style={{ minWidth: 0 }}>
             <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>PENGATURAN AKUN PKM CENTER</span>
-            <h1 style={{ fontSize: '1.65rem', fontWeight: 800, color: '#0b2149', margin: '0.1rem 0 0 0' }}>
+            <h1 className="profile-title" style={{ fontWeight: 800, color: '#0b2149', margin: '0.1rem 0 0 0' }}>
               Profil & Identitas Pengguna
             </h1>
           </div>
@@ -219,7 +220,7 @@ export function ProfilePage({ user, onUpdateUser, onSwitchRole, onLogout }) {
       )}
 
       {/* Two-Column Layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '1.75rem', alignItems: 'start' }}>
+      <div className="profile-layout">
         {/* Kolom Kiri: Kartu Identitas Profil */}
         <aside style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <div style={{ background: '#ffffff', borderRadius: '1.25rem', border: '1px solid #e2e8f0', padding: '1.75rem 1.5rem', textAlign: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
@@ -304,7 +305,7 @@ export function ProfilePage({ user, onUpdateUser, onSwitchRole, onLogout }) {
           </div>
 
           {/* Navigasi Tab Pengaturan */}
-          <div style={{ background: '#ffffff', borderRadius: '1rem', border: '1px solid #e2e8f0', padding: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+          <div className="profile-tab-menu" style={{ background: '#ffffff', borderRadius: '1rem', border: '1px solid #e2e8f0', padding: '0.5rem', display: 'flex', gap: '0.35rem' }}>
             <button
               type="button"
               onClick={() => setActiveTab('identitas')}
@@ -352,7 +353,7 @@ export function ProfilePage({ user, onUpdateUser, onSwitchRole, onLogout }) {
         </aside>
 
         {/* Kolom Kanan: Form Data */}
-        <main style={{ background: '#ffffff', borderRadius: '1.25rem', border: '1px solid #e2e8f0', padding: '2rem', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
+        <main className="profile-main" style={{ background: '#ffffff', borderRadius: '1.25rem', border: '1px solid #e2e8f0', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
           {activeTab === 'identitas' && (
             <form onSubmit={handleSave}>
               <div style={{ marginBottom: '1.75rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '1rem' }}>
@@ -364,8 +365,8 @@ export function ProfilePage({ user, onUpdateUser, onSwitchRole, onLogout }) {
                 </p>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginBottom: '1.5rem' }}>
-                <div style={{ gridColumn: 'span 2' }}>
+              <div className="profile-form-grid">
+                <div className="profile-field-wide">
                   <label style={{ display: 'block', fontWeight: 700, fontSize: '0.85rem', color: '#334155', marginBottom: '0.4rem' }}>
                     Nama Lengkap (Termasuk Gelar Akademik):
                   </label>
@@ -485,7 +486,7 @@ export function ProfilePage({ user, onUpdateUser, onSwitchRole, onLogout }) {
                   </div>
                 )}
 
-                <div style={{ gridColumn: 'span 2' }}>
+                <div className="profile-field-wide">
                   <label style={{ display: 'block', fontWeight: 700, fontSize: '0.85rem', color: '#334155', marginBottom: '0.4rem' }}>
                     Bidang Keahlian / Kepakaran / Minat Riset:
                   </label>
@@ -497,7 +498,7 @@ export function ProfilePage({ user, onUpdateUser, onSwitchRole, onLogout }) {
                   />
                 </div>
 
-                <div style={{ gridColumn: 'span 2' }}>
+                <div className="profile-field-wide">
                   <label style={{ display: 'block', fontWeight: 700, fontSize: '0.85rem', color: '#334155', marginBottom: '0.4rem' }}>
                     Biografi Singkat / Deskripsi Pengalaman:
                   </label>
@@ -510,7 +511,7 @@ export function ProfilePage({ user, onUpdateUser, onSwitchRole, onLogout }) {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', borderTop: '1px solid #f1f5f9', paddingTop: '1.25rem' }}>
+              <div className="profile-form-actions">
                 <a
                   href={getBackHash()}
                   className="btn-action secondary"

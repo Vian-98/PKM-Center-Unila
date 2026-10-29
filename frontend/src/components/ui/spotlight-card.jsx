@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 
 /**
- * Spotlight Glow Card — Kartu interaktif beraksen cahaya yang mengikuti kursor mouse.
+ * Spotlight Glow Card: Kartu interaktif beraksen cahaya yang mengikuti kursor mouse.
  * Diadaptasi ke Plain React + Vite (Vanilla JSX + dynamic CSS variables & border masks).
  *
  * Palet warna diintegrasikan dengan identitas Statuta Unila & tema portal:

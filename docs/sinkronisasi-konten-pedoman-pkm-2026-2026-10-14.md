@@ -2,7 +2,7 @@
 
 Tanggal: 14 Oktober 2026
 Konteks: konten halaman `#pedoman` masih memakai angka dan daftar yang tidak akurat (plafon dana, insentif, batas halaman, dan tautan portal generik). Halaman diselaraskan dengan **buku panduan resmi SIMBELMAWA Kemdiktisaintek tahun 2026**.
-Sumber resmi: [Portal Unduh Panduan PKM 2026](https://simbelmawa.kemdiktisaintek.go.id/portal/unduh/panduan-pkm-2026/) — 13 berkas PDF (`.../wp-content/uploads/2026/03/`).
+Sumber resmi: [Portal Unduh Panduan PKM 2026](https://simbelmawa.kemdiktisaintek.go.id/portal/unduh/panduan-pkm-2026/): 13 berkas PDF (`.../wp-content/uploads/2026/03/`).
 
 ## Ringkasan Koreksi (web lama → resmi 2026)
 
@@ -27,7 +27,7 @@ Sumber resmi: [Portal Unduh Panduan PKM 2026](https://simbelmawa.kemdiktisaintek
 
 ## Perubahan Teknis
 
-### Backend (sumber data halaman Pedoman — API-driven)
+### Backend (sumber data halaman Pedoman: API-driven)
 - `internal/models/info.go`: `Pedoman` ditambah kolom `scheme`, `category`, `localDocUrl`, `funding`, `teamSize`.
 - `internal/handlers/info.go`: `pedomanInput` + `Create`/`Update` menyimpan kolom baru.
 - `cmd/api/main.go` (seeder): daftar pedoman diganti **17 entri resmi** (Umum, Versi Lengkap, Surat Tawaran, 8 skema pendanaan, AI, GFT, Teknis, arsip 2025–2023) dengan tautan PDF langsung; baris placeholder lama dibersihkan agar tidak duplikat.

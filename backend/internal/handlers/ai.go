@@ -1065,22 +1065,22 @@ func generateLocalPKMAnalysis(query string) string {
 
 	if strings.Contains(lower, "tanah") || strings.Contains(lower, "iot") || strings.Contains(lower, "ai") || strings.Contains(lower, "sensor") {
 		scheme = "**PKM-KC (Karsa Cipta)** untuk rancang bangun purwarupa, atau **PKM-PI (Penerapan Iptek)** jika langsung diterapkan pada mitra petani."
-		novelty = "**8.6 / 10** — Kekuatan terletak pada integrasi sensor cerdas berbiaya rendah dan telemetri lokal."
+		novelty = "**8.6 / 10**: Kekuatan terletak pada integrasi sensor cerdas berbiaya rendah dan telemetri lokal."
 		advice = "Fokuskan pada kalibrasi data sensor terhadap kondisi tanah lokal di Lampung, serta keandalan catu daya hemat energi."
 		team = "Teknik Elektro/Informatika (Fakultas Teknik) + Agroteknologi (Fakultas Pertanian)."
 	} else if strings.Contains(lower, "kopi") || strings.Contains(lower, "limbah") || strings.Contains(lower, "briket") || strings.Contains(lower, "pupuk") {
 		scheme = "**PKM-RE (Riset Eksakta)** untuk formulasi & uji lab efektivitas, atau **PKM-K (Kewirausahaan)** jika fokus pada hilirisasi produk komersial."
-		novelty = "**8.2 / 10** — Nilai tambah tinggi karena memanfaatkan komoditas unggulan Provinsi Lampung."
+		novelty = "**8.2 / 10**: Nilai tambah tinggi karena memanfaatkan komoditas unggulan Provinsi Lampung."
 		advice = "Sertakan pengujian parameter baku mutu (SNI) dan perbandingan nilai ekonomis dibanding produk konvensional."
 		team = "Kimia/Biologi (FMIPA) + Manajemen/Akuntansi (FEB) + Teknologi Industri Pertanian (FP)."
 	} else if strings.Contains(lower, "desa") || strings.Contains(lower, "masyarakat") || strings.Contains(lower, "edukasi") || strings.Contains(lower, "stunting") {
 		scheme = "**PKM-PM (Pengabdian kepada Masyarakat)** untuk solusi nirlaba bagi komunitas masyarakat."
-		novelty = "**8.0 / 10** — Sangat relevan dengan kebutuhan pemecahan masalah riil masyarakat."
+		novelty = "**8.0 / 10**: Sangat relevan dengan kebutuhan pemecahan masalah riil masyarakat."
 		advice = "Pastikan telah mengantongi surat kesediaan mitra non-produktif dan sertakan evaluasi keberlanjutan program pasca pendanaan."
 		team = "Kesehatan Masyarakat/Kedokteran (FK) + Sosiologi/Komunikasi (FISIP) + Pendidikan (FKIP)."
 	} else {
 		scheme = "**PKM-KC (Karsa Cipta)** atau **PKM-RSH (Riset Sosial Humaniora)** sesuai fokus luaran yang diinginkan."
-		novelty = "**7.8 / 10** — Gagasan menarik dengan potensi pengembangan lebih lanjut."
+		novelty = "**7.8 / 10**: Gagasan menarik dengan potensi pengembangan lebih lanjut."
 		advice = "Perkuat studi literatur 3-5 tahun terakhir dan identifikasi gap penelitian agar kebaruan semakin menonjol di hadapan reviewer Belmawa."
 		team = "Kolaborasi multidisiplin 3-5 mahasiswa dari minimal 2 angkatan atau 2 program studi berbeda."
 	}

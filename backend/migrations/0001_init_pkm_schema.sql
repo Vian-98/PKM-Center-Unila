@@ -1,5 +1,5 @@
 -- ============================================================================
--- PKM Center Unila — Skema Database v2 (revisi struktur DB)
+-- PKM Center Unila: Skema Database v2 (revisi struktur DB)
 -- Target  : PostgreSQL 16 (docker image: postgres:16-alpine)
 -- File    : backend/migrations/0001_init_pkm_schema.sql
 -- Sumber  : ERD revisi "Digitalisasi Manajemen PKM" (lihat
@@ -535,7 +535,7 @@ CREATE TABLE IF NOT EXISTS contact_infos (
 -- ============================================================================
 -- 10. VIEW: statistik usulan per skema (menggantikan tabel `scheme_stats`)
 -- ============================================================================
--- Keputusan: statistik skema murni TURUNAN dari proposals — tidak ada tabel
+-- Keputusan: statistik skema murni TURUNAN dari proposals, tidak ada tabel
 -- `scheme_stats` dan tidak ada input manual. Endpoint admin terkait dihapus.
 -- Statistik jumlah usulan kini dihitung dari PROPOSALS, bukan tabel tersendiri.
 CREATE OR REPLACE VIEW v_scheme_stats AS

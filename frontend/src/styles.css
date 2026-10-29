@@ -1,5 +1,5 @@
 /* ============================================================
-   PKM Center Unila — Design System (mobile-first)
+   PKM Center Unila: Design System (mobile-first)
    Kerangka: acuan-design-pkm-center.md
    - Base = mobile, penyesuaian memakai @media (min-width: ...)
    - Bahasa visual: glassmorphism (navbar apung sebagai model)
@@ -24,7 +24,7 @@
   --red-deep: #C1121F;
   --green-deep: #0F6B32;
 
-  /* Teks & permukaan (light) — disesuaikan ke referensi biru-putih */
+  /* Teks & permukaan (light), disesuaikan ke referensi biru-putih */
   --ink: #0f172a;
   --muted: #475569;
   --faint: #64748b;

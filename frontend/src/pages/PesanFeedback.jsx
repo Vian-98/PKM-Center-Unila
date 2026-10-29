@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
-import { ArrowLeft, Info, Trash2 } from 'lucide-react'
+import { ArrowLeft, Info, Plus, Trash2 } from 'lucide-react'
 import { loadStore, saveStore } from '../lib/dosenReviewerData'
 import { authFetch } from '../lib/studentApi'
 
@@ -387,14 +387,14 @@ export function PesanFeedback({ user, onLogin }) {
       } : undefined}
     >
       {/* Sleek Integrated Top Navigation Bar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.75rem', flexShrink: 0 }}>
+      <div className="pesan-page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.75rem', flexShrink: 0 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
             <h1 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#0b2149', margin: 0 }}>
               Pusat Pesan Langsung & Feedback
             </h1>
             <span style={{ fontSize: '0.72rem', background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe', padding: '0.2rem 0.65rem', borderRadius: '9999px', fontWeight: 700 }}>
-              {currentUserRole} — {currentUserName}
+              {currentUserRole} · {currentUserName}
             </span>
           </div>
           <p className="chat-page-subtitle" style={{ fontSize: '0.8rem', color: '#64748b', margin: '0.15rem 0 0 0' }}>
@@ -637,7 +637,7 @@ export function PesanFeedback({ user, onLogin }) {
                 <div className="chat-messages-scroll">
                   <div style={{ textAlign: 'center', margin: '0.5rem 0 1rem 0' }}>
                     <span style={{ fontSize: '0.75rem', background: '#e2e8f0', color: '#475569', padding: '0.2rem 0.75rem', borderRadius: '9999px' }}>
-                      Saluran Komunikasi Resmi PKM Center — Universitas Lampung
+                      Saluran Komunikasi Resmi PKM Center · Universitas Lampung
                     </span>
                   </div>
 
@@ -700,27 +700,25 @@ export function PesanFeedback({ user, onLogin }) {
 
       {/* TAB 2: REKAP CATATAN REVISI & FEEDBACK */}
       {activeTab === 'feedback' && (
-        <section>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-            <div>
-              <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0b2149', margin: 0 }}>
-                Rekapitulasi Catatan Revisi & Feedback Proposal
-              </h2>
-              <p style={{ fontSize: '0.875rem', color: '#64748b', margin: '0.25rem 0 0 0' }}>
-                Kronologi seluruh catatan pembimbingan dan evaluasi reviewer untuk memastikan perbaikan naskah terekam rapi.
-              </p>
-            </div>
+        <section className="feedback-panel">
+          <div className="feedback-panel-head">
+            <h2>Rekapitulasi Catatan Revisi & Feedback Proposal</h2>
+            <p>
+              Kronologi seluruh catatan pembimbingan dan evaluasi reviewer untuk memastikan perbaikan naskah terekam rapi.
+            </p>
+          </div>
 
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <input
-                type="text"
-                placeholder="Cari proposal atau isi catatan..."
-                value={feedbackSearch}
-                onChange={e => setFeedbackSearch(e.target.value)}
-                style={{ padding: '0.6rem 0.85rem', border: '1px solid #cbd5e1', borderRadius: '0.55rem', fontSize: '0.85rem', minWidth: '200px' }}
-              />
+          <div className="feedback-toolbar">
+            <input
+              type="text"
+              className="feedback-search"
+              placeholder="Cari proposal atau isi catatan..."
+              value={feedbackSearch}
+              onChange={e => setFeedbackSearch(e.target.value)}
+            />
 
-              <div className="modern-tabs" style={{ marginBottom: 0 }}>
+            <div className="feedback-toolbar-row">
+              <div className="modern-tabs feedback-filter">
                 <button
                   className={`tab-btn ${feedbackFilter === 'all' ? 'active' : ''}`}
                   onClick={() => setFeedbackFilter('all')}
@@ -742,10 +740,12 @@ export function PesanFeedback({ user, onLogin }) {
               </div>
 
               <button
-                className="btn-action primary"
+                type="button"
+                className="btn-action primary feedback-add-btn"
                 onClick={() => setNewFeedbackModal(prev => ({ ...prev, isOpen: true }))}
               >
-                Tambah Catatan Revisi
+                <Plus size={15} />
+                <span>Tambah Catatan</span>
               </button>
             </div>
           </div>
@@ -753,8 +753,12 @@ export function PesanFeedback({ user, onLogin }) {
           {/* Timeline Kartu Feedback */}
           <div className="feedback-timeline">
             {filteredFeedbacks.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '3rem', background: '#ffffff', borderRadius: '1rem', border: '1px dashed #cbd5e1' }}>
-                <p style={{ color: '#64748b' }}>Tidak ada catatan revisi yang sesuai dengan filter pencarian.</p>
+              <div className="feedback-empty">
+                <p>
+                  {feedbacks.length === 0
+                    ? 'Belum ada catatan revisi. Klik "Tambah Catatan" untuk mencatat revisi pertama.'
+                    : 'Tidak ada catatan revisi yang sesuai dengan filter pencarian.'}
+                </p>
               </div>
             ) : (
               filteredFeedbacks.map(fb => (
@@ -785,7 +789,7 @@ export function PesanFeedback({ user, onLogin }) {
                     "{fb.comment}"
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '0.5rem' }}>
+                  <div className="feedback-card-actions">
                     {fb.requiresRevision ? (
                       <button
                         className="btn-action success"
@@ -869,21 +873,21 @@ export function PesanFeedback({ user, onLogin }) {
                     <optgroup label="Dosen Pembimbing">
                       {directoryOptions.filter(u => u.role === 'dosen').map(u => (
                         <option key={u.id} value={u.id}>
-                          {u.name}{u.faculty ? ` — ${u.faculty}` : ''}
+                          {u.name}{u.faculty ? ` · ${u.faculty}` : ''}
                         </option>
                       ))}
                     </optgroup>
                     <optgroup label="Rekan Mahasiswa PKM">
                       {directoryOptions.filter(u => u.role === 'mahasiswa').map(u => (
                         <option key={u.id} value={u.id}>
-                          {u.name}{u.faculty ? ` — ${u.faculty}` : ''}
+                          {u.name}{u.faculty ? ` · ${u.faculty}` : ''}
                         </option>
                       ))}
                     </optgroup>
                     <optgroup label="Reviewer & Admin">
                       {directoryOptions.filter(u => u.role !== 'dosen' && u.role !== 'mahasiswa').map(u => (
                         <option key={u.id} value={u.id}>
-                          {u.name}{u.faculty ? ` — ${u.faculty}` : ''}
+                          {u.name}{u.faculty ? ` · ${u.faculty}` : ''}
                         </option>
                       ))}
                     </optgroup>

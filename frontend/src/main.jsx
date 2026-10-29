@@ -499,7 +499,7 @@ function App() {
     }
   })
 
-  // Daftar rute portal berdasarkan role — semua sub-halaman sekarang berada di bawah prefix role
+  // Daftar rute portal berdasarkan role, semua sub-halaman sekarang berada di bawah prefix role
   const ROLE_ROUTE_MAP = {
     mahasiswa: 'mahasiswa',
     dosen: 'dosen',
@@ -518,7 +518,7 @@ function App() {
     return () => window.removeEventListener('hashchange', listen)
   }, [])
 
-  // Session guard: Proteksi halaman portal — setiap role hanya bisa mengakses portal miliknya
+  // Session guard: Proteksi halaman portal, setiap role hanya bisa mengakses portal miliknya
   useEffect(() => {
     const currentRoute = (window.location.hash || '#beranda').replace('#', '').split('/')[0].toLowerCase()
     const protectedRoles = ['mahasiswa', 'dosen', 'reviewer', 'admin']
