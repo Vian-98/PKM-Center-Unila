@@ -231,7 +231,7 @@ ATURAN FORMAT PENULISAN WAJIB (ANTI-GUGUR SELEKSI TAHAP 1):
 ================================================================================
 STRUKTUR BAGIAN INTI PROPOSAL (SKEMA PENDANAAN):
 ================================================================================
-- DAFTAR ISI (i, ii, iii) — PKM-AI tidak memakai Daftar Isi
+- DAFTAR ISI (i, ii, iii), kecuali PKM-AI yang tidak memakai Daftar Isi
 - BAB 1. PENDAHULUAN
   * Latar belakang, identifikasi masalah, justifikasi ilmiah/praktis
   * Rumusan masalah, tujuan, kebaruan, luaran, dan manfaat

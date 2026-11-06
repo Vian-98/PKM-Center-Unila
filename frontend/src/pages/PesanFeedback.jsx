@@ -1,43 +1,36 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
-import { Trash2 } from 'lucide-react'
-import { api } from '../lib/content'
-import { getAuthToken } from '../lib/authSession'
-import {
-  loadStore,
-  saveStore,
-  SYSTEM_USERS,
-  resolveCurrentUserId,
-  getContactsForUser,
-  initialMasterMessages,
-  initialProposalFeedback,
-} from '../lib/dosenReviewerData'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { ArrowLeft, Info, Plus, Trash2 } from 'lucide-react'
+import { loadStore, saveStore } from '../lib/dosenReviewerData'
+import { authFetch } from '../lib/studentApi'
 
-export function PesanFeedback({ user, onLogin, onSwitchUser }) {
+const ROLE_LABELS = {
+  dosen: 'Dosen Pembimbing',
+  reviewer: 'Reviewer PKM',
+  admin: 'Administrator',
+  mahasiswa: 'Mahasiswa',
+}
+const roleLabel = role => ROLE_LABELS[role] || 'Pengguna PKM'
+const initialsOf = name => (name || '').split(' ').filter(Boolean).map(n => n[0]).slice(0, 2).join('').toUpperCase() || 'PK'
+
+// Interval sinkronisasi pesan baru dari server (ms)
+const CHAT_POLL_MS = 5000
+
+export function PesanFeedback({ user, onLogin }) {
   const [activeTab, setActiveTab] = useState('chat') // 'chat' | 'feedback'
 
+  // Identitas pengguna aktif diambil langsung dari akun login (UUID database)
+  const currentUserId = user?.id || ''
+  const currentUserName = user?.name || user?.nama || 'Pengguna PKM'
+  const currentUserRole = (user?.role || 'pengguna').toUpperCase()
 
-  // Resolusi identitas pengguna aktif yang sedang login
-  const currentUserId = useMemo(() => resolveCurrentUserId(user), [user])
-  const currentUserName = user?.name || user?.nama || (currentUserId ? SYSTEM_USERS[currentUserId]?.name : '') || 'Pengguna PKM'
-  const currentUserRole = user?.role ? user.role.toUpperCase() : (currentUserId ? SYSTEM_USERS[currentUserId]?.role?.toUpperCase() : '') || 'PENGGUNA'
+  // Data chat dari backend: direktori akun, ringkasan percakapan, dan isi thread aktif
+  const [directory, setDirectory] = useState([])
+  const [conversations, setConversations] = useState([])
+  const [messages, setMessages] = useState([])
+  const [chatError, setChatError] = useState('')
+  const [sending, setSending] = useState(false)
 
-  // Master Direct Messages Database (Tersimpan lintas akun di LocalStorage)
-  const [masterMessages, setMasterMessages] = useState(() => {
-    // Bersihkan seluruh riwayat chat di semua akun
-    if (localStorage.getItem('pkm_direct_messages_version_v5') !== 'clean') {
-      localStorage.setItem('pkm_direct_messages_version_v5', 'clean')
-      saveStore('pkm_master_direct_messages', [])
-      return []
-    }
-    return loadStore('pkm_master_direct_messages', [])
-  })
-
-  // Kontak kustom yang ditambahkan manual oleh pengguna
-  const [customContacts, setCustomContacts] = useState(() =>
-    loadStore('pkm_custom_contacts', [])
-  )
-
-  // Kontak yang sedang aktif dipilih di jendela chat (prioritaskan target navigasi atau kontak chat terakhir)
+  // Kontak yang sedang aktif dipilih (prioritaskan target navigasi dari halaman lain)
   const [selectedContactId, setSelectedContactId] = useState(() => {
     const target = localStorage.getItem('pkm_target_chat_contact')
     if (target) {
@@ -47,80 +40,110 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
     return ''
   })
 
-  // Sinkronisasi target kontak jika dipicu dari halaman lain (CariTim / DosenDashboard)
-  useEffect(() => {
-    const target = localStorage.getItem('pkm_target_chat_contact')
-    if (target) {
-      setSelectedContactId(target)
-      localStorage.removeItem('pkm_target_chat_contact')
+  // Layar sempit (<= 840px) menampilkan daftar kontak ATAU jendela chat secara bergantian
+  const [mobileView, setMobileView] = useState(() => (selectedContactId ? 'chat' : 'list'))
+  const openContact = (contactId) => {
+    setSelectedContactId(contactId)
+    setMobileView('chat')
+  }
+
+  const loadConversations = useCallback(async () => {
+    try {
+      const res = await authFetch('/messages/conversations')
+      setConversations(res.data || [])
+      setChatError('')
+    } catch (err) {
+      setChatError(err.message)
     }
   }, [])
 
-  // Hitung daftar kontak yang HANYA memiliki riwayat percakapan nyata (ada chat)
-  const contactsList = useMemo(() => {
-    const allKnown = [
-      ...Object.values(SYSTEM_USERS),
-      ...customContacts.filter(c => c.ownerId === currentUserId)
-    ]
-
-    const userMap = new Map()
-    for (const u of allKnown) {
-      const uid = u.id || u.contactId
-      if (uid && uid !== currentUserId) {
-        userMap.set(uid, u)
-      }
+  const loadThread = useCallback(async (contactId) => {
+    // Target berupa email masih menunggu dipetakan ke UUID lewat direktori
+    if (!contactId || contactId.includes('@')) return
+    try {
+      const res = await authFetch(`/messages/thread/${contactId}`)
+      setMessages(res.data || [])
+    } catch (err) {
+      setChatError(err.message)
     }
+  }, [])
 
-    const listWithHistory = []
+  // Direktori akun untuk "+ Chat Baru" cukup dimuat sekali per sesi login
+  useEffect(() => {
+    if (!currentUserId) return
+    authFetch('/messages/contacts')
+      .then(res => setDirectory(res.data || []))
+      .catch(err => setChatError(err.message))
+  }, [currentUserId])
 
-    for (const [cid, u] of userMap.entries()) {
-      const cName = u.name || u.contactName || 'Pengguna PKM'
-      const cRole = u.roleLabel || u.contactRole || (u.role ? u.role.toUpperCase() : 'PENGGUNA')
-      const cEmail = u.email || u.contactEmail || '-'
-      const cAvatar = u.avatar || cName.split(' ').filter(Boolean).map(n => n[0]).slice(0, 2).join('').toUpperCase()
+  // Halaman lain boleh mengirim target chat berupa email; petakan ke UUID akun terdaftar
+  useEffect(() => {
+    if (!selectedContactId.includes('@') || directory.length === 0) return
+    const email = selectedContactId.toLowerCase()
+    const match = directory.find(d => (d.email || '').toLowerCase() === email)
+    setSelectedContactId(match ? match.id : '')
+    if (!match) setChatError(`Akun ${selectedContactId} belum terdaftar di sistem pesan`)
+  }, [selectedContactId, directory])
 
-      // Cari pesan antara pengguna aktif dan kontak ini (abaikan yang telah dihapus oleh pengguna aktif)
-      const relevant = masterMessages.filter(
-        m => !m.deletedFor?.includes(currentUserId) &&
-             ((m.senderId === currentUserId && m.receiverId === cid) ||
-              (m.senderId === cid && m.receiverId === currentUserId))
-      )
+  // Muat thread saat kontak berganti
+  useEffect(() => {
+    setMessages([])
+    loadThread(selectedContactId)
+  }, [selectedContactId, loadThread])
 
-      const hasHistory = relevant.length > 0
-      const isTargeted = cid === selectedContactId
+  // Polling berkala agar pesan dari akun lain (perangkat berbeda) ikut masuk
+  useEffect(() => {
+    if (!currentUserId) return
+    loadConversations()
+    const timer = setInterval(() => {
+      if (document.visibilityState !== 'visible') return
+      loadConversations()
+      loadThread(selectedContactId)
+    }, CHAT_POLL_MS)
+    return () => clearInterval(timer)
+  }, [currentUserId, selectedContactId, loadConversations, loadThread])
 
-      // HANYA tampilkan kontak jika memiliki riwayat chat nyata ATAU sedang dibuka oleh pengguna
-      if (hasHistory || isTargeted) {
-        const lastMsg = relevant[relevant.length - 1]
-        listWithHistory.push({
-          contactId: cid,
-          contactName: cName,
-          contactRole: cRole,
-          contactEmail: cEmail,
-          avatar: cAvatar,
-          lastMessage: lastMsg ? lastMsg.message : 'Percakapan baru (belum ada pesan)...',
-          lastSentAt: lastMsg ? lastMsg.createdAt : new Date().toISOString(),
+  // Daftar kontak = percakapan yang ada + kontak target yang belum punya riwayat
+  const contactsList = useMemo(() => {
+    const list = conversations.map(c => ({
+      contactId: c.contactId,
+      contactName: c.contactName,
+      role: c.contactRole,
+      contactRole: roleLabel(c.contactRole),
+      contactEmail: c.contactEmail || '-',
+      avatar: initialsOf(c.contactName),
+      lastMessage: c.lastMessage,
+      lastSentAt: c.lastSentAt,
+      unreadCount: c.unreadCount || 0,
+      hasHistory: true,
+    }))
+
+    if (selectedContactId && !list.some(c => c.contactId === selectedContactId)) {
+      const u = directory.find(d => d.id === selectedContactId)
+      if (u) {
+        list.unshift({
+          contactId: u.id,
+          contactName: u.name,
+          role: u.role,
+          contactRole: roleLabel(u.role),
+          contactEmail: u.email || '-',
+          avatar: initialsOf(u.name),
+          lastMessage: 'Percakapan baru (belum ada pesan)...',
+          lastSentAt: new Date().toISOString(),
           unreadCount: 0,
-          hasHistory,
+          hasHistory: false,
         })
       }
     }
+    return list
+  }, [conversations, directory, selectedContactId])
 
-    // Urutkan berdasarkan waktu pesan terakhir (paling baru di atas)
-    return listWithHistory.sort((a, b) => new Date(b.lastSentAt) - new Date(a.lastSentAt))
-  }, [currentUserId, customContacts, masterMessages, selectedContactId])
-
-  // Jaga agar selectedContactId selalu sinkron dengan kontak aktif
+  // Pilih percakapan teratas bila belum ada kontak yang dibuka
   useEffect(() => {
-    if (contactsList.length > 0) {
-      const exists = contactsList.some(c => c.contactId === selectedContactId)
-      if (!exists || selectedContactId === currentUserId) {
-        setSelectedContactId(contactsList[0].contactId)
-      }
-    } else {
-      setSelectedContactId('')
+    if (!selectedContactId && contactsList.length > 0) {
+      setSelectedContactId(contactsList[0].contactId)
     }
-  }, [contactsList, selectedContactId, currentUserId])
+  }, [contactsList, selectedContactId])
 
   const [inputText, setInputText] = useState('')
   const [searchContact, setSearchContact] = useState('')
@@ -151,9 +174,6 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
   const [newContactModal, setNewContactModal] = useState({
     isOpen: false,
     selectedSystemUser: '',
-    name: '',
-    email: '',
-    role: '',
     initialMessage: '',
   })
 
@@ -164,20 +184,10 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
   })
 
   const messagesEndRef = useRef(null)
-  const token = getAuthToken()
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
-
-  // Sinkronisasi otomatis ke LocalStorage
-  useEffect(() => {
-    saveStore('pkm_master_direct_messages', masterMessages)
-  }, [masterMessages])
-
-  useEffect(() => {
-    saveStore('pkm_custom_contacts', customContacts)
-  }, [customContacts])
 
   useEffect(() => {
     saveStore('pkm_proposal_feedback', feedbacks)
@@ -187,131 +197,81 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
     if (activeTab === 'chat') {
       scrollToBottom()
     }
-  }, [selectedContactId, masterMessages, activeTab])
+  }, [selectedContactId, messages, activeTab, mobileView])
 
   // Kontak terpilih saat ini
-  const selectedContact = contactsList.find(c => c.contactId === selectedContactId) || contactsList[0]
+  const selectedContact = contactsList.find(c => c.contactId === selectedContactId)
 
-  // Filter pesan riil antara pengguna aktif dan kontak terpilih (abaikan yang telah dihapus oleh pengguna aktif)
-  const currentMessages = useMemo(() => {
-    if (!selectedContactId) return []
-    return masterMessages.filter(
-      m => !m.deletedFor?.includes(currentUserId) &&
-           ((m.senderId === currentUserId && m.receiverId === selectedContactId) ||
-            (m.senderId === selectedContactId && m.receiverId === currentUserId))
-    )
-  }, [masterMessages, currentUserId, selectedContactId])
+  const currentMessages = useMemo(() => messages.map(m => ({
+    ...m,
+    senderName: m.senderId === currentUserId ? currentUserName : selectedContact?.contactName,
+  })), [messages, currentUserId, currentUserName, selectedContact?.contactName])
 
-  // Hapus riwayat chat perseorangan hanya dari sisi pengguna aktif (tetap tersimpan bagi lawan bicara)
-  const handleDeleteConversation = () => {
+  // Hapus riwayat chat hanya dari sisi pengguna aktif (tetap tersimpan bagi lawan bicara)
+  const handleDeleteConversation = async () => {
     if (!selectedContactId) return
     const contactName = selectedContact?.contactName || 'kontak ini'
-    if (window.confirm(`Hapus riwayat chat dengan ${contactName}?\n\nPesan hanya akan terhapus dari tampilan akun Anda dan tetap tersimpan pada akun lawan bicara.`)) {
-      setMasterMessages(prev =>
-        prev.map(m => {
-          const isBetween = (m.senderId === currentUserId && m.receiverId === selectedContactId) ||
-                            (m.senderId === selectedContactId && m.receiverId === currentUserId)
-          if (isBetween) {
-            const deletedFor = Array.isArray(m.deletedFor) ? m.deletedFor : []
-            if (!deletedFor.includes(currentUserId)) {
-              return { ...m, deletedFor: [...deletedFor, currentUserId] }
-            }
-          }
-          return m
-        })
-      )
+    if (!window.confirm(`Hapus riwayat chat dengan ${contactName}?\n\nPesan hanya akan terhapus dari tampilan akun Anda dan tetap tersimpan pada akun lawan bicara.`)) return
+    try {
+      await authFetch(`/messages/thread/${selectedContactId}`, { method: 'DELETE' })
+      setMessages([])
       setSelectedContactId('')
+      setMobileView('list')
+      loadConversations()
+    } catch (err) {
+      alert(`Gagal menghapus riwayat chat: ${err.message}`)
     }
   }
 
-  // Kirim Pesan Riil (Multi-User Inter-Account Tanpa Bot Palsu)
+  const sendMessage = async (receiverId, text) => {
+    const res = await authFetch('/messages/send', {
+      method: 'POST',
+      body: JSON.stringify({ receiverId, message: text }),
+    })
+    return res.data
+  }
+
+  // Kirim pesan ke server; pesan baru tampil setelah tersimpan di database
   const handleSendMessage = async (e) => {
     e.preventDefault()
     const trimmed = inputText.trim()
-    if (!trimmed || !selectedContactId) return
+    if (!trimmed || !selectedContactId || sending) return
 
-    const newMsg = {
-      id: `msg-${Date.now()}`,
-      senderId: currentUserId,
-      senderName: currentUserName,
-      receiverId: selectedContactId,
-      message: trimmed,
-      createdAt: new Date().toISOString(),
-    }
-
-    // Simpan ke master store yang terbaca oleh akun penerima
-    setMasterMessages(prev => [...prev, newMsg])
-    setInputText('')
-
-    // Jika backend aktif, kirim juga ke server
-    if (token) {
-      try {
-        await fetch(`${api}/messages/send`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({
-            receiverId: selectedContactId,
-            message: trimmed,
-          }),
-        })
-      } catch (err) {
-        console.warn('Backend server offline, pesan tersimpan aman di penyimpanan lokal klien.', err)
-      }
+    setSending(true)
+    try {
+      const saved = await sendMessage(selectedContactId, trimmed)
+      setInputText('')
+      if (saved) setMessages(prev => [...prev, saved])
+      loadConversations()
+    } catch (err) {
+      alert(`Pesan gagal terkirim: ${err.message}`)
+    } finally {
+      setSending(false)
     }
   }
 
-  // Tambah Kontak Baru via Modal (+ Chat Baru)
-  const handleCreateContact = (e) => {
+  // Mulai percakapan baru dengan akun terdaftar (+ Chat Baru)
+  const handleCreateContact = async (e) => {
     e.preventDefault()
+    const targetId = newContactModal.selectedSystemUser
+    if (!targetId) return
 
-    let targetId = newContactModal.selectedSystemUser
-    let targetName = newContactModal.name.trim()
-    let targetRole = newContactModal.role.trim() || 'Pengguna PKM'
-    let targetEmail = newContactModal.email.trim()
-
-    if (targetId && SYSTEM_USERS[targetId]) {
-      const u = SYSTEM_USERS[targetId]
-      targetName = u.name
-      targetRole = u.roleLabel
-      targetEmail = u.email
-    } else if (targetName) {
-      targetId = `custom-${Date.now()}`
-      if (!targetEmail) {
-        targetEmail = `${targetName.toLowerCase().replace(/[^a-z0-9]/g, '')}@pkm.unila.ac.id`
+    const opening = newContactModal.initialMessage.trim()
+    if (opening) {
+      try {
+        await sendMessage(targetId, opening)
+        loadConversations()
+      } catch (err) {
+        alert(`Pesan pembuka gagal terkirim: ${err.message}`)
+        return
       }
-      const newCustomItem = {
-        ownerId: currentUserId,
-        id: targetId,
-        name: targetName,
-        roleLabel: targetRole,
-        email: targetEmail,
-        avatar: targetName.slice(0, 2).toUpperCase(),
-      }
-      setCustomContacts(prev => [newCustomItem, ...prev])
-    } else {
-      return
     }
 
-    // Jika ada pesan awal, kirimkan langsung
-    if (newContactModal.initialMessage.trim()) {
-      const firstMsg = {
-        id: `msg-${Date.now()}`,
-        senderId: currentUserId,
-        senderName: currentUserName,
-        receiverId: targetId,
-        message: newContactModal.initialMessage.trim(),
-        createdAt: new Date().toISOString(),
-      }
-      setMasterMessages(prev => [...prev, firstMsg])
-    }
-
-    setSelectedContactId(targetId)
+    if (targetId === selectedContactId) loadThread(targetId)
+    openContact(targetId)
     setNewContactModal({
       isOpen: false,
       selectedSystemUser: '',
-      name: '',
-      email: '',
-      role: '',
       initialMessage: '',
     })
   }
@@ -349,21 +309,12 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
 
   // Filter daftar kontak berdasarkan input pencarian & filter kategori (Semua / Dosen / Mahasiswa)
   const filteredContacts = useMemo(() => {
+    const q = searchContact.toLowerCase()
     return contactsList.filter(c => {
-      const matchSearch = (
-        c.contactName.toLowerCase().includes(searchContact.toLowerCase()) ||
-        c.contactRole.toLowerCase().includes(searchContact.toLowerCase())
-      )
+      const matchSearch = c.contactName.toLowerCase().includes(q) || c.contactRole.toLowerCase().includes(q)
       if (!matchSearch) return false
-
-      if (categoryFilter === 'dosen') {
-        const u = SYSTEM_USERS[c.contactId]
-        return u?.role === 'dosen' || c.contactRole.toLowerCase().includes('dosen')
-      }
-      if (categoryFilter === 'mahasiswa') {
-        const u = SYSTEM_USERS[c.contactId]
-        return u?.role === 'mahasiswa' || c.contactRole.toLowerCase().includes('mahasiswa')
-      }
+      if (categoryFilter === 'dosen') return c.role === 'dosen'
+      if (categoryFilter === 'mahasiswa') return c.role === 'mahasiswa'
       return true
     })
   }, [contactsList, searchContact, categoryFilter])
@@ -387,10 +338,8 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
     })
   }, [feedbacks, feedbackFilter, feedbackSearch])
 
-  // Daftar pengguna lain di sistem untuk opsi "+ Chat Baru"
-  const directoryOptions = useMemo(() => {
-    return Object.values(SYSTEM_USERS).filter(u => u.id !== currentUserId)
-  }, [currentUserId])
+  // Daftar akun terdaftar (dari database) untuk opsi "+ Chat Baru"
+  const directoryOptions = directory
 
   // Jika pengguna belum login, tampilkan gateway autentikasi resmi
   if (!user) {
@@ -420,47 +369,6 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
             </button>
           </div>
 
-          <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '1.75rem' }}>
-            <p style={{ fontSize: '0.82rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em', margin: '0 0 1rem 0' }}>
-              Pilih Cepat Akun untuk Menguji Percakapan Antar-Pengguna:
-            </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.85rem', textAlign: 'left' }}>
-              {Object.values(SYSTEM_USERS).map(u => (
-                <div
-                  key={u.id}
-                  onClick={() => handleQuickLogin(u)}
-                  style={{
-                    padding: '0.85rem 1rem',
-                    borderRadius: '0.85rem',
-                    border: '1px solid #e2e8f0',
-                    background: '#f8fafc',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.85rem',
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#2563eb'; e.currentTarget.style.background = '#eff6ff' }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.background = '#f8fafc' }}
-                >
-                  <div className="contact-avatar" style={{ width: '40px', height: '40px', fontSize: '0.9rem' }}>
-                    {u.avatar}
-                  </div>
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <div style={{ fontWeight: 700, fontSize: '0.88rem', color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {u.name}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: '#2563eb', fontWeight: 600 }}>
-                      {u.roleLabel}
-                    </div>
-                    <div style={{ fontSize: '0.7rem', color: '#64748b' }}>
-                      Klik untuk Masuk &rarr;
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     )
@@ -470,7 +378,8 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
     <div
       className={`module-container ${activeTab === 'chat' ? 'chat-page-fullscreen' : ''}`}
       style={activeTab === 'chat' ? {
-        height: 'calc(100vh - 4.5rem - 3.5rem)',
+        // Tinggi area konten dashboard; --bo-dock-space hanya terisi saat dock mobile tampil
+        height: 'calc(100vh - var(--bo-topbar-h, 56px) - var(--bo-dock-space, 0px))',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
@@ -478,17 +387,17 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
       } : undefined}
     >
       {/* Sleek Integrated Top Navigation Bar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.75rem', flexShrink: 0 }}>
+      <div className="pesan-page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.75rem', flexShrink: 0 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
             <h1 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#0b2149', margin: 0 }}>
               Pusat Pesan Langsung & Feedback
             </h1>
             <span style={{ fontSize: '0.72rem', background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe', padding: '0.2rem 0.65rem', borderRadius: '9999px', fontWeight: 700 }}>
-              {currentUserRole} — {currentUserName}
+              {currentUserRole} · {currentUserName}
             </span>
           </div>
-          <p style={{ fontSize: '0.8rem', color: '#64748b', margin: '0.15rem 0 0 0' }}>
+          <p className="chat-page-subtitle" style={{ fontSize: '0.8rem', color: '#64748b', margin: '0.15rem 0 0 0' }}>
             Komunikasi substansi dan klarifikasi bimbingan PKM terhubung langsung antar-akun tanpa bot demo.
           </p>
         </div>
@@ -518,8 +427,13 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
       </div>
 
       {/* TAB 1: SISTEM DIRECT MESSAGE (CHAT) */}
+      {activeTab === 'chat' && chatError && (
+        <div style={{ margin: '0 0 0.5rem 0', padding: '0.5rem 0.85rem', borderRadius: '0.6rem', background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', fontSize: '0.8rem', flexShrink: 0 }}>
+          Gagal sinkron dengan server pesan: {chatError}
+        </div>
+      )}
       {activeTab === 'chat' && (
-        <section className="chat-wrapper" style={{ flex: 1, minHeight: 0, height: 'auto', maxHeight: 'none', marginBottom: 0 }}>
+        <section className={`chat-wrapper chat-view-${mobileView}`} style={{ flex: 1, minHeight: 0, height: 'auto', maxHeight: 'none', marginBottom: 0 }}>
           {/* Kolom Kiri: Daftar Kontak Percakapan Terhubung */}
           <aside className="chat-contacts-sidebar">
             <div className="chat-sidebar-search" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
@@ -624,7 +538,7 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
                     <div
                       key={c.contactId}
                       className={`chat-contact-item ${isSelected ? 'active' : ''}`}
-                      onClick={() => setSelectedContactId(c.contactId)}
+                      onClick={() => openContact(c.contactId)}
                     >
                       <div className="contact-avatar">
                         {c.avatar}
@@ -634,6 +548,11 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
                         <div className="contact-role-sub">{c.contactRole}</div>
                         <div className="contact-last-msg">{c.lastMessage}</div>
                       </div>
+                      {c.unreadCount > 0 && (
+                        <span style={{ marginLeft: 'auto', alignSelf: 'center', minWidth: '1.35rem', padding: '0.1rem 0.4rem', borderRadius: '9999px', background: '#2563eb', color: '#ffffff', fontSize: '0.7rem', fontWeight: 700, textAlign: 'center' }}>
+                          {c.unreadCount}
+                        </span>
+                      )}
                     </div>
                   )
                 })
@@ -670,19 +589,27 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
                 {/* Header Chat Aktif */}
                 <div className="chat-header">
                   <div className="chat-header-user">
+                    <button
+                      type="button"
+                      className="chat-back-btn"
+                      onClick={() => setMobileView('list')}
+                      aria-label="Kembali ke daftar kontak"
+                    >
+                      <ArrowLeft size={18} />
+                    </button>
                     <div className="contact-avatar">
                       {selectedContact?.avatar || 'PK'}
                     </div>
-                    <div>
-                      <div style={{ fontWeight: 800, fontSize: '1rem', color: '#0f172a' }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div className="chat-header-name" style={{ fontWeight: 800, fontSize: '1rem', color: '#0f172a' }}>
                         {selectedContact?.contactName || 'Pilih Kontak'}
                       </div>
                       <div style={{ fontSize: '0.8rem', color: '#059669', display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600 }}>
-                        <span>Terhubung - {selectedContact?.contactRole}</span>
+                        <span className="chat-header-name">Terhubung - {selectedContact?.contactRole}</span>
                       </div>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
                     <button
                       type="button"
                       className="btn-action danger"
@@ -691,14 +618,17 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
                       title="Hapus riwayat chat dengan kontak ini dari tampilan Anda"
                     >
                       <Trash2 size={13} />
-                      <span>Hapus Chat</span>
+                      <span className="chat-header-btn-label">Hapus Chat</span>
                     </button>
                     <button
+                      type="button"
                       className="btn-action secondary"
-                      style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem' }}
+                      style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
                       onClick={() => setContactInfoModal({ isOpen: true, contact: selectedContact })}
+                      title="Info kontak"
                     >
-                      Info Kontak
+                      <Info size={13} />
+                      <span className="chat-header-btn-label">Info Kontak</span>
                     </button>
                   </div>
                 </div>
@@ -707,7 +637,7 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
                 <div className="chat-messages-scroll">
                   <div style={{ textAlign: 'center', margin: '0.5rem 0 1rem 0' }}>
                     <span style={{ fontSize: '0.75rem', background: '#e2e8f0', color: '#475569', padding: '0.2rem 0.75rem', borderRadius: '9999px' }}>
-                      Saluran Komunikasi Resmi PKM Center — Universitas Lampung
+                      Saluran Komunikasi Resmi PKM Center · Universitas Lampung
                     </span>
                   </div>
 
@@ -736,7 +666,7 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
                           <div>{msg.message}</div>
                           <div className="chat-bubble-time">
                             {new Date(msg.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-                            {isMine && ' - Terkirim'}
+                            {isMine && (msg.isRead ? ' - Dibaca' : ' - Terkirim')}
                           </div>
                         </div>
                       )
@@ -757,9 +687,9 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
                     type="submit"
                     className="btn-action primary"
                     style={{ borderRadius: '9999px', padding: '0.65rem 1.25rem' }}
-                    disabled={!inputText.trim()}
+                    disabled={!inputText.trim() || sending}
                   >
-                    Kirim
+                    {sending ? 'Mengirim...' : 'Kirim'}
                   </button>
                 </form>
               </>
@@ -770,27 +700,25 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
 
       {/* TAB 2: REKAP CATATAN REVISI & FEEDBACK */}
       {activeTab === 'feedback' && (
-        <section>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-            <div>
-              <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0b2149', margin: 0 }}>
-                Rekapitulasi Catatan Revisi & Feedback Proposal
-              </h2>
-              <p style={{ fontSize: '0.875rem', color: '#64748b', margin: '0.25rem 0 0 0' }}>
-                Kronologi seluruh catatan pembimbingan dan evaluasi reviewer untuk memastikan perbaikan naskah terekam rapi.
-              </p>
-            </div>
+        <section className="feedback-panel">
+          <div className="feedback-panel-head">
+            <h2>Rekapitulasi Catatan Revisi & Feedback Proposal</h2>
+            <p>
+              Kronologi seluruh catatan pembimbingan dan evaluasi reviewer untuk memastikan perbaikan naskah terekam rapi.
+            </p>
+          </div>
 
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <input
-                type="text"
-                placeholder="Cari proposal atau isi catatan..."
-                value={feedbackSearch}
-                onChange={e => setFeedbackSearch(e.target.value)}
-                style={{ padding: '0.6rem 0.85rem', border: '1px solid #cbd5e1', borderRadius: '0.55rem', fontSize: '0.85rem', minWidth: '200px' }}
-              />
+          <div className="feedback-toolbar">
+            <input
+              type="text"
+              className="feedback-search"
+              placeholder="Cari proposal atau isi catatan..."
+              value={feedbackSearch}
+              onChange={e => setFeedbackSearch(e.target.value)}
+            />
 
-              <div className="modern-tabs" style={{ marginBottom: 0 }}>
+            <div className="feedback-toolbar-row">
+              <div className="modern-tabs feedback-filter">
                 <button
                   className={`tab-btn ${feedbackFilter === 'all' ? 'active' : ''}`}
                   onClick={() => setFeedbackFilter('all')}
@@ -812,10 +740,12 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
               </div>
 
               <button
-                className="btn-action primary"
+                type="button"
+                className="btn-action primary feedback-add-btn"
                 onClick={() => setNewFeedbackModal(prev => ({ ...prev, isOpen: true }))}
               >
-                Tambah Catatan Revisi
+                <Plus size={15} />
+                <span>Tambah Catatan</span>
               </button>
             </div>
           </div>
@@ -823,8 +753,12 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
           {/* Timeline Kartu Feedback */}
           <div className="feedback-timeline">
             {filteredFeedbacks.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '3rem', background: '#ffffff', borderRadius: '1rem', border: '1px dashed #cbd5e1' }}>
-                <p style={{ color: '#64748b' }}>Tidak ada catatan revisi yang sesuai dengan filter pencarian.</p>
+              <div className="feedback-empty">
+                <p>
+                  {feedbacks.length === 0
+                    ? 'Belum ada catatan revisi. Klik "Tambah Catatan" untuk mencatat revisi pertama.'
+                    : 'Tidak ada catatan revisi yang sesuai dengan filter pencarian.'}
+                </p>
               </div>
             ) : (
               filteredFeedbacks.map(fb => (
@@ -855,7 +789,7 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
                     "{fb.comment}"
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '0.5rem' }}>
+                  <div className="feedback-card-actions">
                     {fb.requiresRevision ? (
                       <button
                         className="btn-action success"
@@ -932,75 +866,35 @@ export function PesanFeedback({ user, onLogin, onSwitchUser }) {
                   <select
                     style={{ width: '100%', padding: '0.65rem', border: '1px solid #cbd5e1', borderRadius: '0.5rem', background: '#f8fafc', fontSize: '0.9rem' }}
                     value={newContactModal.selectedSystemUser}
-                    onChange={e => {
-                      const selId = e.target.value
-                      if (selId && SYSTEM_USERS[selId]) {
-                        const sel = SYSTEM_USERS[selId]
-                        setNewContactModal(prev => ({
-                          ...prev,
-                          selectedSystemUser: selId,
-                          name: sel.name,
-                          role: sel.roleLabel,
-                          email: sel.email,
-                        }))
-                      } else {
-                        setNewContactModal(prev => ({
-                          ...prev,
-                          selectedSystemUser: '',
-                        }))
-                      }
-                    }}
+                    onChange={e => setNewContactModal(prev => ({ ...prev, selectedSystemUser: e.target.value }))}
+                    required
                   >
-                    <option value="">-- Pilih dari akun terdaftar atau masukkan kustom di bawah --</option>
+                    <option value="">-- Pilih akun terdaftar --</option>
                     <optgroup label="Dosen Pembimbing">
                       {directoryOptions.filter(u => u.role === 'dosen').map(u => (
                         <option key={u.id} value={u.id}>
-                          {u.name} — {u.roleLabel}
+                          {u.name}{u.faculty ? ` · ${u.faculty}` : ''}
                         </option>
                       ))}
                     </optgroup>
                     <optgroup label="Rekan Mahasiswa PKM">
                       {directoryOptions.filter(u => u.role === 'mahasiswa').map(u => (
                         <option key={u.id} value={u.id}>
-                          {u.name} — {u.roleLabel}
+                          {u.name}{u.faculty ? ` · ${u.faculty}` : ''}
                         </option>
                       ))}
                     </optgroup>
                     <optgroup label="Reviewer & Admin">
                       {directoryOptions.filter(u => u.role !== 'dosen' && u.role !== 'mahasiswa').map(u => (
                         <option key={u.id} value={u.id}>
-                          {u.name} — {u.roleLabel}
+                          {u.name}{u.faculty ? ` · ${u.faculty}` : ''}
                         </option>
                       ))}
                     </optgroup>
                   </select>
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontWeight: 700, fontSize: '0.85rem', marginBottom: '0.35rem' }}>
-                    Nama Kontak / Tim:
-                  </label>
-                  <input
-                    type="text"
-                    style={{ width: '100%', padding: '0.65rem', border: '1px solid #cbd5e1', borderRadius: '0.5rem' }}
-                    placeholder="Contoh: Bima Satria / Dr. Rizmi"
-                    value={newContactModal.name}
-                    onChange={e => setNewContactModal(prev => ({ ...prev, name: e.target.value, selectedSystemUser: '' }))}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontWeight: 700, fontSize: '0.85rem', marginBottom: '0.35rem' }}>
-                    Peran / Status Pengguna:
-                  </label>
-                  <input
-                    type="text"
-                    style={{ width: '100%', padding: '0.65rem', border: '1px solid #cbd5e1', borderRadius: '0.5rem' }}
-                    placeholder="Contoh: Mahasiswa (Ketua Tim PKM-KC) / Dosen Pendamping"
-                    value={newContactModal.role}
-                    onChange={e => setNewContactModal(prev => ({ ...prev, role: e.target.value }))}
-                  />
+                  {directoryOptions.length === 0 && (
+                    <p style={{ margin: '0.35rem 0 0 0', fontSize: '0.75rem', color: '#94a3b8' }}>Memuat direktori akun...</p>
+                  )}
                 </div>
 
                 <div>

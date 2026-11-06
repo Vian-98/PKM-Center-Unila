@@ -72,7 +72,7 @@ Berdasarkan pembagian kerja di `docs/pkm - Sheet1.csv`, berikut adalah peta jala
 
 ---
 
-### 👨‍💻 2.1 Aidil (Anggota 1) — *Idea Lab AI, Pencarian Tim & Pembimbing*
+### 👨‍💻 2.1 Aidil (Anggota 1): *Idea Lab AI, Pencarian Tim & Pembimbing*
 
 * **Kondisi Basis Data Saat Ini:** Tabel `ai_analyses`, `expertise_fields`, `user_expertise`, dan `team_invitations` sudah siap di PostgreSQL, tetapi belum memiliki handler Go maupun antarmuka pengguna.
 * **Integrasi Data Riil:** Memanfaatkan master 168 dosen pembimbing di CSV dan daftar dosen FT di Excel untuk mengisi direktori kepakaran.
@@ -88,11 +88,11 @@ Berdasarkan pembagian kerja di `docs/pkm - Sheet1.csv`, berikut adalah peta jala
 
 ---
 
-### 👨‍💻 2.2 Favian (Anggota 2) — *Portal Mahasiswa, Pengajuan Proposal & Logbook* ✅ **SELESAI (13 Okt 2026)**
+### 👨‍💻 2.2 Favian (Anggota 2): *Portal Mahasiswa, Pengajuan Proposal & Logbook* ✅ **SELESAI (13 Okt 2026)**
 
 * **Kondisi Basis Data Saat Ini:** Tabel `proposals`, `proposal_documents`, `teams`, `team_members`, dan `logbook_entries` sudah ada, namun belum ada portal sisi mahasiswa.
 * **Integrasi Data Riil:** 321 judul proposal riil, ketua, dan dosen pembimbing dari CSV dijadikan basis status usulan awal.
-* **PIC/Penanggung Jawab:** **Favian (Vian)** — seluruh butir di bawah telah diimplementasikan, diuji, dan terhubung ke backend.
+* **PIC/Penanggung Jawab:** **Favian (Vian)**: seluruh butir di bawah telah diimplementasikan, diuji, dan terhubung ke backend.
 * **Status Implementasi:**
   1. **Dashboard Mahasiswa (`MahasiswaDashboard.jsx` di `/#mahasiswa`):** ✅
      * Visual Stepper 5 Tahap: `Draft` ➔ `Review Dosen` ➔ `Review Internal Reviewer 1 & 2` ➔ `Lolos Belmawa` ➔ `PIMNAS`.
@@ -118,7 +118,7 @@ Berdasarkan pembagian kerja di `docs/pkm - Sheet1.csv`, berikut adalah peta jala
 
 ---
 
-### 👨‍💻 2.3 Radhit (Anggota 3) — *Database Seeder Riil, Auth RBAC & Admin Kampus*
+### 👨‍💻 2.3 Radhit (Anggota 3): *Database Seeder Riil, Auth RBAC & Admin Kampus*
 
 * **Kondisi Basis Data Saat Ini:** Auth JWT 4 role sudah berjalan, namun seeder backend masih men-generate proposal acak. Fitur admin di [AdminPanel.jsx](file:///Users/favian/Proyek%20/PKM-Center/frontend/src/pages/AdminPanel.jsx) baru mencakup CMS dan feedback.
 * **Integrasi Data Riil:** Bertanggung jawab penuh memindahkan 321 baris CSV ke tabel riil database.
@@ -137,7 +137,7 @@ Berdasarkan pembagian kerja di `docs/pkm - Sheet1.csv`, berikut adalah peta jala
 
 ---
 
-### 👨‍💻 2.4 Dimas (Anggota 4) — *Modul Dosen, Reviewer & Pesan Feedback*
+### 👨‍💻 2.4 Dimas (Anggota 4): *Modul Dosen, Reviewer & Pesan Feedback*
 
 * **Kondisi Basis Data Saat Ini:** Handlers `dosen.go`, `reviewer.go`, dan `pesan_feedback.go` sudah aktif, namun data penugasan masih generik.
 * **Integrasi Data Riil:** Menghubungkan antrean reviewer dengan penugasan nyata 23 reviewer di CSV (seperti *M. Nur Khawarizmi*, *Hadi Prayitno*, *Bayu Saputra*, dll).

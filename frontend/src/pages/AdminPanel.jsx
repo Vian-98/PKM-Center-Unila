@@ -132,7 +132,7 @@ function TimelineView() {
         {[...items].sort((a, b) => b.year - a.year || a.order - b.order).map(item => (
           <article className="admin-item" key={item.id}>
             <div className="admin-swatch gold" />
-            <div><p className="card-meta">{item.year} · urutan {item.order || 0}</p><h3>{item.stage}</h3><p>{item.label}{item.note ? ` — ${item.note}` : ''}</p></div>
+            <div><p className="card-meta">{item.year} · urutan {item.order || 0}</p><h3>{item.stage}</h3><p>{item.label}{item.note ? ` · ${item.note}` : ''}</p></div>
             <div className="admin-actions"><button onClick={() => edit(item)}>Ubah</button><button onClick={() => remove(item.id)}>Hapus</button></div>
           </article>
         ))}
@@ -181,7 +181,7 @@ function PedomanView() {
         {[...items].sort((a, b) => b.year - a.year).map(item => (
           <article className="admin-item" key={item.id}>
             <div className="admin-swatch blue" />
-            <div><p className="card-meta">{item.year} · {item.source || 'Dokumen resmi'}</p><h3>{item.title}</h3><p>{item.note}{item.fileUrl ? ` — ${item.fileUrl}` : ' (belum ada tautan)'}</p></div>
+            <div><p className="card-meta">{item.year} · {item.source || 'Dokumen resmi'}</p><h3>{item.title}</h3><p>{item.note}{item.fileUrl ? ` · ${item.fileUrl}` : ' (belum ada tautan)'}</p></div>
             <div className="admin-actions"><button onClick={() => edit(item)}>Ubah</button><button onClick={() => remove(item.id)}>Hapus</button></div>
           </article>
         ))}
@@ -219,7 +219,7 @@ function PortfolioView() {
         <div className="form-heading"><h2>{editing ? 'Ubah proposal' : 'Tambah proposal'}</h2>{editing && <button type="button" onClick={() => { setEditing(null); setForm({ year: new Date().getFullYear(), title: '', team: '', scheme: 'PKM-K', faculty: '', prodi: '', description: '', link: '' }) }}>Batal</button>}</div>
         <label>Tahun pendanaan<input type="number" value={form.year} onChange={e => setForm({ ...form, year: Number(e.target.value) })} required /></label>
         <label>Judul proposal<input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} required /></label>
-        <label>Skema<select value={form.scheme} onChange={e => setForm({ ...form, scheme: e.target.value })}>{Object.keys(schemeNames).map(s => <option key={s} value={s}>{s} — {schemeNames[s]}</option>)}</select></label>
+        <label>Skema<select value={form.scheme} onChange={e => setForm({ ...form, scheme: e.target.value })}>{Object.keys(schemeNames).map(s => <option key={s} value={s}>{s} · {schemeNames[s]}</option>)}</select></label>
         <label>Tim (dipisah koma)<input value={form.team} onChange={e => setForm({ ...form, team: e.target.value })} placeholder="Nama anggota tim" /></label>
         <label>Fakultas<input value={form.faculty} onChange={e => setForm({ ...form, faculty: e.target.value })} placeholder="Contoh: FMIPA" /></label>
         <label>Prodi<input value={form.prodi} onChange={e => setForm({ ...form, prodi: e.target.value })} placeholder="Contoh: Ilmu Komputer" /></label>
@@ -233,7 +233,7 @@ function PortfolioView() {
         {[...items].sort((a, b) => b.year - a.year).map(item => (
           <article className="admin-item" key={item.id}>
             <div className="admin-swatch green" />
-            <div><p className="card-meta">{item.year} · {item.scheme || 'PKM'} · {item.faculty || '—'}</p><h3>{item.title}</h3><p>{item.team}</p></div>
+            <div><p className="card-meta">{item.year} · {item.scheme || 'PKM'} · {item.faculty || '-'}</p><h3>{item.title}</h3><p>{item.team}</p></div>
             <div className="admin-actions"><button onClick={() => edit(item)}>Ubah</button><button onClick={() => remove(item.id)}>Hapus</button></div>
           </article>
         ))}
@@ -267,7 +267,7 @@ function FeedbackView() {
           <div className={`admin-swatch ${item.kind === 'saran' ? 'gold' : 'blue'}`} />
           <div>
             <p className="card-meta">{item.kind === 'saran' ? 'Kritik & Saran' : 'Form Kontak'}{!item.read && ' · BARU'}</p>
-            <h3>{item.name || 'Anonim'}{item.email ? ` — ${item.email}` : ''}</h3>
+            <h3>{item.name || 'Anonim'}{item.email ? ` · ${item.email}` : ''}</h3>
             <p className="feedback-message">{item.message}</p>
             <p className="feedback-date">{new Date(item.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
           </div>
@@ -290,7 +290,7 @@ function StatsView() {
   return (
     <section className="admin-stats">
       <div className="form-heading"><h2>Usulan per skema PKM</h2><span>{items.length} skema</span></div>
-      <p className="section-copy">Dihitung otomatis dari data proposal (status bukan draf) melalui view <code>v_scheme_stats</code> — tidak dapat diubah manual. Total {total} usulan.</p>
+      <p className="section-copy">Dihitung otomatis dari data proposal (status bukan draf) melalui view <code>v_scheme_stats</code>, tidak dapat diubah manual. Total {total} usulan.</p>
       <div className="stats-editor">
         {items.map((item) => (
           <div className="stat-input" key={item.scheme}>

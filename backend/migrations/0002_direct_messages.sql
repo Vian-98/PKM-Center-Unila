@@ -1,5 +1,5 @@
 -- ============================================================================
--- PKM Center Unila — Skema Pesan Langsung (Direct Messages) & Evaluasi Tambahan
+-- PKM Center Unila: Skema Pesan Langsung (Direct Messages) & Evaluasi Tambahan
 -- File    : backend/migrations/0002_direct_messages.sql
 -- ============================================================================
 

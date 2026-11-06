@@ -2474,3 +2474,29 @@ body:has(.bo-layout) {
   box-sizing: border-box;
 
 }
+
+/* < 900px navigasi dashboard pindah ke Apple Mobile Dock (lihat .apple-mobile-dock),
+   jadi sidebar desktop disembunyikan dan konten diberi ruang di atas dock. */
+@media (max-width: 899px) {
+  :root { --bo-dock-space: calc(5.2rem + env(safe-area-inset-bottom, 0px)); }
+  .bo-sidebar,
+  .bo-toggle {
+    display: none;
+  }
+  body:has(.bo-layout) {
+    padding-bottom: 0 !important;
+  }
+  .bo-content {
+    padding-bottom: var(--bo-dock-space);
+  }
+  .bo-content > * {
+    min-height: calc(100vh - var(--bo-topbar-h) - var(--bo-dock-space));
+  }
+  /* Ruang dock sudah diberikan .bo-content; batalkan padding dock bawaan .module-container */
+  .bo-content .module-container {
+    padding-bottom: 1rem !important;
+  }
+  .bo-content .module-container.chat-page-fullscreen {
+    padding-bottom: 0.5rem !important;
+  }
+}

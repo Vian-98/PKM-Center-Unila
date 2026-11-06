@@ -1,6 +1,6 @@
 # Revisi Struktur Database PKM Center Unila
 
-> Status: **diterapkan ke backend (model + migrasi)** — tanggal 09-10-2026
+> Status: **diterapkan ke backend (model + migrasi)**: tanggal 09-10-2026
 > Sumber ERD: revisi "Digitalisasi Manajemen PKM" (diberikan sebagai mermaid erDiagram)
 > DDL implementasi: [`backend/migrations/0001_init_pkm_schema.sql`](../backend/migrations/0001_init_pkm_schema.sql)
 > Target DB: PostgreSQL 16 (`postgres:16-alpine`, lihat `docker-compose.yml`)
@@ -8,7 +8,7 @@
 Dokumen ini melengkapi `rencana-awal-proyek-pkm-center-unila.md` (bagian 5 & Fase 3) dan
 `daftar-fitur-pkm-center-unila.md` (Fitur Lanjutan). Skema baru ini adalah fondasi untuk
 fitur lanjutan: login mahasiswa, submit & tracking proposal, dashboard reviewer/dosen,
-notifikasi — yang selama ini bertanda `[ ]` di daftar fitur.
+notifikasi, yang selama ini bertanda `[ ]` di daftar fitur.
 
 Hasil validasi DDL: **33 tabel + 1 view**, **48 foreign key**, diuji nyata pada
 `postgres:16-alpine` (semua `CREATE TABLE` sukses, seed `roles` & 9 skema PKM terpasang).
@@ -381,62 +381,62 @@ erDiagram
 
 ## 2. Katalog tabel per domain
 
-Format: **nama tabel** — kunci & catatan penting. Detail tipe/constraint ada di file SQL.
+Format: **nama tabel**: kunci & catatan penting. Detail tipe/constraint ada di file SQL.
 
 ### 2.1 Autentikasi & pengguna (RBAC)
-- **`roles`** — `id` bigint, `code` unik (`admin`, `mahasiswa`, `dosen`, `reviewer`, `pimpinan`).
-- **`users`** — PK UUID, `email` unik, `password_hash`, `full_name`, `account_status`, `auth_provider`,
+- **`roles`**: `id` bigint, `code` unik (`admin`, `mahasiswa`, `dosen`, `reviewer`, `pimpinan`).
+- **`users`**: PK UUID, `email` unik, `password_hash`, `full_name`, `account_status`, `auth_provider`,
   verifikasi email, `last_login_at`. Menggantikan `users` lama (kolom `role` string → tabel relasi).
-- **`user_roles`** — pivot `(user_id, role_id)`, mendukung multi-role.
-- **`student_profiles`** — 1:1 opsional ke `users`: NPM unik, fakultas/prodi, angkatan, IPK.
-- **`lecturer_profiles`** — 1:1 opsional: NIDN/NIP unik, jabatan akademik, kapasitas bimbingan.
-- **`expertise_fields`** + **`user_expertise`** — bidang keahlian & level per user.
-- **`achievements`** — prestasi mahasiswa + status verifikasi.
+- **`user_roles`**: pivot `(user_id, role_id)`, mendukung multi-role.
+- **`student_profiles`**: 1:1 opsional ke `users`: NPM unik, fakultas/prodi, angkatan, IPK.
+- **`lecturer_profiles`**: 1:1 opsional: NIDN/NIP unik, jabatan akademik, kapasitas bimbingan.
+- **`expertise_fields`** + **`user_expertise`**: bidang keahlian & level per user.
+- **`achievements`**: prestasi mahasiswa + status verifikasi.
 
 ### 2.2 Master PKM
-- **`pkm_periods`** — periode PKM per tahun + jendela pendaftaran + status.
-- **`pkm_schemes`** — skema (PKM-K … PKM-RSH), batas `min_members`/`max_members`.
-- **`pkm_stages`** — tahapan di dalam periode (sosialisasi → submit → review → penetapan →
+- **`pkm_periods`**: periode PKM per tahun + jendela pendaftaran + status.
+- **`pkm_schemes`**: skema (PKM-K … PKM-RSH), batas `min_members`/`max_members`.
+- **`pkm_stages`**: tahapan di dalam periode (sosialisasi → submit → review → penetapan →
   pelaksanaan → PIMNAS), dengan urutan & rentang tanggal. Punya `UNIQUE (id, period_id)`
   sebagai target FK komposit.
 
 ### 2.3 Tim
-- **`teams`** — tim per periode, diketuai `leader_id`. Punya `UNIQUE (id, period_id)`.
-- **`team_members`** — anggota tim + status undangan.
-- **`team_invitations`** — undangan bergabung (sender/recipient/message/status).
+- **`teams`**: tim per periode, diketuai `leader_id`. Punya `UNIQUE (id, period_id)`.
+- **`team_members`**: anggota tim + status undangan.
+- **`team_invitations`**: undangan bergabung (sender/recipient/message/status).
 
 ### 2.4 Proposal & bimbingan
-- **`proposals`** — inti: tim + skema + periode, status, `current_stage_id`, `is_funded`.
+- **`proposals`**: inti: tim + skema + periode, status, `current_stage_id`, `is_funded`.
   Dilengkapi 2 FK komposit integritas periode (lihat bagian 5).
-- **`proposal_documents`** — versi berkas proposal (`version_number` unik per proposal).
-- **`supervisor_requests`** — permintaan dosen pembimbing.
-- **`proposal_supervisors`** — dosen pembimbing final (+ `is_primary`).
-- **`guidance_sessions`** — jadwal bimbingan (luring/daring).
-- **`proposal_feedback`** — catatan/revisi/approval pada proposal & dokumen.
+- **`proposal_documents`**: versi berkas proposal (`version_number` unik per proposal).
+- **`supervisor_requests`**: permintaan dosen pembimbing.
+- **`proposal_supervisors`**: dosen pembimbing final (+ `is_primary`).
+- **`guidance_sessions`**: jadwal bimbingan (luring/daring).
+- **`proposal_feedback`**: catatan/revisi/approval pada proposal & dokumen.
 
 ### 2.5 Review & penilaian
-- **`review_assignments`** — penugasan proposal ke reviewer + tenggat.
-- **`reviews`** — hasil review (1:1 dari assignment), skor total & rekomendasi.
-- **`review_criteria`** — kriteria per skema (bobot & skor maks).
-- **`review_scores`** — skor per kriteria dalam satu review.
+- **`review_assignments`**: penugasan proposal ke reviewer + tenggat.
+- **`reviews`**: hasil review (1:1 dari assignment), skor total & rekomendasi.
+- **`review_criteria`**: kriteria per skema (bobot & skor maks).
+- **`review_scores`**: skor per kriteria dalam satu review.
 
 ### 2.6 Logbook kegiatan
-- **`logbook_entries`** — catatan kegiatan mahasiswa per proposal + status verifikasi.
-- **`logbook_comments`** — komentar/umpan balik pada logbook.
+- **`logbook_entries`**: catatan kegiatan mahasiswa per proposal + status verifikasi.
+- **`logbook_comments`**: komentar/umpan balik pada logbook.
 
 ### 2.7 Analisis AI
-- **`ai_analyses`** — riwayat analisis (tipe, input/output, confidence, model).
+- **`ai_analyses`**: riwayat analisis (tipe, input/output, confidence, model).
 
 ### 2.8 Konten / CMS
-- **`content_posts`** — berita/artikel/pengumuman (pengganti berita di `contents`).
-- **`guidelines`** — dokumen pedoman per periode + `source`/`note` (dari `pedoman` lama) + versi.
-- **`notifications`** — notifikasi in-app per user.
+- **`content_posts`**: berita/artikel/pengumuman (pengganti berita di `contents`).
+- **`guidelines`**: dokumen pedoman per periode + `source`/`note` (dari `pedoman` lama) + versi.
+- **`notifications`**: notifikasi in-app per user.
 
 ### 2.9 Tabel tambahan terintegrasi
-- **`content_media`** — video & galeri foto (bagian 4.1).
-- **`feedbacks`** — kritik & saran + pesan kontak (bagian 4.2).
-- **`contact_infos`** — info kontak baris tunggal (bagian 4.3).
-- **`v_scheme_stats`** — VIEW statistik usulan per skema (bagian 4.4).
+- **`content_media`**: video & galeri foto (bagian 4.1).
+- **`feedbacks`**: kritik & saran + pesan kontak (bagian 4.2).
+- **`contact_infos`**: info kontak baris tunggal (bagian 4.3).
+- **`v_scheme_stats`**: VIEW statistik usulan per skema (bagian 4.4).
 
 ---
 
@@ -531,7 +531,7 @@ Keduanya didukung `UNIQUE (id, period_id)` pada `pkm_stages` dan `teams`.
 Jalankan terhadap database `pkmcenter` (PostgreSQL 16). DDL bersifat idempoten
 (`IF NOT EXISTS` / `ON CONFLICT DO NOTHING`), aman dijalankan ulang.
 
-**Cara utama — otomatis saat startup (sudah diterapkan):**
+**Cara utama, otomatis saat startup (sudah diterapkan):**
 Backend menjalankan `backend/migrations/*.sql` lewat runner `migrations.Run(db)` tepat
 setelah koneksi DB dibuat di `main.go`. `AutoMigrate` hanya dipakai untuk tabel CMS
 transisional (`contents`, `timelines`, `pedoman`, `portfolios`). Jadi cukup:
@@ -540,7 +540,7 @@ transisional (`contents`, `timelines`, `pedoman`, `portfolios`). Jadi cukup:
 docker compose up --build
 ```
 
-**Opsi manual — langsung ke container Docker:**
+**Opsi manual, langsung ke container Docker:**
 ```bash
 docker compose up -d db
 docker compose exec -T db \
@@ -568,7 +568,7 @@ Skema ini **sudah diimplementasikan bertahap** ke kode Go:
    `PUT /api/admin/stats`, dan editor angka di admin dibuang; `GET /api/stats` membaca
    `v_scheme_stats` (read-only). Proposal contoh di-seed agar angka terisi & konsisten.
 5. **[BELUM]** Handler & endpoint fitur baru (tim, proposal, dokumen, bimbingan, review,
-   logbook, notifikasi, analisis AI) serta ETL data lama (bagian 3) — menyusul.
+   logbook, notifikasi, analisis AI) serta ETL data lama (bagian 3): menyusul.
    CMS publik masih memakai tabel transisional (`contents`, `timelines`, `pedoman`, `portfolios`).
 6. **[BELUM]** Penyesuaian frontend: modul baru untuk halaman mahasiswa/dosen/reviewer.
 
@@ -591,14 +591,14 @@ logbook → notifikasi → konten/AI**, sejalan dengan prioritas di
   (`file_url`, `attachment_url`, `certificate_url`, `cover_image_url`). Sesuai kebutuhan saat ini
   (fitur upload berkas belum ada), kolom URL dipertahankan. Bila upload masuk roadmap,
   tambahkan tabel `files` terpusat.
-- **[TERBUKA]** `teams.leader_id` idealnya juga terdaftar di `team_members` — belum di-enforce
+- **[TERBUKA]** `teams.leader_id` idealnya juga terdaftar di `team_members`: belum di-enforce
   di DB (aturan aplikasi).
 
 ---
 
 ## 9. Changelog revisi
 
-### v4 — 09-10-2026 (implementasi backend)
+### v4 - 09-10-2026 (implementasi backend)
 - Model GORM v2 lengkap (semua tabel) + runner migrasi SQL yang dijalankan otomatis saat startup.
 - Auth bermigrasi ke `users` ber-UUID + `user_roles`/`roles`; login mengembalikan peran utama.
 - `GET /api/stats` & `GET /api/admin/stats` membaca `v_scheme_stats` (read-only); `PUT` dihapus;
@@ -606,12 +606,12 @@ logbook → notifikasi → konten/AI**, sejalan dengan prioritas di
 - Seed v2: periode 2026 + tahapan + tim demo + proposal contoh (statistik terisi konsisten).
 - Divalidasi runtime pada database bersih: 37 tabel (33 v2 + 4 CMS transisional) + 1 view; login & stats OK.
 
-### v3 — 09-10-2026 (keputusan statistik)
+### v3 - 09-10-2026 (keputusan statistik)
 - **Diputuskan: statistik skema murni turunan** dari `proposals` (`v_scheme_stats`).
 - Tabel `scheme_stats` dihapus dari target; edit manual admin dihilangkan; angka konsisten otomatis.
 - Rencana penghapusan kode: `SchemeStat`, `StatsHandler.Update`, `PUT /api/admin/stats`, editor admin.
 
-### v2 — 09-10-2026 (revisi sesuai kebutuhan & temuan)
+### v2 - 09-10-2026 (revisi sesuai kebutuhan & temuan)
 - Tambah FK komposit: `proposals (team_id, period_id) → teams` dan
   `proposals (current_stage_id, period_id) → pkm_stages`, didukung `UNIQUE (id, period_id)`.
 - Tambah kolom `guidelines.source` dan `guidelines.note`.
@@ -619,5 +619,5 @@ logbook → notifikasi → konten/AI**, sejalan dengan prioritas di
 - Perjelas status tabel tambahan sebagai bagian resmi skema (bukan penambal sementara).
 - Divalidasi ulang di `postgres:16-alpine`: 33 tabel + 1 view, 48 FK.
 
-### v1 — 09-10-2026 (draft awal)
+### v1 - 09-10-2026 (draft awal)
 - DDL awal dari ERD + tabel tambahan, pemetaan tabel lama.

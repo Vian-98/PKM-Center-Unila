@@ -34,7 +34,7 @@ export function PortofolioIndex() {
             <span>Skema</span>
             <select value={scheme} onChange={(e) => setScheme(e.target.value)}>
               <option value="all">Semua skema</option>
-              {schemes.map((s) => <option key={s} value={s}>{s} — {schemeNames[s] || s}</option>)}
+              {schemes.map((s) => <option key={s} value={s}>{s} · {schemeNames[s] || s}</option>)}
             </select>
           </label>
         </div>
@@ -46,15 +46,15 @@ export function PortofolioIndex() {
             <article className={`portfolio-card ${item.scheme}`} key={item.id}>
               <div className="portfolio-head">
                 <div>
-                  <p className="card-meta">{item.year} · {item.scheme || 'PKM'} — {schemeNames[item.scheme] || 'Skema PKM'}</p>
+                  <p className="card-meta">{item.year} · {item.scheme || 'PKM'} · {schemeNames[item.scheme] || 'Skema PKM'}</p>
                   <h2>{item.title}</h2>
                 </div>
                 <span className="portfolio-year">{item.year}</span>
               </div>
               <dl className="portfolio-meta">
-                <div><dt>Tim</dt><dd>{item.team || '—'}</dd></div>
-                <div><dt>Fakultas</dt><dd>{item.faculty || '—'}</dd></div>
-                <div><dt>Prodi</dt><dd>{item.prodi || '—'}</dd></div>
+                <div><dt>Tim</dt><dd>{item.team || '-'}</dd></div>
+                <div><dt>Fakultas</dt><dd>{item.faculty || '-'}</dd></div>
+                <div><dt>Prodi</dt><dd>{item.prodi || '-'}</dd></div>
               </dl>
               {item.description && (
                 <div className="portfolio-detail">

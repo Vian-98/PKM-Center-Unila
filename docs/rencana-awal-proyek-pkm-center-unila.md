@@ -2,9 +2,9 @@
 
 > Catatan: dokumen ini disusun sebagai rencana kerja awal. Sesuaikan bagian **Fitur** dan **Timeline** seiring progres.
 
-> **Status per 25 September 2026 — MVP hampir selesai.** Seluruh halaman publik (Home, Pedoman, Portofolio, Kontak, Berita, Galeri) dan panel admin 7 seksi (Konten, Timeline, Pedoman, Portofolio, Masukan, Statistik, Kontak) sudah berjalan dan diverifikasi di browser. Checklist fase 3–5 di bawah sudah sebagian besar tercentang; yang tersisa: unit test, deployment production (Nginx/HTTPS), dan fitur lanjutan (login mahasiswa, tracking proposal).
+> **Status per 25 September 2026: MVP hampir selesai.** Seluruh halaman publik (Home, Pedoman, Portofolio, Kontak, Berita, Galeri) dan panel admin 7 seksi (Konten, Timeline, Pedoman, Portofolio, Masukan, Statistik, Kontak) sudah berjalan dan diverifikasi di browser. Checklist fase 3–5 di bawah sudah sebagian besar tercentang; yang tersisa: unit test, deployment production (Nginx/HTTPS), dan fitur lanjutan (login mahasiswa, tracking proposal).
 >
-> **Update 09-10-2026 — Skema database v2 diterapkan.** Model GORM baru (user/role, periode/skema/tahap, tim, proposal, review, logbook, notifikasi, AI, CMS posts/media) + migrasi SQL otomatis saat startup; auth pindah ke `users` ber-UUID + `user_roles`/`roles`; statistik per skema kini **turunan** dari `proposals` (view `v_scheme_stats`, read-only). Tabel CMS lama (`contents`, `timelines`, `pedoman`, `portfolios`) dipertahankan sebagai transisional. Rincian: `docs/revisi-struktur-db-pkm-center.md`.
+> **Update 09-10-2026: Skema database v2 diterapkan.** Model GORM baru (user/role, periode/skema/tahap, tim, proposal, review, logbook, notifikasi, AI, CMS posts/media) + migrasi SQL otomatis saat startup; auth pindah ke `users` ber-UUID + `user_roles`/`roles`; statistik per skema kini **turunan** dari `proposals` (view `v_scheme_stats`, read-only). Tabel CMS lama (`contents`, `timelines`, `pedoman`, `portfolios`) dipertahankan sebagai transisional. Rincian: `docs/revisi-struktur-db-pkm-center.md`.
 
 ---
 
@@ -52,7 +52,7 @@ Lambang berbentuk **perisai persegi lima**, warna dasar **biru muda**, terdiri d
 | Elemen | Warna | Kode RGB (Statuta) | Hex | Makna (Pasal 3 ayat 2) |
 |---|---|---|---|---|
 | Perisai persegi lima (dasar) | Biru muda | 1E 90 FF | `#1E90FF` | Alam kehidupan perguruan tinggi |
-| Tulisan "Universitas Lampung" | Hitam | 00 00 00 | `#000000` | — |
+| Tulisan "Universitas Lampung" | Hitam | 00 00 00 | `#000000` | - |
 | Lidah api | Merah | FF 00 00 | `#FF0000` | Penerang dalam kegelapan |
 | Bejana penopang | Abu-abu | 2F 4F 4F | `#2F4F4F` | Penerang dalam kegelapan |
 | Obor & tangkai | Hitam | 00 00 00 | `#000000` | Penerang dalam kegelapan |
@@ -62,14 +62,14 @@ Lambang berbentuk **perisai persegi lima**, warna dasar **biru muda**, terdiri d
 | Meja pepadun | Kuning keemasan | FF D7 (00)* | `#FFD700` | Tempat bermusyawarah |
 | Lima lembar daun lada | Hijau | 00 80 00 | `#008000` | Kemakmuran |
 
-> \* Kode RGB "kuning keemasan" di teks statuta konsisten tertulis terpotong ("FF D7") di **empat elemen berbeda** (mahkota siger, pintu gerbang, buku terbuka, meja pepadun) — pola ini kemungkinan besar karena proses ekstraksi/OCR dokumen yang membuang byte terakhir. Nilai penuh yang paling mendekati adalah **`#FFD700` (Gold)**. Tetap disarankan dikonfirmasi ke dokumen statuta resmi/lambang asli sebelum dipakai final di branding.
+> \* Kode RGB "kuning keemasan" di teks statuta konsisten tertulis terpotong ("FF D7") di **empat elemen berbeda** (mahkota siger, pintu gerbang, buku terbuka, meja pepadun): pola ini kemungkinan besar karena proses ekstraksi/OCR dokumen yang membuang byte terakhir. Nilai penuh yang paling mendekati adalah **`#FFD700` (Gold)**. Tetap disarankan dikonfirmasi ke dokumen statuta resmi/lambang asli sebelum dipakai final di branding.
 
 ### 3.3 Bendera Unila (Pasal 4)
 - Bentuk persegi panjang, rasio panjang : lebar = **3 : 2**
 - Warna dasar: **kuning keemasan** (`#FFD700`, dengan catatan yang sama seperti di atas)
 - Di tengah terdapat lambang Unila (lihat 3.2)
 
-### 3.4 Warna Aksen per Fakultas & Pascasarjana (Pasal 5) — opsional, untuk badge/kategori/filter
+### 3.4 Warna Aksen per Fakultas & Pascasarjana (Pasal 5): opsional, untuk badge/kategori/filter
 | Fakultas / Unit | Warna | Kode RGB (Statuta) | Hex |
 |---|---|---|---|
 | Ekonomi dan Bisnis | Abu-abu | 2F 4F 4F | `#2F4F4F` |
@@ -83,7 +83,7 @@ Lambang berbentuk **perisai persegi lima**, warna dasar **biru muda**, terdiri d
 | Pascasarjana | Merah marun | 8B 00 00 | `#8B0000` |
 | Teks label (semua fakultas) | Hitam | 00 00 00 | `#000000` |
 
-> Catatan: kode abu-abu Fakultas Ekonomi & Bisnis di statuta tertulis "2F 4F 4F D7" — ekor "D7" ini kemungkinan artefak salah tempel dari baris kuning keemasan di dekatnya (bukan bagian warna abu-abu), sehingga tabel di atas memakai `#2F4F4F` (DarkSlateGray) sebagai nilai bersih.
+> Catatan: kode abu-abu Fakultas Ekonomi & Bisnis di statuta tertulis "2F 4F 4F D7", ekor "D7" ini kemungkinan artefak salah tempel dari baris kuning keemasan di dekatnya (bukan bagian warna abu-abu), sehingga tabel di atas memakai `#2F4F4F` (DarkSlateGray) sebagai nilai bersih.
 
 ### 3.5 Rekomendasi Penerapan di UI
 - **Primary color (navbar, tombol utama, aksen brand):** `#FFD700` (kuning keemasan Unila)
@@ -130,7 +130,7 @@ Mengacu pada struktur menu **PKM Center ITNY** yang dijadikan referensi sebelumn
 
 ## 5. Struktur Folder Proyek
 
-> Struktur aktual repo (per September 2026) — sedikit berbeda dari rencana awal: routing didefinisikan langsung di `cmd/api/main.go` (tanpa folder `routes/`), dan file CSS tema memakai satu `styles.css`.
+> Struktur aktual repo (per September 2026): sedikit berbeda dari rencana awal: routing didefinisikan langsung di `cmd/api/main.go` (tanpa folder `routes/`), dan file CSS tema memakai satu `styles.css`.
 
 ```
 project/
@@ -167,47 +167,47 @@ project/
 
 ## 6. Tahapan Pengerjaan (Fase)
 
-### Fase 1 — Persiapan & Desain (Minggu 1)
+### Fase 1: Persiapan & Desain (Minggu 1)
 - [ ] Finalisasi ruang lingkup fitur (lihat bagian 4) & user flow
 - [ ] Rancang ERD / struktur database (berita, timeline, portfolio, pedoman/file, kontak)
 - [ ] Rancang wireframe/UI dasar dengan palet warna Unila (bagian 3)
 - [ ] Setup repository Git (backend, frontend, atau monorepo)
 
-### Fase 2 — Setup Environment (Minggu 1–2)
+### Fase 2: Setup Environment (Minggu 1–2)
 - [x] Inisialisasi project Golang (`go mod init`) + Gin
 - [x] Inisialisasi project React (Vite) + setup theme warna (CSS variables)
 - [x] Setup Docker & Docker Compose untuk development
-- [x] Setup database — *awalnya GORM AutoMigrate; kini skema v2 via migrasi SQL otomatis (`backend/migrations/`)*
+- [x] Setup database: *awalnya GORM AutoMigrate; kini skema v2 via migrasi SQL otomatis (`backend/migrations/`)*
 - [x] Setup CORS & koneksi dasar frontend ↔ backend (uji endpoint `/health`)
 
-### Fase 3 — Backend Development (Minggu 2–4)
-- [x] Desain skema database & model (GORM) — *skema v2 lengkap (users/roles, pkm_periods/schemes/stages, teams, proposals, review, logbook, notifikasi, AI, content_posts/media, guidelines) + tabel CMS transisional. Lihat `docs/revisi-struktur-db-pkm-center.md`*
-- [x] Implementasi autentikasi admin (JWT) untuk kelola konten — *tiga role: admin, mahasiswa, dosen*
-- [x] Implementasi endpoint CRUD — *konten, timeline, pedoman, portfolio; plus masukan (list/tandai dibaca/hapus), kontak (PUT); statistik kini hanya-baca (turunan `v_scheme_stats`)*
+### Fase 3: Backend Development (Minggu 2–4)
+- [x] Desain skema database & model (GORM): *skema v2 lengkap (users/roles, pkm_periods/schemes/stages, teams, proposals, review, logbook, notifikasi, AI, content_posts/media, guidelines) + tabel CMS transisional. Lihat `docs/revisi-struktur-db-pkm-center.md`*
+- [x] Implementasi autentikasi admin (JWT) untuk kelola konten: *tiga role: admin, mahasiswa, dosen*
+- [x] Implementasi endpoint CRUD: *konten, timeline, pedoman, portfolio; plus masukan (list/tandai dibaca/hapus), kontak (PUT); statistik kini hanya-baca (turunan `v_scheme_stats`)*
 - [x] Middleware: auth guard, validasi input, error handling
 - [ ] Unit testing untuk handler/service penting
 
-### Fase 4 — Frontend Development (Minggu 3–5, paralel dengan backend)
-- [x] Setup routing (hash routing manual): beranda, berita, galeri, tentang, pedoman, portofolio, kontak, admin — *React Router belum dipakai*
-- [ ] Setup state management (Context API / Zustand, sesuai kebutuhan) — *belum diperlukan; cukup state lokal + localStorage*
-- [x] Buat service layer untuk konsumsi API — *`src/lib/content.js`: fetch + hook (`useContent`, `useTimeline`, `usePedoman`, `usePortfolio`, `useStats`, `useContact`) + data fallback offline*
-- [x] Implementasi halaman publik sesuai fitur MVP — *Home (statistik, layanan, preview, timeline, kritik&saran), Pedoman, Portofolio, Kontak, Berita, Galeri — semua selesai*
-- [x] Implementasi dashboard admin — *panel `/#admin` dengan 7 seksi: Konten, Timeline, Pedoman, Portofolio, Masukan, Statistik (hanya-baca), Kontak*
+### Fase 4: Frontend Development (Minggu 3–5, paralel dengan backend)
+- [x] Setup routing (hash routing manual): beranda, berita, galeri, tentang, pedoman, portofolio, kontak, admin: *React Router belum dipakai*
+- [ ] Setup state management (Context API / Zustand, sesuai kebutuhan): *belum diperlukan; cukup state lokal + localStorage*
+- [x] Buat service layer untuk konsumsi API: *`src/lib/content.js`: fetch + hook (`useContent`, `useTimeline`, `usePedoman`, `usePortfolio`, `useStats`, `useContact`) + data fallback offline*
+- [x] Implementasi halaman publik sesuai fitur MVP: *Home (statistik, layanan, preview, timeline, kritik&saran), Pedoman, Portofolio, Kontak, Berita, Galeri, semua selesai*
+- [x] Implementasi dashboard admin: *panel `/#admin` dengan 7 seksi: Konten, Timeline, Pedoman, Portofolio, Masukan, Statistik (hanya-baca), Kontak*
 
-### Fase 5 — Integrasi & Testing (Minggu 5–6)
-- [x] Integrasi penuh frontend ↔ backend — *seluruh halaman publik & seksi admin memakai endpoint live (dengan fallback offline)*
-- [x] Testing manual seluruh alur (happy path & edge case) — *diverifikasi di browser: tampilan tiap halaman, CRUD admin, alur feedback guest → admin Masukan, sesi kadaluarsa (401)*
-- [x] Perbaikan bug hasil testing — *mis. panel admin menampilkan "0 item" saat token kadaluarsa, kartu portofolio tanpa ringkasan, dropdown navbar*
+### Fase 5: Integrasi & Testing (Minggu 5–6)
+- [x] Integrasi penuh frontend ↔ backend: *seluruh halaman publik & seksi admin memakai endpoint live (dengan fallback offline)*
+- [x] Testing manual seluruh alur (happy path & edge case): *diverifikasi di browser: tampilan tiap halaman, CRUD admin, alur feedback guest → admin Masukan, sesi kadaluarsa (401)*
+- [x] Perbaikan bug hasil testing: *mis. panel admin menampilkan "0 item" saat token kadaluarsa, kartu portofolio tanpa ringkasan, dropdown navbar*
 - [ ] Load testing dasar (opsional)
 
-### Fase 6 — Dockerisasi & Deployment (Minggu 6–7)
+### Fase 6: Dockerisasi & Deployment (Minggu 6–7)
 - [ ] Buat Dockerfile production (multi-stage) untuk backend & frontend
 - [ ] Setup `docker-compose.yml` untuk production (backend, frontend, db, nginx)
 - [ ] Setup Nginx sebagai reverse proxy (satu domain/port untuk FE+BE)
 - [ ] Setup environment variable production (`.env.production`)
 - [ ] Deploy ke server Linux, uji berjalan via domain/IP server
 
-### Fase 7 — Finalisasi & Dokumentasi (Minggu 7–8)
+### Fase 7: Finalisasi & Dokumentasi (Minggu 7–8)
 - [ ] Tulis dokumentasi API (Swagger/Postman collection)
 - [ ] Tulis README (cara install, run, deploy)
 - [ ] Review keamanan dasar (validasi input, rate limiting, HTTPS)
@@ -263,7 +263,7 @@ project/
 ---
 
 ## 10. Catatan Tambahan
-- Dokumen ini bisa diperbarui seiring progres — tandai checklist yang sudah selesai.
-- Warna aksen fakultas (bagian 3.4) bersifat opsional — dipakai hanya jika PKM-Center menampilkan data per fakultas (misal filter proposal berdasarkan fakultas pengusul).
+- Dokumen ini bisa diperbarui seiring progres, tandai checklist yang sudah selesai.
+- Warna aksen fakultas (bagian 3.4) bersifat opsional, dipakai hanya jika PKM-Center menampilkan data per fakultas (misal filter proposal berdasarkan fakultas pengusul).
 - Dokumen terkait: `pembagian-awal-halaman.md` (PIC & checklist per halaman), `daftar-fitur-pkm-center-unila.md` (fitur admin & lanjutan).
 - Update 07-10-2026: palet UI mengikuti referensi `docs/reference/` (navy `#123B66`, emas `#FFD700` tetap sebagai aksen Unila). Implementasi: `frontend/src/ref.css`.
