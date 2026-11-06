@@ -204,8 +204,8 @@ export function MahasiswaDashboard({ user }) {
         <div className="student-portal-header-actions">
           <NotificationBell />
           <a className="btn-portal-create" href="#mahasiswa/ajukan-proposal">
-            <Plus size={16} />
-            <span>Ajukan Proposal Baru</span>
+            {proposal ? <FileEdit size={16} /> : <Plus size={16} />}
+            <span>{proposal ? 'Kirim Revisi Draft' : 'Ajukan Proposal Baru'}</span>
           </a>
         </div>
       </header>
@@ -473,6 +473,17 @@ export function MahasiswaDashboard({ user }) {
                         <span>Bidang: {proposal.fieldOfStudy}</span>
                       </div>
                     )}
+                    {proposal.latestDocument ? (
+                      <div className="bento-meta-chip" title="Draf Terkini">
+                        <FileText size={14} color="#059669" />
+                        <span>Draft v{proposal.latestDocument.versionNumber}: {proposal.latestDocument.fileName}</span>
+                      </div>
+                    ) : proposal.draftCount ? (
+                      <div className="bento-meta-chip" title="Total Draf">
+                        <FileText size={14} color="#059669" />
+                        <span>{proposal.draftCount} Versi Draf</span>
+                      </div>
+                    ) : null}
                   </div>
 
                   {proposal.abstract ? (
@@ -494,7 +505,7 @@ export function MahasiswaDashboard({ user }) {
                   <div className="bento-hero-actions">
                     <a className="btn-action primary" href="#mahasiswa/ajukan-proposal">
                       <FileEdit size={15} />
-                      <span>Edit / Lanjutkan Usulan</span>
+                      <span>Kirim Revisi Draft Naskah</span>
                     </a>
                     <a className="btn-action secondary" href="#mahasiswa/logbook">
                       <BookOpen size={15} />

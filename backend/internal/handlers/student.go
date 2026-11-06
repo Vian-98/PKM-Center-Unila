@@ -226,7 +226,7 @@ func (h StudentHandler) GetDashboard(c *gin.Context) {
 			Joins("JOIN pkm_schemes s ON s.id = p.scheme_id").
 			Joins("LEFT JOIN pkm_stages st ON st.id = p.current_stage_id").
 			Where("p.team_id = ?", team.ID).
-			Order("p.created_at DESC").
+			Order("p.updated_at DESC, p.created_at DESC").
 			Scan(&proposal)
 		proposalFound = proposal.ID != ""
 	}
@@ -332,7 +332,31 @@ func (h StudentHandler) GetDashboard(c *gin.Context) {
 		}
 	}
 	if proposalFound {
-		data["proposal"] = proposal
+		var proposalDocs []models.ProposalDocument
+		h.DB.Where("proposal_id = ?", proposal.ID).Order("version_number DESC").Find(&proposalDocs)
+		var latestDoc *models.ProposalDocument
+		if len(proposalDocs) > 0 {
+			latestDoc = &proposalDocs[0]
+		}
+		data["proposal"] = gin.H{
+			"id":             proposal.ID,
+			"title":          proposal.Title,
+			"abstract":       proposal.Abstract,
+			"keywords":       proposal.Keywords,
+			"fieldOfStudy":   proposal.FieldOfStudy,
+			"status":         proposal.Status,
+			"schemeCode":     proposal.SchemeCode,
+			"schemeName":     proposal.SchemeName,
+			"isFunded":       proposal.IsFunded,
+			"submittedAt":    proposal.SubmittedAt,
+			"createdAt":      proposal.CreatedAt,
+			"updatedAt":      proposal.UpdatedAt,
+			"stageName":      proposal.StageName,
+			"logbookCount":   proposal.LogbookCount,
+			"documents":      proposalDocs,
+			"draftCount":     len(proposalDocs),
+			"latestDocument": latestDoc,
+		}
 	}
 	if supervisor.Name != "" {
 		data["supervisor"] = supervisor
@@ -463,6 +487,7 @@ func (h StudentHandler) CreateProposal(c *gin.Context) {
 		SupervisorMessage    string `json:"supervisorMessage"`
 		DocURL               string `json:"docUrl"`
 		DocName              string `json:"docName"`
+		ChangeNotes          string `json:"changeNotes"`
 		Submit               bool   `json:"submit"`
 		Members              []struct {
 			NPM     string `json:"npm"`
@@ -498,55 +523,111 @@ func (h StudentHandler) CreateProposal(c *gin.Context) {
 	}
 
 	var proposal models.Proposal
-	found := h.DB.Where("team_id = ?", team.ID).Order("created_at DESC").First(&proposal).Error == nil
-	if found && proposal.Status != "draft" && proposal.Status != "revision" {
-		c.JSON(http.StatusConflict, gin.H{"message": "Proposal sudah diajukan dan tidak dapat diubah lagi"})
-		return
-	}
-	if !found {
-		proposal = models.Proposal{ID: uuidV4(), TeamID: team.ID, SchemeID: scheme.ID, PeriodID: period.ID}
-	}
-	proposal.SchemeID = scheme.ID
-	proposal.Title = input.Title
-	proposal.Abstract = input.Abstract
-	proposal.Keywords = input.Keywords
-	proposal.FieldOfStudy = input.FieldOfStudy
-	proposal.Status = "draft"
-	if input.Submit {
-		now := time.Now()
-		proposal.Status = "submitted"
-		proposal.SubmittedAt = &now
-	}
+	found := h.DB.Where("team_id = ?", team.ID).Order("updated_at DESC, created_at DESC").First(&proposal).Error == nil
+	now := time.Now()
 
 	if found {
+		// Batasan 1 Usulan per Mahasiswa: Proposal sudah terdaftar.
+		// Jika proposal berstatus draft atau revision, izinkan penyempurnaan judul dan identitas.
+		// Jika proposal sudah diajukan/direview/lolos, judul & skema resmi dikunci, namun mahasiswa
+		// TETAP DAPAT mengirimkan draf naskah revisi berkali-kali beserta pembaruan abstrak.
+		if proposal.Status == "draft" || proposal.Status == "revision" {
+			proposal.SchemeID = scheme.ID
+			if strings.TrimSpace(input.Title) != "" {
+				proposal.Title = input.Title
+			}
+		}
+		if strings.TrimSpace(input.Abstract) != "" {
+			proposal.Abstract = input.Abstract
+		}
+		if strings.TrimSpace(input.Keywords) != "" {
+			proposal.Keywords = input.Keywords
+		}
+		if strings.TrimSpace(input.FieldOfStudy) != "" {
+			proposal.FieldOfStudy = input.FieldOfStudy
+		}
+		proposal.UpdatedAt = now
+
+		if input.Submit {
+			proposal.Status = "submitted"
+			proposal.SubmittedAt = &now
+		}
+
 		if err := h.DB.Save(&proposal).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"message": "Gagal memperbarui proposal"})
 			return
 		}
-	} else if err := h.DB.Create(&proposal).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Gagal menyimpan proposal"})
-		return
-	}
 
-	if input.Submit {
-		h.DB.Model(&models.Team{}).Where("id = ?", team.ID).Update("status", "submitted")
-		h.notify(userID, "status_change", "Proposal berhasil diajukan",
-			"Usulan \""+proposal.Title+"\" telah dikirim dan menunggu review dosen pembimbing.", "#mahasiswa")
-	}
-
-	if input.DocURL != "" {
-		var count int64
-		h.DB.Model(&models.ProposalDocument{}).Where("proposal_id = ?", proposal.ID).Count(&count)
-		doc := models.ProposalDocument{
-			ID:            uuidV4(),
-			ProposalID:    proposal.ID,
-			VersionNumber: int(count) + 1,
-			FileName:      orDefault(input.DocName, "Proposal "+scheme.Code+".pdf"),
-			FileURL:       input.DocURL,
-			UploadedBy:    &userID,
-			ChangeNotes:   "Diunggah melalui portal mahasiswa",
+		newVersion := 1
+		if input.DocURL != "" {
+			var count int64
+			h.DB.Model(&models.ProposalDocument{}).Where("proposal_id = ?", proposal.ID).Count(&count)
+			newVersion = int(count) + 1
+			doc := models.ProposalDocument{
+				ID:            uuidV4(),
+				ProposalID:    proposal.ID,
+				VersionNumber: newVersion,
+				FileName:      orDefault(input.DocName, fmt.Sprintf("Draft_v%d_%s.pdf", newVersion, scheme.Code)),
+				FileURL:       input.DocURL,
+				UploadedBy:    &userID,
+				ChangeNotes:   orDefault(input.ChangeNotes, fmt.Sprintf("Draf revisi naskah versi %d", newVersion)),
+				UploadedAt:    now,
+			}
+			h.DB.Create(&doc)
 		}
-		h.DB.Create(&doc)
+
+		if input.Submit {
+			h.DB.Model(&models.Team{}).Where("id = ?", team.ID).Update("status", "submitted")
+			h.notify(userID, "status_change", "Draf Revisi Proposal Berhasil Diajukan",
+				fmt.Sprintf("Naskah revisi (versi %d) untuk \"%s\" telah dikirim dan menunggu review dosen pembimbing.", newVersion, proposal.Title), "#mahasiswa")
+		} else if input.DocURL != "" {
+			h.notify(userID, "doc_upload", "Draf Revisi Disimpan",
+				fmt.Sprintf("Draf naskah versi %d untuk \"%s\" berhasil disimpan sebagai draf.", newVersion, proposal.Title), "#mahasiswa")
+		}
+	} else {
+		// Usulan proposal baru pertama kali
+		proposal = models.Proposal{
+			ID:           uuidV4(),
+			TeamID:       team.ID,
+			SchemeID:     scheme.ID,
+			PeriodID:     period.ID,
+			Title:        input.Title,
+			Abstract:     input.Abstract,
+			Keywords:     input.Keywords,
+			FieldOfStudy: input.FieldOfStudy,
+			Status:       "draft",
+			CreatedAt:    now,
+			UpdatedAt:    now,
+		}
+		if input.Submit {
+			proposal.Status = "submitted"
+			proposal.SubmittedAt = &now
+		}
+
+		if err := h.DB.Create(&proposal).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "Gagal menyimpan proposal"})
+			return
+		}
+
+		if input.Submit {
+			h.DB.Model(&models.Team{}).Where("id = ?", team.ID).Update("status", "submitted")
+			h.notify(userID, "status_change", "Proposal berhasil diajukan",
+				"Usulan \""+proposal.Title+"\" telah dikirim dan menunggu review dosen pembimbing.", "#mahasiswa")
+		}
+
+		if input.DocURL != "" {
+			doc := models.ProposalDocument{
+				ID:            uuidV4(),
+				ProposalID:    proposal.ID,
+				VersionNumber: 1,
+				FileName:      orDefault(input.DocName, "Proposal "+scheme.Code+".pdf"),
+				FileURL:       input.DocURL,
+				UploadedBy:    &userID,
+				ChangeNotes:   orDefault(input.ChangeNotes, "Naskah awal usulan proposal"),
+				UploadedAt:    now,
+			}
+			h.DB.Create(&doc)
+		}
 	}
 
 	if input.SupervisorLecturerID != "" {
@@ -706,6 +787,7 @@ func (h StudentHandler) UploadProposalDocument(c *gin.Context) {
 		FileName    string `json:"fileName" binding:"required"`
 		FileURL     string `json:"fileUrl" binding:"required"`
 		ChangeNotes string `json:"changeNotes"`
+		Submit      bool   `json:"submit"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Nama berkas dan tautan wajib diisi"})
@@ -725,21 +807,45 @@ func (h StudentHandler) UploadProposalDocument(c *gin.Context) {
 
 	var count int64
 	h.DB.Model(&models.ProposalDocument{}).Where("proposal_id = ?", input.ProposalID).Count(&count)
+	newVersion := int(count) + 1
+	now := time.Now()
 
 	doc := models.ProposalDocument{
 		ID:            uuidV4(),
 		ProposalID:    input.ProposalID,
-		VersionNumber: int(count) + 1,
+		VersionNumber: newVersion,
 		FileName:      input.FileName,
 		FileURL:       input.FileURL,
 		UploadedBy:    &userID,
-		ChangeNotes:   input.ChangeNotes,
+		ChangeNotes:   orDefault(input.ChangeNotes, fmt.Sprintf("Draf revisi versi %d", newVersion)),
+		UploadedAt:    now,
 	}
 	if err := h.DB.Create(&doc).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Gagal menyimpan dokumen"})
 		return
 	}
-	c.JSON(http.StatusCreated, gin.H{"message": "Dokumen berhasil diunggah", "data": doc})
+
+	var proposal models.Proposal
+	if h.DB.Where("id = ?", input.ProposalID).First(&proposal).Error == nil {
+		proposal.UpdatedAt = now
+		if input.Submit || proposal.Status == "revision" || proposal.Status == "draft" {
+			proposal.Status = "submitted"
+			proposal.SubmittedAt = &now
+			h.DB.Save(&proposal)
+			h.notify(userID, "status_change", "Draf Revisi Berhasil Diajukan",
+				fmt.Sprintf("Naskah revisi versi %d untuk \"%s\" telah dikirim ke dosen pembimbing.", doc.VersionNumber, proposal.Title), "#mahasiswa")
+		} else {
+			h.DB.Save(&proposal)
+			h.notify(userID, "doc_upload", "Draf Baru Disimpan",
+				fmt.Sprintf("Draf versi %d berhasil disimpan sebagai draf revisi.", doc.VersionNumber), "#mahasiswa")
+		}
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "Dokumen revisi berhasil diunggah",
+		"data":    doc,
+		"version": doc.VersionNumber,
+	})
 }
 
 // GetLogbook mengembalikan entri logbook kegiatan tim beserta komentar dosen.

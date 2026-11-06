@@ -7,6 +7,7 @@ import { PedomanIndex } from './pages/Pedoman'
 import { PortofolioIndex } from './pages/Portofolio'
 import { KontakPage } from './pages/Kontak'
 import { AdminPanel } from './pages/AdminPanel'
+import { AdminAkunDashboard } from './pages/AdminAkunDashboard'
 import { DosenDashboard } from './pages/DosenDashboard'
 import { ReviewerDashboard } from './pages/ReviewerDashboard'
 import { PesanFeedback } from './pages/PesanFeedback'
@@ -83,6 +84,7 @@ function getNavItems(user) {
 
   const portalByRole = {
     admin: ['admin', 'Portal Administrator'],
+    admin_akun: ['admin-akun', 'Portal Admin Akun'],
     dosen: ['dosen', 'Portal Dosen'],
     reviewer: ['reviewer', 'Portal Reviewer'],
     mahasiswa: ['mahasiswa', 'Portal Mahasiswa'],
@@ -95,6 +97,7 @@ function getNavItems(user) {
 
 function getRoleLabel(role) {
   switch (role) {
+    case 'admin_akun': return 'Admin Akun'
     case 'dosen': return 'Dosen Pembimbing'
     case 'reviewer': return 'Reviewer PKM'
     case 'admin': return 'Administrator'
@@ -112,6 +115,7 @@ function TopNavbar({ active, user, isDashboard, onLogin, onLogout, onSwitchRole,
     if (id === 'dosen' && active === 'dosen') return true
     if (id === 'reviewer' && active === 'reviewer') return true
     if (id === 'admin' && active === 'admin') return true
+    if ((id === 'admin-akun' || id === 'admin_akun') && (active === 'admin-akun' || active === 'admin_akun')) return true
     return false
   }
 
@@ -186,7 +190,7 @@ function TopNavbar({ active, user, isDashboard, onLogin, onLogout, onSwitchRole,
             letterSpacing: '0.04em',
             textTransform: 'uppercase'
           }}>
-            {user?.role === 'dosen' ? 'Portal Dosen Pembimbing' : user?.role === 'reviewer' ? 'Portal Reviewer PKM' : user?.role === 'admin' ? 'Portal Administrator' : 'Portal Mahasiswa PKM'}
+            {user?.role === 'admin_akun' ? 'Portal Admin Akun' : user?.role === 'dosen' ? 'Portal Dosen Pembimbing' : user?.role === 'reviewer' ? 'Portal Reviewer PKM' : user?.role === 'admin' ? 'Portal Administrator' : 'Portal Mahasiswa PKM'}
           </span>
         </div>
       )}
@@ -251,6 +255,9 @@ function TopNavbar({ active, user, isDashboard, onLogin, onLogout, onSwitchRole,
 }
 
 const DEMO_ACCOUNTS = [
+  { label: 'Admin Akun (Verifikasi KTM)', email: 'admin.akun@pkm.unila.ac.id', pass: 'adminakun123', desc: 'Verifikasi & ACC Akun Mahasiswa Baru' },
+  { label: 'Mhs Baru (Pending ACC)', email: 'dimas.aditya@student.unila.ac.id', pass: 'mhs12345', desc: 'Dimas Aditya • Menunggu Validasi KTM' },
+  { label: 'Mhs (KTM Ditolak)', email: 'riko.prasetyo@student.unila.ac.id', pass: 'mhs12345', desc: 'Riko Prasetyo • Ditolak: KTM Buram' },
   { label: 'Mahasiswa (Nadia - Demo)', email: 'mahasiswa@pkm.unila.ac.id', pass: 'mahasiswa123', desc: 'Nadia Putri • S1 Teknik Elektro (NPM 2117051001)' },
   { label: 'Mahasiswa 1 (FMIPA)', email: 'mhs1@pkm.unila.ac.id', pass: 'mahasiswa123', desc: 'Favian Pratama • Ilmu Komputer (NPM 2217051001)' },
   { label: 'Mahasiswa 2 (Teknik)', email: 'mhs2@pkm.unila.ac.id', pass: 'mahasiswa123', desc: 'Ahmad Fauzi • Teknik Informatika (NPM 2215061002)' },
@@ -262,17 +269,137 @@ const DEMO_ACCOUNTS = [
 ]
 
 function LoginModal({ close, complete }) {
+  const [tab, setTab] = useState('login') // 'login' | 'register'
   const [form, setForm] = useState({ email: '', password: '' })
   const [remember, setRemember] = useState(false)
-  const [state, setState] = useState({ loading: false, error: '' })
+  const [state, setState] = useState({ loading: false, error: null }) // error can be { type: 'pending'|'rejected'|'general', message, reason }
 
+  // State untuk form registrasi mahasiswa baru
+  const [regForm, setRegForm] = useState({
+    name: '',
+    npm: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    phone: '',
+    faculty: 'FMIPA',
+    studyProgram: '',
+    entryYear: '2024',
+    ktmFile: null,
+    ktmPreview: null,
+  })
+  const [regLoading, setRegLoading] = useState(false)
+  const [regLoadingText, setRegLoadingText] = useState('')
+  const [regError, setRegError] = useState('')
+  const [regSuccess, setRegSuccess] = useState(false)
+
+  // Handle file KTM change
+  const handleKtmChange = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      setRegError('Berkas KTM harus berupa file gambar (JPG, PNG, atau WEBP).')
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setRegError('Ukuran berkas KTM maksimal 5 MB.')
+      return
+    }
+    setRegError('')
+    const previewUrl = URL.createObjectURL(file)
+    setRegForm(prev => ({ ...prev, ktmFile: file, ktmPreview: previewUrl }))
+  }
+
+  // Handle register submit
+  const handleRegister = async (e) => {
+    e.preventDefault()
+    setRegError('')
+
+    if (!regForm.name || !regForm.npm || !regForm.email || !regForm.password || !regForm.phone || !regForm.studyProgram) {
+      setRegError('Harap lengkapi semua data wajib pada formulir.')
+      return
+    }
+
+    if (regForm.password.length < 6) {
+      setRegError('Kata sandi minimal 6 karakter.')
+      return
+    }
+
+    if (regForm.password !== regForm.confirmPassword) {
+      setRegError('Konfirmasi kata sandi tidak cocok.')
+      return
+    }
+
+    if (!regForm.ktmFile) {
+      setRegError('Foto Kartu Tanda Mahasiswa (KTM) wajib diunggah untuk verifikasi Admin Akun.')
+      return
+    }
+
+    setRegLoading(true)
+    let ktmUrl = ''
+
+    try {
+      // Step 1: Upload Foto KTM ke server
+      setRegLoadingText('Mengunggah foto KTM...')
+      const formData = new FormData()
+      formData.append('ktm', regForm.ktmFile)
+
+      const uploadRes = await fetch(`${api}/auth/upload-ktm`, {
+        method: 'POST',
+        body: formData,
+      })
+      const uploadData = await uploadRes.json().catch(() => ({}))
+      const ktmUrl = uploadData?.ktm_url || uploadData?.url || uploadData?.ktmUrl || ''
+      if (!uploadRes.ok || !ktmUrl) {
+        throw new Error(uploadData?.message || 'Gagal mengunggah foto KTM ke server.')
+      }
+
+      // Step 2: Kirim data registrasi ke backend & database
+      setRegLoadingText('Menyimpan data pendaftaran ke database...')
+      const regRes = await fetch(`${api}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: regForm.name.trim(),
+          npm: regForm.npm.trim(),
+          student_number: regForm.npm.trim(),
+          email: regForm.email.trim(),
+          password: regForm.password,
+          phone: regForm.phone.trim(),
+          faculty: regForm.faculty,
+          department: regForm.studyProgram.trim(),
+          studyProgram: regForm.studyProgram.trim(),
+          study_program: regForm.studyProgram.trim(),
+          entryYear: parseInt(regForm.entryYear, 10) || 2024,
+          entry_year: parseInt(regForm.entryYear, 10) || 2024,
+          ktmUrl: ktmUrl,
+          ktm_url: ktmUrl,
+        }),
+      })
+
+      const regResult = await regRes.json().catch(() => ({}))
+      if (regRes.ok) {
+        setRegSuccess(true)
+      } else {
+        throw new Error(regResult?.message || 'Gagal menyimpan pendaftaran ke database.')
+      }
+    } catch (err) {
+      console.error('Registration error:', err)
+      setRegError(err.message || 'Terjadi kesalahan saat pendaftaran. Silakan periksa kembali data Anda.')
+    } finally {
+      setRegLoading(false)
+      setRegLoadingText('')
+    }
+  }
+
+  // Handle login submit
   const login = async (event) => {
     event.preventDefault()
     if (!form.email || !form.password) {
-      setState({ loading: false, error: 'Harap isi akun dan kata sandi.' })
+      setState({ loading: false, error: { type: 'general', message: 'Harap isi akun dan kata sandi.' } })
       return
     }
-    setState({ loading: true, error: '' })
+    setState({ loading: true, error: null })
     let loggedUser = null
     let authToken = ''
 
@@ -280,25 +407,93 @@ function LoginModal({ close, complete }) {
       const response = await fetch(`${api}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: form.email, password: form.password }),
+        body: JSON.stringify({ email: form.email.trim(), password: form.password }),
       })
       const result = await response.json()
+
       if (response.ok && result?.user) {
         loggedUser = result.user
         authToken = result.token
+      } else if (response.status === 403 && (result?.status === 'pending' || (result?.message && result.message.includes('verifikasi')))) {
+        // Akun belum di-ACC oleh Admin Akun
+        setState({
+          loading: false,
+          error: {
+            type: 'pending',
+            message: result?.message || 'Akun Anda masih dalam proses verifikasi KTM oleh Admin Akun PKM Center. Mohon tunggu hingga akun Anda di-ACC.'
+          }
+        })
+        return
+      } else if (response.status === 403 && (result?.status === 'rejected' || (result?.message && result.message.includes('ditolak')))) {
+        // Akun ditolak oleh Admin Akun
+        setState({
+          loading: false,
+          error: {
+            type: 'rejected',
+            message: result?.message || 'Pendaftaran akun Anda ditolak oleh Admin Akun.',
+            reason: result?.rejection_reason || 'Foto KTM tidak valid / data tidak sesuai.'
+          }
+        })
+        return
       } else {
-        throw new Error(result?.message || 'Login gagal')
+        throw new Error(result?.message || 'Identitas atau kata sandi tidak sesuai.')
       }
-    } catch {
+    } catch (networkErr) {
+      // Periksa jika ini pesan penolakan / pending dari error langsung
+      if (networkErr.message && networkErr.message.includes('verifikasi')) {
+        setState({
+          loading: false,
+          error: { type: 'pending', message: networkErr.message }
+        })
+        return
+      }
+      if (networkErr.message && networkErr.message.includes('ditolak')) {
+        setState({
+          loading: false,
+          error: { type: 'rejected', message: networkErr.message }
+        })
+        return
+      }
+
       // Deteksi otomatis peran pengguna berdasarkan akun login (fallback offline)
       const raw = form.email.trim()
       const e = raw.toLowerCase()
+
+      // Demo akun pending
+      if (e.includes('dimas.aditya') || e === '2217051050') {
+        setState({
+          loading: false,
+          error: {
+            type: 'pending',
+            message: 'Akun Anda masih dalam proses verifikasi KTM oleh Admin Akun PKM Center. Mohon tunggu hingga akun Anda di-ACC sebelum dapat masuk.'
+          }
+        })
+        return
+      }
+
+      // Demo akun ditolak
+      if (e.includes('riko.prasetyo') || e === '2215061099') {
+        setState({
+          loading: false,
+          error: {
+            type: 'rejected',
+            message: 'Pendaftaran akun Anda ditolak oleh Admin Akun PKM Center.',
+            reason: 'Foto KTM buram dan nomor pokok mahasiswa tidak terbaca jelas. Harap unggah ulang dengan foto KTM asli.'
+          }
+        })
+        return
+      }
+
       let role = 'mahasiswa'
       let name = 'Mahasiswa Unila'
       let roles = ['mahasiswa']
       let studentNumber = ''
 
-      if (e.includes('dosen.reviewer') || e.includes('sri') || (e.includes('dosen') && e.includes('reviewer'))) {
+      if (e.includes('admin.akun') || e.includes('adminakun')) {
+        role = 'admin_akun'
+        name = 'Admin Akun PKM Center'
+        roles = ['admin_akun']
+      } else if (e.includes('dosen.reviewer') || e.includes('sri') || (e.includes('dosen') && e.includes('reviewer'))) {
         role = 'dosen'
         name = 'Dr. Ir. Sri Mulyani, M.T.'
         roles = ['dosen', 'reviewer']
@@ -354,28 +549,39 @@ function LoginModal({ close, complete }) {
     }
 
     if (loggedUser) {
-      // Pastikan atribut roles selalu tersedia
       if (!loggedUser.roles) {
         loggedUser.roles = [loggedUser.role]
       }
-      // Opsi C: Jika "Ingat Saya" dicentang -> localStorage. Jika tidak -> sessionStorage (bersih saat browser ditutup)
       setAuthSession(loggedUser, authToken, remember)
       complete(loggedUser)
       close()
 
       // Redirect otomatis ke modul dashboard sesuai role akun
-      if (loggedUser.role === 'dosen') window.location.hash = '#dosen'
-      else if (loggedUser.role === 'reviewer') window.location.hash = '#reviewer'
+      if (loggedUser.role === 'admin_akun') window.location.hash = '#admin-akun'
       else if (loggedUser.role === 'admin') window.location.hash = '#admin'
+      else if (loggedUser.role === 'dosen') window.location.hash = '#dosen'
+      else if (loggedUser.role === 'reviewer') window.location.hash = '#reviewer'
       else window.location.hash = '#mahasiswa'
     } else {
-      setState({ loading: false, error: 'Identitas atau kata sandi tidak sesuai.' })
+      setState({
+        loading: false,
+        error: { type: 'general', message: 'Identitas atau kata sandi tidak sesuai.' }
+      })
     }
   }
 
   return (
     <div className="modal-backdrop login-backdrop" onMouseDown={close}>
-      <section className="login-card apple-card-glass" onMouseDown={event => event.stopPropagation()} aria-label="Masuk ke PKM Center">
+      <section
+        className="login-card apple-card-glass"
+        style={{
+          width: tab === 'register' ? 'min(100%, 34rem)' : 'min(100%, 28rem)',
+          transition: 'width 0.2s ease',
+          maxWidth: '94vw'
+        }}
+        onMouseDown={event => event.stopPropagation()}
+        aria-label="Masuk ke PKM Center"
+      >
         <div className="login-head">
           <div className="login-brand">
             <img src="/Logo-2016-Unila.png" alt="Logo Universitas Lampung" />
@@ -384,70 +590,554 @@ function LoginModal({ close, complete }) {
           </div>
           <button className="login-x" onClick={close} aria-label="Tutup">x</button>
         </div>
-        <p className="login-eyebrow">PORTAL DIGITAL</p>
-        <h2>Masuk ke Akun PKM</h2>
-        <p className="login-sub">Sistem mendeteksi peran akun secara otomatis. Dosen dan Reviewer adalah peran berbeda yang dapat dialihkan jika akun memiliki hak akses ganda.</p>
 
-        <form onSubmit={login}>
-          <label>NPM / NIP / Email Akun
-            <input
-              type="text"
-              placeholder="nama@pkm.unila.ac.id"
-              value={form.email}
-              onChange={event => setForm({ ...form, email: event.target.value })}
-              required
-            />
-          </label>
-          <label>Kata Sandi
-            <input
-              type="password"
-              placeholder="Masukkan kata sandi"
-              value={form.password}
-              onChange={event => setForm({ ...form, password: event.target.value })}
-              required
-            />
-          </label>
-          {state.error && <p className="error">{state.error}</p>}
-          <div className="login-row">
-            <label className="remember"><input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> Ingat saya</label>
-            <button type="button" className="link" onClick={() => window.alert('Fitur pemulihan kata sandi dapat menghubungi admin PKM Center.')}>Lupa kata sandi?</button>
-          </div>
-          <button className="btn-primary login-submit" disabled={state.loading}>{state.loading ? 'Memeriksa...' : 'Masuk ke Sistem'} <b>&rarr;</b></button>
-        </form>
-
-        <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid #e2e8f0' }}>
-          <p style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 700, margin: '0 0 0.5rem 0', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            Pilih Cepat Akun Demo:
-          </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.45rem' }}>
-            {DEMO_ACCOUNTS.map(acc => (
-              <button
-                key={acc.label}
-                type="button"
-                onClick={() => setForm({ email: acc.email, password: acc.pass })}
-                style={{
-                  textAlign: 'left',
-                  fontSize: '0.75rem',
-                  padding: '0.45rem 0.65rem',
-                  borderRadius: '0.5rem',
-                  border: `1px solid ${form.email === acc.email ? '#2563eb' : '#cbd5e1'}`,
-                  background: form.email === acc.email ? '#eff6ff' : '#f8fafc',
-                  color: form.email === acc.email ? '#1e40af' : '#334155',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.15rem'
-                }}
-              >
-                <strong style={{ fontSize: '0.78rem' }}>{acc.label}</strong>
-                <span style={{ fontSize: '0.68rem', color: '#64748b' }}>{acc.desc}</span>
-              </button>
-            ))}
-          </div>
+        {/* Tab Switcher: Masuk vs Daftar Mahasiswa */}
+        <div style={{
+          display: 'flex',
+          gap: '0.35rem',
+          marginTop: '1rem',
+          marginBottom: '1rem',
+          background: '#f1f5f9',
+          padding: '0.25rem',
+          borderRadius: '0.65rem',
+          border: '1px solid #e2e8f0'
+        }}>
+          <button
+            type="button"
+            onClick={() => { setTab('login'); setState({ loading: false, error: null }); }}
+            style={{
+              flex: 1,
+              padding: '0.55rem',
+              borderRadius: '0.5rem',
+              border: 'none',
+              fontWeight: tab === 'login' ? 700 : 600,
+              fontSize: '0.82rem',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+              background: tab === 'login' ? '#ffffff' : 'transparent',
+              color: tab === 'login' ? '#0f172a' : '#64748b',
+              boxShadow: tab === 'login' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none'
+            }}
+          >
+            Masuk ke Akun
+          </button>
+          <button
+            type="button"
+            onClick={() => { setTab('register'); setRegError(''); }}
+            style={{
+              flex: 1,
+              padding: '0.55rem',
+              borderRadius: '0.5rem',
+              border: 'none',
+              fontWeight: tab === 'register' ? 700 : 600,
+              fontSize: '0.82rem',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+              background: tab === 'register' ? '#ffffff' : 'transparent',
+              color: tab === 'register' ? '#0071e3' : '#64748b',
+              boxShadow: tab === 'register' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.3rem'
+            }}
+          >
+            <span>Daftar Mahasiswa</span>
+            <span style={{
+              fontSize: '0.62rem',
+              background: tab === 'register' ? '#e0f2fe' : '#e2e8f0',
+              color: tab === 'register' ? '#0284c7' : '#64748b',
+              padding: '0.1rem 0.35rem',
+              borderRadius: '999px',
+              fontWeight: 700
+            }}>
+              KTM
+            </span>
+          </button>
         </div>
 
-        <p className="login-sso" style={{ marginTop: '1rem' }}>INTEGRASI SSO UNIVERSITAS LAMPUNG</p>
+        {/* ── TAB 1: FORM MASUK (LOGIN) ────────────────────────── */}
+        {tab === 'login' && (
+          <>
+            <p className="login-eyebrow">PORTAL DIGITAL</p>
+            <h2>Masuk ke Akun PKM</h2>
+            <p className="login-sub">
+              Sistem memvalidasi status akun secara otomatis. Akun mahasiswa baru harus diverifikasi dan di-ACC oleh Admin Akun terlebih dahulu.
+            </p>
+
+            {/* Banner Peringatan Akun Pending (Menunggu ACC) */}
+            {state.error?.type === 'pending' && (
+              <div style={{
+                background: '#fffbeb',
+                border: '1px solid #fde68a',
+                borderRadius: '0.75rem',
+                padding: '0.85rem 1rem',
+                margin: '0.85rem 0',
+                display: 'flex',
+                gap: '0.75rem',
+                alignItems: 'flex-start'
+              }}>
+                <div style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: '50%',
+                  background: '#fef3c7',
+                  color: '#d97706',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  fontSize: '0.9rem'
+                }}>
+                  ⏳
+                </div>
+                <div>
+                  <h4 style={{ margin: '0 0 0.2rem 0', fontSize: '0.85rem', fontWeight: 700, color: '#92400e' }}>
+                    Akun Menunggu Verifikasi Admin
+                  </h4>
+                  <p style={{ margin: 0, fontSize: '0.78rem', color: '#78350f', lineHeight: 1.45 }}>
+                    {state.error.message}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Banner Peringatan Akun Ditolak */}
+            {state.error?.type === 'rejected' && (
+              <div style={{
+                background: '#fef2f2',
+                border: '1px solid #fecaca',
+                borderRadius: '0.75rem',
+                padding: '0.85rem 1rem',
+                margin: '0.85rem 0',
+                display: 'flex',
+                gap: '0.75rem',
+                alignItems: 'flex-start'
+              }}>
+                <div style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: '50%',
+                  background: '#fee2e2',
+                  color: '#dc2626',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  fontSize: '0.9rem'
+                }}>
+                  ✕
+                </div>
+                <div>
+                  <h4 style={{ margin: '0 0 0.2rem 0', fontSize: '0.85rem', fontWeight: 700, color: '#991b1b' }}>
+                    Pendaftaran Akun Ditolak
+                  </h4>
+                  <p style={{ margin: '0 0 0.35rem 0', fontSize: '0.78rem', color: '#7f1d1d', lineHeight: 1.45 }}>
+                    {state.error.message}
+                  </p>
+                  {state.error.reason && (
+                    <div style={{
+                      background: 'rgba(255,255,255,0.7)',
+                      borderLeft: '3px solid #dc2626',
+                      padding: '0.4rem 0.6rem',
+                      borderRadius: '0.25rem',
+                      fontSize: '0.74rem',
+                      color: '#991b1b'
+                    }}>
+                      <strong>Alasan:</strong> {state.error.reason}
+                    </div>
+                  )}
+                  <p style={{ margin: '0.4rem 0 0 0', fontSize: '0.72rem', color: '#b91c1c' }}>
+                    Silakan daftar ulang dengan foto KTM asli yang jelas atau hubungi Admin Akun PKM Center.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Error General */}
+            {state.error?.type === 'general' && (
+              <p className="error" style={{ margin: '0.5rem 0 0.75rem' }}>{state.error.message}</p>
+            )}
+
+            <form onSubmit={login}>
+              <label>NPM / NIP / Email Akun
+                <input
+                  type="text"
+                  placeholder="nama@pkm.unila.ac.id atau NPM"
+                  value={form.email}
+                  onChange={event => setForm({ ...form, email: event.target.value })}
+                  required
+                />
+              </label>
+              <label>Kata Sandi
+                <input
+                  type="password"
+                  placeholder="Masukkan kata sandi"
+                  value={form.password}
+                  onChange={event => setForm({ ...form, password: event.target.value })}
+                  required
+                />
+              </label>
+              <div className="login-row">
+                <label className="remember"><input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> Ingat saya</label>
+                <button type="button" className="link" onClick={() => window.alert('Fitur pemulihan kata sandi dapat menghubungi admin PKM Center.')}>Lupa kata sandi?</button>
+              </div>
+              <button className="btn-primary login-submit" disabled={state.loading}>
+                {state.loading ? 'Memeriksa Status Akun...' : 'Masuk ke Sistem'} <b>&rarr;</b>
+              </button>
+            </form>
+
+            <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid #e2e8f0' }}>
+              <p style={{ fontSize: '0.76rem', color: '#64748b', fontWeight: 700, margin: '0 0 0.5rem 0', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Pilih Cepat Akun Demo (Uji Coba Sistem):
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '0.45rem', maxHeight: '180px', overflowY: 'auto', paddingRight: '0.2rem' }}>
+                {DEMO_ACCOUNTS.map(acc => (
+                  <button
+                    key={acc.label}
+                    type="button"
+                    onClick={() => {
+                      setForm({ email: acc.email, password: acc.pass })
+                      setState({ loading: false, error: null })
+                    }}
+                    style={{
+                      textAlign: 'left',
+                      fontSize: '0.74rem',
+                      padding: '0.45rem 0.65rem',
+                      borderRadius: '0.5rem',
+                      border: `1px solid ${form.email === acc.email ? '#2563eb' : '#cbd5e1'}`,
+                      background: form.email === acc.email ? '#eff6ff' : '#f8fafc',
+                      color: form.email === acc.email ? '#1e40af' : '#334155',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.15rem'
+                    }}
+                  >
+                    <strong style={{ fontSize: '0.76rem' }}>{acc.label}</strong>
+                    <span style={{ fontSize: '0.67rem', color: '#64748b' }}>{acc.desc}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <p className="login-sso" style={{ marginTop: '1rem' }}>INTEGRASI SSO UNIVERSITAS LAMPUNG</p>
+          </>
+        )}
+
+        {/* ── TAB 2: REGISTRASI MAHASISWA BARU (UPLOAD KTM) ───── */}
+        {tab === 'register' && (
+          <div>
+            {regSuccess ? (
+              <div style={{ textAlign: 'center', padding: '1.25rem 0.5rem' }}>
+                <div style={{
+                  width: 58,
+                  height: 58,
+                  borderRadius: '50%',
+                  background: '#dcfce7',
+                  color: '#16a34a',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 1rem',
+                  fontSize: '1.8rem',
+                  boxShadow: '0 4px 12px rgba(22, 163, 74, 0.15)'
+                }}>
+                  ✓
+                </div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', marginBottom: '0.4rem' }}>
+                  Pendaftaran Berhasil Terkirim!
+                </h3>
+                <p style={{ fontSize: '0.86rem', color: '#475569', lineHeight: 1.5, margin: '0 0 1.25rem' }}>
+                  Akun mahasiswa atas nama <strong>{regForm.name}</strong> ({regForm.npm}) telah berhasil didaftarkan ke sistem PKM Center.
+                </p>
+
+                <div style={{
+                  background: '#fffbeb',
+                  border: '1px solid #fde68a',
+                  borderRadius: '0.75rem',
+                  padding: '1rem',
+                  textAlign: 'left',
+                  marginBottom: '1.5rem'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.35rem' }}>
+                    <span style={{ fontSize: '0.9rem' }}>⏳</span>
+                    <strong style={{ fontSize: '0.84rem', color: '#92400e' }}>
+                      Status: Menunggu Verifikasi Foto KTM
+                    </strong>
+                  </div>
+                  <p style={{ fontSize: '0.78rem', color: '#78350f', margin: 0, lineHeight: 1.45 }}>
+                    Admin Akun akan memvalidasi keaslian data akademik dan foto KTM yang Anda unggah. Anda baru dapat melakukan login setelah akun disetujui (di-ACC).
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  className="btn-primary"
+                  style={{ width: '100%', justifyContent: 'center' }}
+                  onClick={() => {
+                    setTab('login')
+                    setForm({ email: regForm.email, password: regForm.password })
+                    setRegSuccess(false)
+                  }}
+                >
+                  Masuk ke Form Login &rarr;
+                </button>
+              </div>
+            ) : (
+              <div>
+                <p className="login-eyebrow">PENDAFTARAN MAHASISWA</p>
+                <h2>Daftar Akun PKM</h2>
+                <p className="login-sub">
+                  Isi data akademik dan unggah foto Kartu Tanda Mahasiswa (KTM) asli untuk diverifikasi oleh Admin Akun PKM Center.
+                </p>
+
+                {regError && (
+                  <div style={{
+                    background: '#fef2f2',
+                    border: '1px solid #fecaca',
+                    borderRadius: '0.6rem',
+                    padding: '0.65rem 0.85rem',
+                    marginBottom: '0.85rem',
+                    color: '#991b1b',
+                    fontSize: '0.8rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem'
+                  }}>
+                    <span>⚠️</span>
+                    <span>{regError}</span>
+                  </div>
+                )}
+
+                <form onSubmit={handleRegister}>
+                  {/* Grid 2 Kolom: Nama & NPM */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem' }}>
+                    <label>Nama Lengkap
+                      <input
+                        type="text"
+                        placeholder="Contoh: Dimas Aditya"
+                        value={regForm.name}
+                        onChange={e => setRegForm({ ...regForm, name: e.target.value })}
+                        required
+                      />
+                    </label>
+                    <label>NPM (Nomor Pokok Mahasiswa)
+                      <input
+                        type="text"
+                        placeholder="Contoh: 2317051050"
+                        value={regForm.npm}
+                        onChange={e => setRegForm({ ...regForm, npm: e.target.value })}
+                        required
+                      />
+                    </label>
+                  </div>
+
+                  {/* Grid 2 Kolom: Email & No WA */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem' }}>
+                    <label>Email Mahasiswa / Akun
+                      <input
+                        type="email"
+                        placeholder="nama@student.unila.ac.id"
+                        value={regForm.email}
+                        onChange={e => setRegForm({ ...regForm, email: e.target.value })}
+                        required
+                      />
+                    </label>
+                    <label>No. WhatsApp / HP
+                      <input
+                        type="tel"
+                        placeholder="081234567890"
+                        value={regForm.phone}
+                        onChange={e => setRegForm({ ...regForm, phone: e.target.value })}
+                        required
+                      />
+                    </label>
+                  </div>
+
+                  {/* Grid 2 Kolom: Fakultas & Prodi */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem' }}>
+                    <label>Fakultas
+                      <select
+                        value={regForm.faculty}
+                        onChange={e => setRegForm({ ...regForm, faculty: e.target.value })}
+                        style={{
+                          border: '1px solid rgba(18,59,102,.15)',
+                          background: 'rgba(255,255,255,.75)',
+                          borderRadius: '12px',
+                          padding: '0.7rem 0.95rem',
+                          fontSize: '0.85rem',
+                          width: '100%'
+                        }}
+                      >
+                        <option value="FMIPA">FMIPA (MIPA)</option>
+                        <option value="Fakultas Teknik">Fakultas Teknik (FT)</option>
+                        <option value="Fakultas Pertanian">Fakultas Pertanian (FP)</option>
+                        <option value="Fakultas Kedokteran">Fakultas Kedokteran (FK)</option>
+                        <option value="Fakultas Ekonomi dan Bisnis">FEB (Ekonomi & Bisnis)</option>
+                        <option value="Fakultas Hukum">Fakultas Hukum (FH)</option>
+                        <option value="Fakultas Ilmu Sosial dan Ilmu Politik">FISIP (Sosial & Politik)</option>
+                        <option value="Fakultas Keguruan dan Ilmu Pendidikan">FKIP (Keguruan & Pendidikan)</option>
+                        <option value="Pascasarjana">Pascasarjana</option>
+                      </select>
+                    </label>
+                    <label>Program Studi
+                      <input
+                        type="text"
+                        placeholder="Contoh: S1 Ilmu Komputer"
+                        value={regForm.studyProgram}
+                        onChange={e => setRegForm({ ...regForm, studyProgram: e.target.value })}
+                        required
+                      />
+                    </label>
+                  </div>
+
+                  {/* Grid 3 Kolom: Angkatan, Password, Konfirmasi */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '0.8fr 1.1fr 1.1fr', gap: '0.65rem' }}>
+                    <label>Angkatan
+                      <select
+                        value={regForm.entryYear}
+                        onChange={e => setRegForm({ ...regForm, entryYear: e.target.value })}
+                        style={{
+                          border: '1px solid rgba(18,59,102,.15)',
+                          background: 'rgba(255,255,255,.75)',
+                          borderRadius: '12px',
+                          padding: '0.7rem 0.5rem',
+                          fontSize: '0.85rem',
+                          width: '100%'
+                        }}
+                      >
+                        <option value="2025">2025</option>
+                        <option value="2024">2024</option>
+                        <option value="2023">2023</option>
+                        <option value="2022">2022</option>
+                        <option value="2021">2021</option>
+                        <option value="2020">2020</option>
+                      </select>
+                    </label>
+                    <label>Kata Sandi
+                      <input
+                        type="password"
+                        placeholder="Min. 6 digit"
+                        value={regForm.password}
+                        onChange={e => setRegForm({ ...regForm, password: e.target.value })}
+                        required
+                      />
+                    </label>
+                    <label>Ulangi Sandi
+                      <input
+                        type="password"
+                        placeholder="Ulangi sandi"
+                        value={regForm.confirmPassword}
+                        onChange={e => setRegForm({ ...regForm, confirmPassword: e.target.value })}
+                        required
+                      />
+                    </label>
+                  </div>
+
+                  {/* UPLOAD FOTO KTM (WAJIB) */}
+                  <div style={{ marginTop: '0.5rem', marginBottom: '1rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#102a43', marginBottom: '0.35rem' }}>
+                      Foto Kartu Tanda Mahasiswa (KTM) <span style={{ color: '#ef4444' }}>*Wajib</span>
+                    </label>
+
+                    {regForm.ktmPreview ? (
+                      <div style={{
+                        position: 'relative',
+                        border: '2px solid #2563eb',
+                        borderRadius: '0.75rem',
+                        padding: '0.5rem',
+                        background: '#eff6ff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.75rem'
+                      }}>
+                        <img
+                          src={regForm.ktmPreview}
+                          alt="Pratinjau KTM"
+                          style={{ width: '80px', height: '52px', objectFit: 'cover', borderRadius: '0.4rem', border: '1px solid #bfdbfe' }}
+                        />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ margin: '0 0 0.15rem 0', fontSize: '0.78rem', fontWeight: 700, color: '#1e40af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {regForm.ktmFile?.name}
+                          </p>
+                          <span style={{ fontSize: '0.7rem', color: '#3b82f6' }}>
+                            {regForm.ktmFile ? `${(regForm.ktmFile.size / 1024).toFixed(1)} KB` : ''} • Siap diverifikasi Admin Akun
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setRegForm(prev => ({ ...prev, ktmFile: null, ktmPreview: null }))}
+                          style={{
+                            border: 'none',
+                            background: '#fee2e2',
+                            color: '#dc2626',
+                            borderRadius: '0.4rem',
+                            padding: '0.35rem 0.6rem',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Ganti
+                        </button>
+                      </div>
+                    ) : (
+                      <label style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: '2px dashed #93c5fd',
+                        borderRadius: '0.75rem',
+                        padding: '1rem',
+                        background: '#f8fafc',
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                        transition: 'all 0.15s ease'
+                      }}>
+                        <div style={{ fontSize: '1.6rem', marginBottom: '0.2rem' }}>🪪</div>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1d4ed8' }}>
+                          Pilih / Unggah Foto KTM Asli
+                        </span>
+                        <span style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.15rem' }}>
+                          Format JPG, PNG, atau WEBP (Maksimal 5 MB). Pastikan Nama & NPM terbaca jelas.
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/png,image/jpeg,image/jpg,image/webp"
+                          onChange={handleKtmChange}
+                          style={{ display: 'none' }}
+                        />
+                      </label>
+                    )}
+                  </div>
+
+                  <button
+                    className="btn-primary login-submit"
+                    disabled={regLoading}
+                    style={{ width: '100%', justifyContent: 'center' }}
+                  >
+                    {regLoading ? (regLoadingText || 'Mendaftarkan...') : 'Kirim Pendaftaran & Foto KTM'} <b>&rarr;</b>
+                  </button>
+                </form>
+
+                <p style={{ textAlign: 'center', fontSize: '0.78rem', color: '#64748b', marginTop: '0.85rem' }}>
+                  Sudah memiliki akun terverifikasi?{' '}
+                  <button
+                    type="button"
+                    className="link"
+                    onClick={() => { setTab('login'); setState({ loading: false, error: null }); }}
+                    style={{ fontWeight: 700, color: '#0071e3', border: 'none', background: 'none', cursor: 'pointer' }}
+                  >
+                    Masuk di sini
+                  </button>
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </section>
     </div>
   )
@@ -505,6 +1195,8 @@ function App() {
     dosen: 'dosen',
     reviewer: 'reviewer',
     admin: 'admin',
+    admin_akun: 'admin-akun',
+    'admin-akun': 'admin-akun',
   }
 
   useEffect(() => {
@@ -521,7 +1213,7 @@ function App() {
   // Session guard: Proteksi halaman portal, setiap role hanya bisa mengakses portal miliknya
   useEffect(() => {
     const currentRoute = (window.location.hash || '#beranda').replace('#', '').split('/')[0].toLowerCase()
-    const protectedRoles = ['mahasiswa', 'dosen', 'reviewer', 'admin']
+    const protectedRoles = ['mahasiswa', 'dosen', 'reviewer', 'admin', 'admin-akun', 'admin_akun']
     if (protectedRoles.includes(currentRoute)) {
       if (!user) {
         // Belum login → redirect ke beranda dan tampilkan peringatan
@@ -532,11 +1224,14 @@ function App() {
         return
       }
       const allowedRoles = user.roles && user.roles.length > 0 ? user.roles : [user.role]
-      if (!allowedRoles.includes(currentRoute) && user.role !== currentRoute) {
+      const targetRoleKey = (currentRoute === 'admin-akun' || currentRoute === 'admin_akun') ? 'admin_akun' : currentRoute
+      const userHasAccess = allowedRoles.includes(targetRoleKey) || user.role === targetRoleKey || (targetRoleKey === 'admin_akun' && (allowedRoles.includes('admin') || user.role === 'admin'))
+
+      if (!userHasAccess) {
         // Sudah login tapi bukan role yang sesuai → redirect ke beranda
         window.location.hash = '#beranda'
         setTimeout(() => {
-          alert('⚠️ Halaman ini hanya dapat diakses oleh akun ' + getRoleLabel(currentRoute) + '. Anda login sebagai ' + getRoleLabel(user.role) + '.')
+          alert('⚠️ Halaman ini hanya dapat diakses oleh akun ' + getRoleLabel(targetRoleKey) + '. Anda login sebagai ' + getRoleLabel(user.role) + '.')
         }, 100)
         return
       }
@@ -660,19 +1355,31 @@ function App() {
     if (targetRole === 'dosen') window.location.hash = '#dosen'
     else if (targetRole === 'reviewer') window.location.hash = '#reviewer'
     else if (targetRole === 'admin') window.location.hash = '#admin'
+    else if (targetRole === 'admin_akun') window.location.hash = '#admin-akun'
     else window.location.hash = '#beranda'
   }
 
   const route = hash.replace('#', '').split('/')
   const raw = (route[0] || 'beranda').toLowerCase()
   const sub = (route[1] || '').toLowerCase()  // Sub-route di bawah prefix role (misal: ajukan-proposal, logbook, dll)
-  const active = ['beranda', 'tentang', 'timeline', 'berita', 'pedoman', 'portofolio', 'galeri', 'kontak', 'admin', 'dosen', 'reviewer', 'mahasiswa', 'pkmate', 'idealab'].includes(raw) ? raw : 'beranda'
+  const active = ['beranda', 'tentang', 'timeline', 'berita', 'pedoman', 'portofolio', 'galeri', 'kontak', 'admin', 'admin-akun', 'admin_akun', 'dosen', 'reviewer', 'mahasiswa', 'pkmate', 'idealab'].includes(raw) ? raw : 'beranda'
 
   const fallbackHome = <Home anchor="beranda" user={user} onLogin={() => setModal(true)} />
 
   let view
+  // ── Portal Admin Akun (Verifikasi KTM) ────────────────────────────
+  if (raw === 'admin-akun' || raw === 'admin_akun') {
+    if (user && (user.role === 'admin_akun' || user.role === 'admin' || (user.roles || []).includes('admin_akun'))) {
+      if (sub === 'pesan') view = <PesanFeedback user={user} onLogin={() => setModal(true)} onSwitchUser={setUser} />
+      else if (sub === 'profil') view = <ProfilePage user={user} onUpdateUser={setUser} onSwitchRole={switchRole} onLogout={logout} />
+      else if (sub === 'pedoman') view = <PedomanIndex />
+      else view = <AdminAkunDashboard user={user} />
+    } else {
+      view = fallbackHome
+    }
+  }
   // ── Portal Mahasiswa ──────────────────────────────────────────────
-  if (raw === 'mahasiswa') {
+  else if (raw === 'mahasiswa') {
     if (user && user.role === 'mahasiswa') {
       if (sub === 'ajukan-proposal') view = <AjukanProposal user={user} />
       else if (sub === 'logbook') view = <LogbookPKM user={user} />
@@ -733,7 +1440,7 @@ function App() {
   else view = <Home anchor={['tentang', 'timeline'].includes(route[0]) ? route[0] : 'beranda'} user={user} onLogin={() => setModal(true)} />
 
   // Render collapsible desktop sidebar for authenticated dashboard routes
-  const isDashboardRoute = ['mahasiswa', 'dosen', 'reviewer', 'admin'].includes(raw)
+  const isDashboardRoute = ['mahasiswa', 'dosen', 'reviewer', 'admin', 'admin-akun', 'admin_akun'].includes(raw)
 
   // Akses Panduan dari portal sidebar (hash #role/pedoman) tetap pakai sidebar layout
   const isPedomanSidebar = sub === 'pedoman'

@@ -263,7 +263,7 @@ export function IdeaLab({ user, onLogin }) {
   const initialGreeting = {
     role: 'ai',
     content:
-      'Halo! Saya PKMATE, asisten AI resmi PKM Center Universitas Lampung.\n\nSaya siap mendampingimu untuk:\n1. Menguji tingkat kebaruan ide (Novelty Score)\n2. Menemukan skema PKM Belmawa (RE, RSH, K, PM, PI, KC, KI, VGK, GFT, AI) yang paling tepat\n3. Memperkuat metodologi & luaran wajib agar lolos pendanaan Belmawa\n4. Merekomendasikan kolaborasi jurusan/fakultas multidisiplin di Unila\n\nApa gagasan inovatif atau masalah di masyarakat yang ingin kamu diskusikan hari ini?'
+      'Halo! Saya PKMATE, asisten AI resmi PKM Center Universitas Lampung.\n\nSaya siap mendampingimu untuk:\n1. Menganalisis keaslian & kebaruan ide (Novelty)\n2. Menemukan skema PKM Belmawa (RE, RSH, K, PM, PI, KC, KI, VGK, GFT, AI) yang paling tepat\n3. Memperkuat metodologi & luaran wajib agar lolos pendanaan Belmawa\n4. Merekomendasikan kolaborasi jurusan/fakultas multidisiplin di Unila\n\nApa gagasan inovatif atau masalah di masyarakat yang ingin kamu diskusikan hari ini?'
   }
 
   // Riwayat percakapan:

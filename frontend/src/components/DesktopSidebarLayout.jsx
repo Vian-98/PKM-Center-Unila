@@ -16,12 +16,14 @@ import {
   ArrowLeftRight,
   Menu,
   ChevronRight,
+  ShieldCheck,
+  UserCheck,
 } from 'lucide-react'
 
 export function DesktopSidebarLayout({ user, active, routePrefix, onLogout, onSwitchRole, onOpenProfile, children }) {
   const [collapsed, setCollapsed] = useState(false)
 
-  // routePrefix = 'mahasiswa' | 'dosen' | 'reviewer' | 'admin'
+  // routePrefix = 'mahasiswa' | 'dosen' | 'reviewer' | 'admin' | 'admin-akun' | 'admin_akun'
   const prefix = routePrefix || user?.role || 'mahasiswa'
 
   const getSidebarLinks = () => {
@@ -44,9 +46,16 @@ export function DesktopSidebarLayout({ user, active, routePrefix, onLogout, onSw
           { label: 'Pesan & Feedback', href: '#reviewer/pesan', icon: <MessageSquare size={17} /> },
           { label: 'Buku Panduan', href: '#pedoman', icon: <BookOpen size={17} /> },
         ]
+      case 'admin_akun':
+        return [
+          { label: 'Verifikasi Akun KTM', href: '#admin-akun', icon: <UserCheck size={17} /> },
+          { label: 'Pusat Pesan', href: '#admin-akun/pesan', icon: <MessageSquare size={17} /> },
+          { label: 'Buku Panduan', href: '#pedoman', icon: <BookOpen size={17} /> },
+        ]
       case 'admin':
         return [
           { label: 'Kelola Data', href: '#admin', icon: <FolderCog size={17} /> },
+          { label: 'Verifikasi KTM (Admin Akun)', href: '#admin-akun', icon: <UserCheck size={17} /> },
           { label: 'Portal Dosen', href: '#dosen', icon: <GraduationCap size={17} /> },
           { label: 'Portal Reviewer', href: '#reviewer', icon: <Scale size={17} /> },
           { label: 'Pusat Pesan', href: '#admin/pesan', icon: <MessageSquare size={17} /> },
@@ -78,12 +87,20 @@ export function DesktopSidebarLayout({ user, active, routePrefix, onLogout, onSw
   let switchLabel = 'Ganti Peran'
 
   if (user?.role === 'admin') {
-    if (roles.includes('dosen')) {
+    if (roles.includes('admin_akun')) {
+      switchTarget = 'admin_akun'
+      switchLabel = 'Ganti ke Admin Akun'
+    } else if (roles.includes('dosen')) {
       switchTarget = 'dosen'
       switchLabel = 'Ganti ke Dosen'
     } else if (roles.includes('reviewer')) {
       switchTarget = 'reviewer'
       switchLabel = 'Ganti ke Reviewer'
+    }
+  } else if (user?.role === 'admin_akun') {
+    if (roles.includes('admin')) {
+      switchTarget = 'admin'
+      switchLabel = 'Kembali ke Panel Admin'
     }
   } else if (user?.role === 'dosen') {
     if (roles.includes('admin')) {
@@ -109,6 +126,7 @@ export function DesktopSidebarLayout({ user, active, routePrefix, onLogout, onSw
     dosen: 'Portal Dosen Pembimbing',
     reviewer: 'Portal Reviewer PKM',
     admin: 'Portal Administrator',
+    admin_akun: 'Portal Admin Akun PKM',
     mahasiswa: 'Portal Mahasiswa PKM',
   }[user?.role] ?? 'Portal PKM Center'
 
@@ -116,6 +134,7 @@ export function DesktopSidebarLayout({ user, active, routePrefix, onLogout, onSw
     dosen: 'Dosen Pembimbing',
     reviewer: 'Reviewer PKM',
     admin: 'Administrator',
+    admin_akun: 'Admin Akun',
     mahasiswa: 'Mahasiswa PKM',
   }[user?.role] ?? 'Pengguna'
 

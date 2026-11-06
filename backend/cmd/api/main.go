@@ -71,6 +71,8 @@ func main() {
 
 	api := r.Group("/api")
 	api.POST("/auth/login", auth.Login)
+	api.POST("/auth/register", auth.RegisterStudent)
+	api.POST("/auth/upload-ktm", auth.UploadKTM)
 	api.GET("/auth/me", middleware.RequireAuth(secret), auth.Me)
 	api.POST("/auth/switch-role", middleware.RequireAuth(secret), auth.SwitchRole)
 	api.PUT("/auth/profile", middleware.RequireAuth(secret), auth.UpdateProfile)
@@ -82,6 +84,12 @@ func main() {
 	api.GET("/stats", stats.List)
 	api.GET("/contact", contact.Get)
 	api.POST("/feedback", feedback.Create)
+
+	// --- Modul Admin Akun (Verifikasi KTM & Manajemen Akun Mahasiswa) ---
+	adminAkunGroup := api.Group("/admin-akun", middleware.RequireAuth(secret, "admin_akun", "admin"))
+	adminAkunGroup.GET("/students", auth.ListStudentsForVerification)
+	adminAkunGroup.PUT("/students/:id/status", auth.UpdateStudentStatus)
+	adminAkunGroup.DELETE("/students/:id", auth.DeleteStudentAccount)
 
 	// --- Modul Idea Lab & AI Assistant (9Router Gateway) ---
 	api.POST("/ai/brainstorm", middleware.OptionalAuth(secret), ai.Brainstorm)
@@ -286,28 +294,35 @@ func seedContent(db *gorm.DB) {
 
 // seedUsers membuat akun demo pada skema v2 (users + user_roles + profil).
 func seedUsers(db *gorm.DB) {
-	accounts := []struct{ Name, Email, Password, Role string }{
-		{"Admin PKM", "admin@pkm.unila.ac.id", "admin123", "admin"},
-		{"Nadia Mahasiswa", "mahasiswa@pkm.unila.ac.id", "mahasiswa123", "mahasiswa"},
-		{"Favian Pratama (Mahasiswa 1)", "mhs1@pkm.unila.ac.id", "mahasiswa123", "mahasiswa"},
-		{"Ahmad Fauzi (Mahasiswa 2)", "mhs2@pkm.unila.ac.id", "mahasiswa123", "mahasiswa"},
-		{"Siti Nurhaliza (Mahasiswa 3)", "mhs3@pkm.unila.ac.id", "mahasiswa123", "mahasiswa"},
-		{"Favian Rifqi Pratama", "favian@student.unila.ac.id", "mhs12345", "mahasiswa"},
-		{"Ahmad Fauzi", "ahmad.fauzi@student.unila.ac.id", "mhs12345", "mahasiswa"},
-		{"Siti Nurhaliza", "siti.nurhaliza@student.unila.ac.id", "mhs12345", "mahasiswa"},
-		{"Rizky Ramadhan", "rizky.ramadhan@student.unila.ac.id", "mhs12345", "mahasiswa"},
-		{"Aulia Rahma Putri", "aulia.rahma@student.unila.ac.id", "mhs12345", "mahasiswa"},
-		{"Bima Sakti", "bima.sakti@student.unila.ac.id", "mhs12345", "mahasiswa"},
-		{"Dr. Budi Dosen", "dosen@pkm.unila.ac.id", "dosen123", "dosen"},
-		{"Dr. Hendri Reviewer", "reviewer@pkm.unila.ac.id", "reviewer123", "reviewer"},
-		{"Dr. Ir. Sri Mulyani, M.T.", "dosen.reviewer@pkm.unila.ac.id", "dosen123", "dosen"},
+	accounts := []struct{ Name, Email, Password, Role, Status string }{
+		{"Admin PKM", "admin@pkm.unila.ac.id", "admin123", "admin", "active"},
+		{"Admin Akun PKM", "admin.akun@pkm.unila.ac.id", "adminakun123", "admin_akun", "active"},
+		{"Nadia Mahasiswa", "mahasiswa@pkm.unila.ac.id", "mahasiswa123", "mahasiswa", "active"},
+		{"Favian Pratama (Mahasiswa 1)", "mhs1@pkm.unila.ac.id", "mahasiswa123", "mahasiswa", "active"},
+		{"Ahmad Fauzi (Mahasiswa 2)", "mhs2@pkm.unila.ac.id", "mahasiswa123", "mahasiswa", "active"},
+		{"Siti Nurhaliza (Mahasiswa 3)", "mhs3@pkm.unila.ac.id", "mahasiswa123", "mahasiswa", "active"},
+		{"Favian Rifqi Pratama", "favian@student.unila.ac.id", "mhs12345", "mahasiswa", "active"},
+		{"Ahmad Fauzi", "ahmad.fauzi@student.unila.ac.id", "mhs12345", "mahasiswa", "active"},
+		{"Siti Nurhaliza", "siti.nurhaliza@student.unila.ac.id", "mhs12345", "mahasiswa", "active"},
+		{"Rizky Ramadhan", "rizky.ramadhan@student.unila.ac.id", "mhs12345", "mahasiswa", "active"},
+		{"Aulia Rahma Putri", "aulia.rahma@student.unila.ac.id", "mhs12345", "mahasiswa", "active"},
+		{"Bima Sakti", "bima.sakti@student.unila.ac.id", "mhs12345", "mahasiswa", "active"},
+		{"Dimas Aditya (Menunggu ACC)", "dimas.aditya@student.unila.ac.id", "mhs12345", "mahasiswa", "pending"},
+		{"Riko Prasetyo (Ditolak)", "riko.prasetyo@student.unila.ac.id", "mhs12345", "mahasiswa", "rejected"},
+		{"Dr. Budi Dosen", "dosen@pkm.unila.ac.id", "dosen123", "dosen", "active"},
+		{"Dr. Hendri Reviewer", "reviewer@pkm.unila.ac.id", "reviewer123", "reviewer", "active"},
+		{"Dr. Ir. Sri Mulyani, M.T.", "dosen.reviewer@pkm.unila.ac.id", "dosen123", "dosen", "active"},
 	}
 	for _, account := range accounts {
 		var user models.User
 		err := db.Where("email = ?", account.Email).First(&user).Error
 		if err == gorm.ErrRecordNotFound {
 			hash, _ := bcrypt.GenerateFromPassword([]byte(account.Password), bcrypt.DefaultCost)
-			user = models.User{ID: newUUID(), Email: account.Email, PasswordHash: string(hash), FullName: account.Name, AccountStatus: "active", AuthProvider: "local"}
+			userStatus := "active"
+			if account.Status != "" {
+				userStatus = account.Status
+			}
+			user = models.User{ID: newUUID(), Email: account.Email, PasswordHash: string(hash), FullName: account.Name, AccountStatus: userStatus, AuthProvider: "local"}
 			if err := db.Create(&user).Error; err != nil {
 				log.Printf("seed user %s gagal: %v", account.Email, err)
 				continue
@@ -336,23 +351,28 @@ func seedUsers(db *gorm.DB) {
 		case "mahasiswa":
 			var sp models.StudentProfile
 			if db.Where("user_id = ?", user.ID).First(&sp).Error == gorm.ErrRecordNotFound {
+				defaultKtm := "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&q=80"
 				switch account.Email {
 				case "mahasiswa@pkm.unila.ac.id":
-					db.Create(&models.StudentProfile{UserID: user.ID, StudentNumber: "2117051001", Faculty: "Fakultas Teknik", Department: "Teknik Elektro", StudyProgram: "Teknik Elektro", EntryYear: 2021, GPA: 3.72, AcademicStatus: "active", Biography: "Mahasiswa aktif Universitas Lampung."})
+					db.Create(&models.StudentProfile{UserID: user.ID, StudentNumber: "2117051001", Faculty: "Fakultas Teknik", Department: "Teknik Elektro", StudyProgram: "Teknik Elektro", EntryYear: 2021, GPA: 3.72, AcademicStatus: "active", Biography: "Mahasiswa aktif Universitas Lampung.", KtmURL: defaultKtm})
 				case "mhs1@pkm.unila.ac.id", "favian@student.unila.ac.id":
-					db.Create(&models.StudentProfile{UserID: user.ID, StudentNumber: "2217051020", Faculty: "FMIPA", Department: "Ilmu Komputer", StudyProgram: "S1 Ilmu Komputer", EntryYear: 2022, GPA: 3.85, AcademicStatus: "active", Biography: "Fokus riset AI & Computer Vision."})
+					db.Create(&models.StudentProfile{UserID: user.ID, StudentNumber: "2217051020", Faculty: "FMIPA", Department: "Ilmu Komputer", StudyProgram: "S1 Ilmu Komputer", EntryYear: 2022, GPA: 3.85, AcademicStatus: "active", Biography: "Fokus riset AI & Computer Vision.", KtmURL: defaultKtm})
 				case "mhs2@pkm.unila.ac.id", "ahmad.fauzi@student.unila.ac.id":
-					db.Create(&models.StudentProfile{UserID: user.ID, StudentNumber: "2215061034", Faculty: "Fakultas Teknik", Department: "Teknik Informatika", StudyProgram: "S1 Teknik Informatika", EntryYear: 2022, GPA: 3.68, AcademicStatus: "active", Biography: "Pengembang Web & Mobile IoT."})
+					db.Create(&models.StudentProfile{UserID: user.ID, StudentNumber: "2215061034", Faculty: "Fakultas Teknik", Department: "Teknik Informatika", StudyProgram: "S1 Teknik Informatika", EntryYear: 2022, GPA: 3.68, AcademicStatus: "active", Biography: "Pengembang Web & Mobile IoT.", KtmURL: defaultKtm})
 				case "mhs3@pkm.unila.ac.id", "siti.nurhaliza@student.unila.ac.id":
-					db.Create(&models.StudentProfile{UserID: user.ID, StudentNumber: "2114131012", Faculty: "Fakultas Pertanian", Department: "Agribisnis", StudyProgram: "S1 Agribisnis", EntryYear: 2021, GPA: 3.79, AcademicStatus: "active", Biography: "Riset Sosial Humaniora & Agribisnis."})
+					db.Create(&models.StudentProfile{UserID: user.ID, StudentNumber: "2114131012", Faculty: "Fakultas Pertanian", Department: "Agribisnis", StudyProgram: "S1 Agribisnis", EntryYear: 2021, GPA: 3.79, AcademicStatus: "active", Biography: "Riset Sosial Humaniora & Agribisnis.", KtmURL: defaultKtm})
+				case "dimas.aditya@student.unila.ac.id":
+					db.Create(&models.StudentProfile{UserID: user.ID, StudentNumber: "2317051088", Faculty: "FMIPA", Department: "Ilmu Komputer", StudyProgram: "S1 Ilmu Komputer", EntryYear: 2023, GPA: 3.60, AcademicStatus: "active", Biography: "Pendaftar baru menunggu verifikasi KTM.", KtmURL: "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&q=80"})
+				case "riko.prasetyo@student.unila.ac.id":
+					db.Create(&models.StudentProfile{UserID: user.ID, StudentNumber: "2315061099", Faculty: "Fakultas Teknik", Department: "Teknik Mesin", StudyProgram: "S1 Teknik Mesin", EntryYear: 2023, GPA: 3.40, AcademicStatus: "active", Biography: "Pendaftaran ditolak karena berkas buram.", KtmURL: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80", RejectionReason: "Foto KTM buram dan nomor pokok mahasiswa tidak terbaca jelas."})
 				case "rizky.ramadhan@student.unila.ac.id":
-					db.Create(&models.StudentProfile{UserID: user.ID, StudentNumber: "2211011045", Faculty: "FEB", Department: "Manajemen", StudyProgram: "S1 Manajemen Bisnis", EntryYear: 2022, GPA: 3.65, AcademicStatus: "active", Biography: "Peminat PKM-K dan Analisis Pasar."})
+					db.Create(&models.StudentProfile{UserID: user.ID, StudentNumber: "2211011045", Faculty: "FEB", Department: "Manajemen", StudyProgram: "S1 Manajemen Bisnis", EntryYear: 2022, GPA: 3.65, AcademicStatus: "active", Biography: "Peminat PKM-K dan Analisis Pasar.", KtmURL: defaultKtm})
 				case "aulia.rahma@student.unila.ac.id":
-					db.Create(&models.StudentProfile{UserID: user.ID, StudentNumber: "2318011008", Faculty: "Fakultas Kedokteran", Department: "Pendidikan Dokter", StudyProgram: "S1 Pendidikan Dokter", EntryYear: 2023, GPA: 3.88, AcademicStatus: "active", Biography: "Riset Biomedis dan Kesehatan Tropis."})
+					db.Create(&models.StudentProfile{UserID: user.ID, StudentNumber: "2318011008", Faculty: "Fakultas Kedokteran", Department: "Pendidikan Dokter", StudyProgram: "S1 Pendidikan Dokter", EntryYear: 2023, GPA: 3.88, AcademicStatus: "active", Biography: "Riset Biomedis dan Kesehatan Tropis.", KtmURL: defaultKtm})
 				case "bima.sakti@student.unila.ac.id":
-					db.Create(&models.StudentProfile{UserID: user.ID, StudentNumber: "2216031022", Faculty: "FISIP", Department: "Ilmu Komunikasi", StudyProgram: "S1 Ilmu Komunikasi", EntryYear: 2022, GPA: 3.70, AcademicStatus: "active", Biography: "Komunikasi Publik dan Kampanye Kreatif."})
+					db.Create(&models.StudentProfile{UserID: user.ID, StudentNumber: "2216031022", Faculty: "FISIP", Department: "Ilmu Komunikasi", StudyProgram: "S1 Ilmu Komunikasi", EntryYear: 2022, GPA: 3.70, AcademicStatus: "active", Biography: "Komunikasi Publik dan Kampanye Kreatif.", KtmURL: defaultKtm})
 				default:
-					db.Create(&models.StudentProfile{UserID: user.ID, StudentNumber: "2317051099", Faculty: "Universitas Lampung", Department: "Umum", StudyProgram: "S1 Reguler", EntryYear: 2023, GPA: 3.50, AcademicStatus: "active", Biography: "Mahasiswa aktif."})
+					db.Create(&models.StudentProfile{UserID: user.ID, StudentNumber: "2317051099", Faculty: "Universitas Lampung", Department: "Umum", StudyProgram: "S1 Reguler", EntryYear: 2023, GPA: 3.50, AcademicStatus: "active", Biography: "Mahasiswa aktif.", KtmURL: defaultKtm})
 				}
 			}
 		case "dosen":
