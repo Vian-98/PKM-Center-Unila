@@ -83,6 +83,9 @@ Skema PKM yang berlaku:
 Panduan Penilaian & Output:
 - Gaya Bahasa: Profesional, akademis, santun, bernas (ringkas dan padat makna), lugas, serta menggunakan peristilahan ilmiah standar Belmawa Dikti / PIMNAS.
 - Kebijakan Penggunaan Emoji: Minimalisir atau hindari penggunaan emoji. Tampilkan jawaban yang bersih, rapi, dan profesional tanpa hiasan emoji.
+- Kebijakan Penilaian Kebaruan (Novelty): Aspek kebaruan (novelty) TETAP WAJIB dianalisis secara mendalam, namun DILARANG KERAS memberikan skor numerik, skala angka (seperti skor 1-10, nilai x/10, atau persentase). Sebagai gantinya, Anda WAJIB menyajikan evaluasi dua sisi secara objektif:
+  1. Kelebihan & Nilai Kebaruan (Novelty): Uraikan keunggulan konsep, orisinalitas ide, diferensiasi dari riset/produk eksisting, dan state-of-the-art gap.
+  2. Kekurangan & Tantangan Kritis: Uraikan keterbatasan ide saat ini, potensi celah yang rawan dikritisi reviewer Belmawa, risiko teknis/metodologis, atau hal-hal yang perlu diantisipasi.
 - Pemrosesan Ide Mahasiswa:
   1. Telaah & Baca Masukan: Pahami secara saksama inti masalah empiris, pendekatan teknologi/metode, dan target sasaran dari masukan user (meskipun user menggunakan bahasa informal/santai).
   2. Peringkas & Padatkan: Singkirkan kata percakapan santai, kata ganti orang (saya, kami, mau bikin, pengen buat, dsb), serta uraian bertele-tele. Rangkum ke intisari substansi ilmiah yang padat.
@@ -98,7 +101,7 @@ Panduan Penilaian & Output:
      - Metode (Method): 2-3 tahapan metodologis sistematis (persiapan, eksekusi/fabrikasi, validasi/pengujian, evaluasi).
      - Keunikan (Unique Value): 2-3 keunggulan komparatif dibanding solusi yang sudah ada.
      - Kegiatan Utama (Key Activities): 2-3 langkah kerja operasional tim pelaksana.
-     - Kebaharuan (Novelty): 2-3 unsur kebaruan (novelty) dan state-of-the-art gap.
+     - Kebaharuan (Novelty): 2-3 unsur kebaruan (novelty) dan state-of-the-art gap (kualitatif tanpa skor angka).
      - Luaran (Output): Luaran wajib Belmawa, luaran spesifik skema, HaKI/Paten, dan Publikasi Ilmiah.
      Bimbing mahasiswa dan sertakan blok data terstruktur di akhir jawaban untuk otomatisasi pratinjau dan ekspor PDF:
      [PSC_DATA]
@@ -117,10 +120,13 @@ Panduan Penilaian & Output:
      [/PSC_DATA]
   2. '/tanya' (Konsultasi Bebas):
      Kembali ke mode diskusi dan brainstorming ide umum.
-- Jika mahasiswa mengajukan ide/pertanyaan umum, susun tanggapan dengan format terstruktur:
+- Jika mahasiswa mengajukan ide/pertanyaan umum (mode /tanya):
+  Susun tanggapan dengan format terstruktur:
   1. **Rekomendasi Skema PKM Utama & Alternatif** (disertai argumentasi kelayakan).
-  2. **Analisis Kebaruan (Novelty) & Potensi Dampak** (skor estimasi 1-10 beserta keunikannya).
-  3. **Saran Penguatan Metodologi & Luaran** (agar kompetitif dalam seleksi Belmawa).
+  2. **Analisis Kebaruan (Novelty): Kelebihan & Kekurangan Ide** (TANPA SKOR ANGKA):
+     - **Kelebihan & Nilai Kebaruan:** [Uraikan aspek orisinalitas, diferensiasi dari riset/solusi eksisting, dan keunggulan pendekatan ilmiah yang diajukan]
+     - **Kekurangan & Tantangan Kritis:** [Uraikan kelemahan/keterbatasan ide saat ini, potensi celah yang rawan dipermasalahkan reviewer Belmawa, risiko teknis/metodologis, atau aspek yang belum lengkap]
+  3. **Saran Penguatan Metodologi & Luaran** (strategi konkret mengatasi kekurangan di atas agar proposal kompetitif dan lolos pendanaan Belmawa).
   4. **Rekomendasi Kolaborasi Tim Multidisiplin** (saran fakultas/jurusan di Unila yang relevan, misal: FMIPA, FT, FP, FK, FEB, FH, FISIP, FKIP).
 - Gunakan format Markdown yang rapi dengan poin-poin yang mudah dibaca.`
 
@@ -296,25 +302,25 @@ func (h AIHandler) Brainstorm(c *gin.Context) {
 	var reply, usedModel string
 	var err error
 
-	// 1. Coba panggil model utama via 9Router (timeout 25s)
-	ctxPrimary, cancelPrimary := context.WithTimeout(c.Request.Context(), 25*time.Second)
+	// 1. Coba panggil model utama via 9Router (timeout 18s)
+	ctxPrimary, cancelPrimary := context.WithTimeout(c.Request.Context(), 18*time.Second)
 	reply, usedModel, err = h.callGateway(ctxPrimary, llmMessages, preferredModel)
 	cancelPrimary()
 
-	// 2. Jika model utama gagal / timeout, coba model cepat claude-sonnet-4-6 (timeout 20s)
+	// 2. Jika model utama gagal / timeout, coba model cepat ag/gemini-3.8-flash (timeout 12s)
 	if err != nil || reply == "" {
-		log.Printf("[AI 9Router] Model %s kendala: %v. Mencoba ag/claude-sonnet-4-6...", preferredModel, err)
-		ctxClaude, cancelClaude := context.WithTimeout(c.Request.Context(), 20*time.Second)
-		reply, usedModel, err = h.callGateway(ctxClaude, llmMessages, "ag/claude-sonnet-4-6")
-		cancelClaude()
-	}
-
-	// 3. Jika masih gagal, coba model gemini-3.8-flash (timeout 15s)
-	if err != nil || reply == "" {
-		log.Printf("[AI 9Router] Model claude kendala: %v. Mencoba ag/gemini-3.8-flash...", err)
-		ctxGemini, cancelGemini := context.WithTimeout(c.Request.Context(), 15*time.Second)
+		log.Printf("[AI 9Router] Model %s kendala: %v. Mencoba ag/gemini-3.8-flash...", preferredModel, err)
+		ctxGemini, cancelGemini := context.WithTimeout(c.Request.Context(), 12*time.Second)
 		reply, usedModel, err = h.callGateway(ctxGemini, llmMessages, "ag/gemini-3.8-flash")
 		cancelGemini()
+	}
+
+	// 3. Jika masih gagal, coba model claude-sonnet-4-6 (timeout 12s)
+	if err != nil || reply == "" {
+		log.Printf("[AI 9Router] Model gemini kendala: %v. Mencoba ag/claude-sonnet-4-6...", err)
+		ctxClaude, cancelClaude := context.WithTimeout(c.Request.Context(), 12*time.Second)
+		reply, usedModel, err = h.callGateway(ctxClaude, llmMessages, "ag/claude-sonnet-4-6")
+		cancelClaude()
 	}
 
 	// 4. Jika gateway benar-benar tidak merespons (mis. offline total), gunakan asisten berbasis aturan darurat
@@ -1061,28 +1067,68 @@ func generateLocalPKMAnalysis(query string) string {
 		return generateDynamicPKMStrategyCanvas(query)
 	}
 
+	clean := cleanUserIdea(query)
+	if clean == "" {
+		clean = strings.TrimSpace(query)
+	}
+	refinedTopic := toAcademicTitle(clean)
+
 	var scheme, novelty, advice, team string
 
-	if strings.Contains(lower, "tanah") || strings.Contains(lower, "iot") || strings.Contains(lower, "ai") || strings.Contains(lower, "sensor") {
-		scheme = "**PKM-KC (Karsa Cipta)** untuk rancang bangun purwarupa, atau **PKM-PI (Penerapan Iptek)** jika langsung diterapkan pada mitra petani."
-		novelty = "**8.6 / 10**: Kekuatan terletak pada integrasi sensor cerdas berbiaya rendah dan telemetri lokal."
-		advice = "Fokuskan pada kalibrasi data sensor terhadap kondisi tanah lokal di Lampung, serta keandalan catu daya hemat energi."
-		team = "Teknik Elektro/Informatika (Fakultas Teknik) + Agroteknologi (Fakultas Pertanian)."
-	} else if strings.Contains(lower, "kopi") || strings.Contains(lower, "limbah") || strings.Contains(lower, "briket") || strings.Contains(lower, "pupuk") {
+	// 1. Software, AI, Dokumen, Format, Website, NLP/Vision
+	if strings.Contains(lower, "format") || strings.Contains(lower, "dokumen") || strings.Contains(lower, "berkas") ||
+		strings.Contains(lower, "font") || strings.Contains(lower, "margin") || strings.Contains(lower, "italic") ||
+		strings.Contains(lower, "aplikasi") || strings.Contains(lower, "website") || strings.Contains(lower, "sistem informasi") ||
+		strings.Contains(lower, "nlp") || strings.Contains(lower, "ocr") || strings.Contains(lower, "computer vision") ||
+		strings.Contains(lower, "machine learning") || strings.Contains(lower, "deep learning") ||
+		(strings.Contains(lower, "ai") && !strings.Contains(lower, "tanah") && !strings.Contains(lower, "pupuk")) {
+
+		scheme = "**PKM-KC (Karsa Cipta)** untuk rancang bangun purwarupa sistem/perangkat lunak cerdas, atau **PKM-PI (Penerapan Iptek)** jika diterapkan langsung pada mitra produktif."
+		novelty = fmt.Sprintf(`- **Kelebihan & Nilai Kebaruan:** Otomasi inspeksi cerdas untuk %s menggantikan verifikasi manual yang lambat dan rentan inkonsistensi. Pendekatan ini menawarkan akurasi tinggi dalam memeriksa kepatuhan margin, tipografi, dan hierarki tata letak secara instan.
+   - **Kekurangan & Tantangan Kritis:** Kompleksitas ekstraksi pada format berkas yang bervariasi (misal: PDF hasil scan vs digital asli, tabel bertingkat, atau layout multi-kolom), serta risiko kesalahan deteksi (*false positive*) jika template dokumen tidak terstandarisasi.`, clean)
+		advice = "Fokuskan pada keakuratan parsing struktur data berkas (precision/recall), penanganan variasi dokumen digital, serta keselarasan dengan pedoman standar Belmawa Dikti."
+		team = "Teknik Informatika / Ilmu Komputer (Fakultas Teknik / FMIPA) + Sistem Informasi / Pendidikan Bahasa."
+
+	// 2. Hardware, IoT, Sensor Tanah / Lingkungan
+	} else if strings.Contains(lower, "tanah") || strings.Contains(lower, "sensor") || strings.Contains(lower, "iot") ||
+		strings.Contains(lower, "hardware") || strings.Contains(lower, "mikrokontroler") || strings.Contains(lower, "lora") ||
+		strings.Contains(lower, "arduino") || strings.Contains(lower, "esp32") {
+
+		scheme = "**PKM-KC (Karsa Cipta)** untuk purwarupa alat/hardware, atau **PKM-PI (Penerapan Iptek)** jika diaplikasikan langsung pada mitra."
+		novelty = fmt.Sprintf(`- **Kelebihan & Nilai Kebaruan:** Integrasi sensor spesifik berbiaya terjangkau dengan telemetri nirkabel terpadu untuk %s, memungkinkan monitoring dan mitigasi real-time tanpa ketergantungan infrastruktur mahal.
+   - **Kekurangan & Tantangan Kritis:** Kerentanan sensor terhadap derau lingkungan (noise/interferensi fisik), kebutuhan kalibrasi berkala, serta keterbatasan daya baterai pada penempatan area luar ruangan (outdoor).`, clean)
+		advice = "Fokuskan pada kalibrasi data sensor terhadap kondisi lapangan riil, keandalan catu daya hemat energi, dan pengujian performa purwarupa."
+		team = "Teknik Elektro / Teknik Komputer (Fakultas Teknik) + Agroteknologi / Lingkungan."
+
+	// 3. Pangan, Formulasi Kimia/Biologi, Limbah, Pupuk
+	} else if strings.Contains(lower, "kopi") || strings.Contains(lower, "limbah") || strings.Contains(lower, "briket") ||
+		strings.Contains(lower, "pupuk") || strings.Contains(lower, "maggot") || strings.Contains(lower, "lele") ||
+		strings.Contains(lower, "ekstrak") || strings.Contains(lower, "senyawa") {
+
 		scheme = "**PKM-RE (Riset Eksakta)** untuk formulasi & uji lab efektivitas, atau **PKM-K (Kewirausahaan)** jika fokus pada hilirisasi produk komersial."
-		novelty = "**8.2 / 10**: Nilai tambah tinggi karena memanfaatkan komoditas unggulan Provinsi Lampung."
+		novelty = fmt.Sprintf(`- **Kelebihan & Nilai Kebaruan:** Pemanfaatan bahan baku alternatif/limbah lokal bernilai ekonomis tinggi untuk formulasi %s, mendukung prinsip keberlanjutan dan substitusi produk kimia sintetis.
+   - **Kekurangan & Tantangan Kritis:** Konsistensi mutu bahan baku lokal yang dapat fluktuatif antar-musim, serta perlunya serangkaian uji laboratorium berkala (stabilitas, toksisitas, dan umur simpan) untuk memenuhi standar baku mutu.`, clean)
 		advice = "Sertakan pengujian parameter baku mutu (SNI) dan perbandingan nilai ekonomis dibanding produk konvensional."
-		team = "Kimia/Biologi (FMIPA) + Manajemen/Akuntansi (FEB) + Teknologi Industri Pertanian (FP)."
-	} else if strings.Contains(lower, "desa") || strings.Contains(lower, "masyarakat") || strings.Contains(lower, "edukasi") || strings.Contains(lower, "stunting") {
-		scheme = "**PKM-PM (Pengabdian kepada Masyarakat)** untuk solusi nirlaba bagi komunitas masyarakat."
-		novelty = "**8.0 / 10**: Sangat relevan dengan kebutuhan pemecahan masalah riil masyarakat."
+		team = "Kimia / Biologi (FMIPA) + Manajemen / Akuntansi (FEB) + Teknologi Industri Pertanian (FP)."
+
+	// 4. Sosial, Edukasi, Stunting, Pengabdian Masyarakat
+	} else if strings.Contains(lower, "desa") || strings.Contains(lower, "masyarakat") || strings.Contains(lower, "edukasi") ||
+		strings.Contains(lower, "stunting") || strings.Contains(lower, "pemberdayaan") || strings.Contains(lower, "panti") {
+
+		scheme = "**PKM-PM (Pengabdian kepada Masyarakat)** untuk solusi nirlaba bagi komunitas masyarakat sasaran."
+		novelty = fmt.Sprintf(`- **Kelebihan & Nilai Kebaruan:** Model intervensi sosial partisipatif berbasis kearifan lokal yang terarah langsung pada pemecahan masalah riil masyarakat sasaran terkait %s.
+   - **Kekurangan & Tantangan Kritis:** Ketergantungan pada penerimaan sosial dan tingkat keaktifan mitra sasaran, serta tantangan dalam menjamin keberlanjutan program pasca periode pendanaan PKM selesai.`, clean)
 		advice = "Pastikan telah mengantongi surat kesediaan mitra non-produktif dan sertakan evaluasi keberlanjutan program pasca pendanaan."
-		team = "Kesehatan Masyarakat/Kedokteran (FK) + Sosiologi/Komunikasi (FISIP) + Pendidikan (FKIP)."
+		team = "Kesehatan Masyarakat / Kedokteran (FK) + Sosiologi / Komunikasi (FISIP) + Pendidikan (FKIP)."
+
+	// 5. Analisis Cerdas Dinamis untuk Topik Umum Lainnya
 	} else {
-		scheme = "**PKM-KC (Karsa Cipta)** atau **PKM-RSH (Riset Sosial Humaniora)** sesuai fokus luaran yang diinginkan."
-		novelty = "**7.8 / 10**: Gagasan menarik dengan potensi pengembangan lebih lanjut."
+		detectedScheme, detectedSchemeName := detectScheme(clean)
+		scheme = fmt.Sprintf("**%s (%s)** sesuai dengan fokus luaran dan metodologi yang dituju.", detectedScheme, detectedSchemeName)
+		novelty = fmt.Sprintf(`- **Kelebihan & Nilai Kebaruan:** Gagasan mengenai %s memiliki potensi kebaruan yang baik dalam memecahkan masalah melalui pendekatan yang lebih segar dan terarah dibanding metode konvensional.
+   - **Kekurangan & Tantangan Kritis:** Belum tajamnya batasan state-of-the-art gap dan rujukan riset terdahulu, sehingga rawan dinilai oleh reviewer Belmawa sebagai ide yang sudah umum jika tidak diperkuat dengan diferensiasi spesifik.`, refinedTopic)
 		advice = "Perkuat studi literatur 3-5 tahun terakhir dan identifikasi gap penelitian agar kebaruan semakin menonjol di hadapan reviewer Belmawa."
-		team = "Kolaborasi multidisiplin 3-5 mahasiswa dari minimal 2 angkatan atau 2 program studi berbeda."
+		team = "Kolaborasi multidisiplin 3-5 mahasiswa dari minimal 2 angkatan atau 2 program studi berbeda di Unila."
 	}
 
 	return fmt.Sprintf(`### Analisis PKMATE - PKM Center Unila
@@ -1091,7 +1137,7 @@ Untuk gagasan: *"%s"*
 1. **Rekomendasi Skema PKM:**
    %s
 
-2. **Tingkat Kebaruan (Novelty) & Potensi Dampak:**
+2. **Analisis Kebaruan (Novelty): Kelebihan & Kekurangan Ide:**
    %s
 
 3. **Saran Penguatan Metodologi & Luaran:**

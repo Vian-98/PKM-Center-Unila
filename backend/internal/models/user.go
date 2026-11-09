@@ -39,15 +39,19 @@ type UserRole struct {
 func (UserRole) TableName() string { return "user_roles" }
 
 type StudentProfile struct {
-	UserID         string  `json:"userId" gorm:"column:user_id;type:uuid;primaryKey"`
-	StudentNumber  string  `json:"studentNumber" gorm:"column:student_number;uniqueIndex;not null"`
-	Faculty        string  `json:"faculty"`
-	Department     string  `json:"department"`
-	StudyProgram   string  `json:"studyProgram" gorm:"column:study_program"`
-	EntryYear      int     `json:"entryYear" gorm:"column:entry_year"`
-	GPA            float64 `json:"gpa" gorm:"column:gpa"`
-	AcademicStatus string  `json:"academicStatus" gorm:"column:academic_status"`
-	Biography      string  `json:"biography"`
+	UserID          string     `json:"userId" gorm:"column:user_id;type:uuid;primaryKey"`
+	StudentNumber   string     `json:"studentNumber" gorm:"column:student_number;uniqueIndex;not null"`
+	Faculty         string     `json:"faculty"`
+	Department      string     `json:"department"`
+	StudyProgram    string     `json:"studyProgram" gorm:"column:study_program"`
+	EntryYear       int        `json:"entryYear" gorm:"column:entry_year"`
+	GPA             float64    `json:"gpa" gorm:"column:gpa"`
+	AcademicStatus  string     `json:"academicStatus" gorm:"column:academic_status"`
+	Biography       string     `json:"biography"`
+	KtmURL          string     `json:"ktmUrl" gorm:"column:ktm_url"`
+	RejectionReason string     `json:"rejectionReason" gorm:"column:rejection_reason"`
+	VerifiedAt      *time.Time `json:"verifiedAt" gorm:"column:verified_at"`
+	VerifiedBy      *string    `json:"verifiedBy" gorm:"column:verified_by;type:uuid"`
 }
 
 func (StudentProfile) TableName() string { return "student_profiles" }

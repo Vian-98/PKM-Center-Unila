@@ -251,6 +251,7 @@ function parseInlineMarkup(text) {
 
 export function IdeaLab({ user, onLogin }) {
   const isMahasiswa = Boolean(user && user.role === 'mahasiswa')
+  const isLoggedIn = Boolean(user && user.id)
   const userKey = user?.id || (user?.email ? user.email.toLowerCase().replace(/[^a-z0-9]/g, '_') : 'guest')
   const chatStorageKey = isMahasiswa ? `pkmate_chat_history_${userKey}` : null
   const getTodayDateStr = () => new Date().toISOString().slice(0, 10)
@@ -262,7 +263,7 @@ export function IdeaLab({ user, onLogin }) {
   const initialGreeting = {
     role: 'ai',
     content:
-      'Halo! Saya PKMATE, asisten AI resmi PKM Center Universitas Lampung.\n\nSaya siap mendampingimu untuk:\n1. Menguji tingkat kebaruan ide (Novelty Score)\n2. Menemukan skema PKM Belmawa (RE, RSH, K, PM, PI, KC, KI, VGK, GFT, AI) yang paling tepat\n3. Memperkuat metodologi & luaran wajib agar lolos pendanaan Belmawa\n4. Merekomendasikan kolaborasi jurusan/fakultas multidisiplin di Unila\n\nApa gagasan inovatif atau masalah di masyarakat yang ingin kamu diskusikan hari ini?'
+      'Halo! Saya PKMATE, asisten AI resmi PKM Center Universitas Lampung.\n\nSaya siap mendampingimu untuk:\n1. Menganalisis keaslian & kebaruan ide (Novelty)\n2. Menemukan skema PKM Belmawa (RE, RSH, K, PM, PI, KC, KI, VGK, GFT, AI) yang paling tepat\n3. Memperkuat metodologi & luaran wajib agar lolos pendanaan Belmawa\n4. Merekomendasikan kolaborasi jurusan/fakultas multidisiplin di Unila\n\nApa gagasan inovatif atau masalah di masyarakat yang ingin kamu diskusikan hari ini?'
   }
 
   // Riwayat percakapan:
@@ -439,38 +440,53 @@ export function IdeaLab({ user, onLogin }) {
 
     // Penanganan Command /canvas dan /tanya secara instan
     const lowerQ = q.toLowerCase()
-    if (lowerQ === '/canvas') {
-      setActiveMode('canvas')
-      const userMsg = { role: 'user', content: '/canvas', time: new Date() }
-      const aiMsg = {
-        role: 'ai',
-        content: `Selamat datang di penyusunan **PKM Strategy Canvas (PSC)**! 🎯\n\nFramework ini dirancang untuk memetakan ide PKM Anda ke dalam 8 pilar strategis hingga siap lolos PIMNAS:\n1. **Masalah (Problem)**: Urgensi latar belakang dan fakta lapangan\n2. **Tujuan (Purpose)**: Target spesifik penyelesaian masalah\n3. **Gagasan (Idea)**: Inovasi & pendekatan solusi kreatif\n4. **Metode (Method)**: Tahapan dan alur eksekusi ilmiah\n5. **Keunikan (Unique Value)**: Nilai lebih dibanding alternatif lain\n6. **Kegiatan Utama (Key Activities)**: Agenda kerja kunci selama PKM\n7. **Kebaharuan (Novelty)**: Aspek orisinalitas & kebaruan konsep\n8. **Luaran (Output)**: Target luaran wajib & tambahan berstandar Belmawa\n\n**Silakan ceritakan ide usulan Anda, atau sebutkan judul/skema (misal PKM-VGK, PKM-KC, PKM-RE) beserta masalah yang ingin dipecahkan.** PKMATE akan langsung memandu dan memetakannya ke dalam kanvas resmi!`,
-        time: new Date()
+
+    if (lowerQ === '/canvas' || lowerQ.startsWith('/canvas')) {
+      if (!isLoggedIn) {
+        setActiveMode('tanya')
+        const userMsg = { role: 'user', content: q, time: new Date() }
+        const aiMsg = {
+          role: 'ai',
+          content: `🔒 **Akses Terbatas: PKM Strategy Canvas (PSC)**\n\nFitur penyusunan 8 pilar Strategy Canvas dan export dokumen PDF resmi hanya tersedia bagi pengguna yang telah **masuk (login) dengan akun terdaftar di PKM Center Unila**.\n\nSebagai tamu (guest), Anda dapat menggunakan mode **Konsultasi Bebas (/tanya)** untuk mendiskusikan gagasan, analisis skema, dan validasi kebaruan ide PKM Anda. Silakan masuk akun untuk menyusun dan mencetak kanvas resmi.`,
+          time: new Date()
+        }
+        setMessages(prev => [...prev, userMsg, aiMsg])
+        setInput('')
+        if (inputRef.current) inputRef.current.style.height = 'auto'
+        return
       }
-      setMessages(prev => [...prev, userMsg, aiMsg])
-      setInput('')
-      if (inputRef.current) inputRef.current.style.height = 'auto'
-      return
+
+      if (lowerQ === '/canvas') {
+        setActiveMode('canvas')
+        const userMsg = { role: 'user', content: '/canvas', time: new Date() }
+        const aiMsg = {
+          role: 'ai',
+          content: `Selamat datang di penyusunan **PKM Strategy Canvas (PSC)**! 🎯\n\nFramework ini dirancang untuk memetakan ide PKM Anda ke dalam 8 pilar strategis hingga siap lolos PIMNAS:\n1. **Masalah (Problem)**: Urgensi latar belakang dan fakta lapangan\n2. **Tujuan (Purpose)**: Target spesifik penyelesaian masalah\n3. **Gagasan (Idea)**: Inovasi & pendekatan solusi kreatif\n4. **Metode (Method)**: Tahapan dan alur eksekusi ilmiah\n5. **Keunikan (Unique Value)**: Nilai lebih dibanding alternatif lain\n6. **Kegiatan Utama (Key Activities)**: Agenda kerja kunci selama PKM\n7. **Kebaharuan (Novelty)**: Aspek orisinalitas & kebaruan konsep\n8. **Luaran (Output)**: Target luaran wajib & tambahan berstandar Belmawa\n\n**Silakan ceritakan ide usulan Anda, atau sebutkan judul/skema (misal PKM-VGK, PKM-KC, PKM-RE) beserta masalah yang ingin dipecahkan.** PKMATE akan langsung memandu dan memetakannya ke dalam kanvas resmi!`,
+          time: new Date()
+        }
+        setMessages(prev => [...prev, userMsg, aiMsg])
+        setInput('')
+        if (inputRef.current) inputRef.current.style.height = 'auto'
+        return
+      }
+
+      setActiveMode('canvas')
     }
 
-    if (lowerQ === '/tanya') {
+    if (lowerQ === '/tanya' || lowerQ.startsWith('/tanya')) {
       setActiveMode('tanya')
-      const userMsg = { role: 'user', content: '/tanya', time: new Date() }
-      const aiMsg = {
-        role: 'ai',
-        content: `Mode **Konsultasi Bebas PKMATE** aktif! 💡\n\nSilakan ajukan pertanyaan seputar skema PKM Belmawa, aturan administrasi proposal, pencarian mitra, perhitungan anggaran, hingga strategi lolos PIMNAS.`,
-        time: new Date()
+      if (lowerQ === '/tanya') {
+        const userMsg = { role: 'user', content: '/tanya', time: new Date() }
+        const aiMsg = {
+          role: 'ai',
+          content: `Mode **Konsultasi Bebas PKMATE** aktif! 💡\n\nSilakan ajukan pertanyaan seputar skema PKM Belmawa, aturan administrasi proposal, pencarian mitra, perhitungan anggaran, hingga strategi lolos PIMNAS.`,
+          time: new Date()
+        }
+        setMessages(prev => [...prev, userMsg, aiMsg])
+        setInput('')
+        if (inputRef.current) inputRef.current.style.height = 'auto'
+        return
       }
-      setMessages(prev => [...prev, userMsg, aiMsg])
-      setInput('')
-      if (inputRef.current) inputRef.current.style.height = 'auto'
-      return
-    }
-
-    if (lowerQ.startsWith('/canvas ')) {
-      setActiveMode('canvas')
-    } else if (lowerQ.startsWith('/tanya ')) {
-      setActiveMode('tanya')
     }
 
     // Validasi kuota chat sebelum mengirim
@@ -521,7 +537,8 @@ export function IdeaLab({ user, onLogin }) {
         }))
 
       // Sertakan arahan mode canvas jika sedang dalam mode canvas
-      const queryPayload = activeMode === 'canvas' && !q.toLowerCase().includes('/canvas')
+      // Sertakan arahan mode canvas hanya jika user sudah login
+      const queryPayload = (isLoggedIn && activeMode === 'canvas' && !q.toLowerCase().includes('/canvas'))
         ? `/canvas ${q}`
         : q
 
@@ -541,9 +558,9 @@ export function IdeaLab({ user, onLogin }) {
 
       const aiReply = result.data.reply
 
-      // Periksa apakah balasan memuat data PSC terstruktur
+      // Periksa apakah balasan memuat data PSC terstruktur (hanya update canvas jika login)
       const { pscData } = extractPscData(aiReply)
-      if (pscData) {
+      if (pscData && isLoggedIn) {
         setCanvasData(prev => ({
           ...prev,
           ...pscData,
@@ -999,93 +1016,153 @@ export function IdeaLab({ user, onLogin }) {
                           {renderFormattedContent(cleanText)}
 
                           {itemPscData && (
-                            <div
-                              style={{
-                                marginTop: '0.85rem',
-                                padding: '0.85rem 1rem',
-                                background: 'linear-gradient(135deg, #f0f9ff, #e0f2fe)',
-                                border: '1px solid #bae6fd',
-                                borderRadius: '14px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '0.65rem'
-                              }}
-                            >
-                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                            isLoggedIn ? (
+                              <div
+                                style={{
+                                  marginTop: '0.85rem',
+                                  padding: '0.85rem 1rem',
+                                  background: 'linear-gradient(135deg, #f0f9ff, #e0f2fe)',
+                                  border: '1px solid #bae6fd',
+                                  borderRadius: '14px',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  gap: '0.65rem'
+                                }}
+                              >
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
+                                    <div
+                                      style={{
+                                        width: 32,
+                                        height: 32,
+                                        borderRadius: '8px',
+                                        background: '#0284c7',
+                                        color: '#ffffff',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                      }}
+                                    >
+                                      <FileText size={17} />
+                                    </div>
+                                    <div>
+                                      <div style={{ fontWeight: 800, fontSize: '0.82rem', color: '#0369a1' }}>
+                                        PKM STRATEGY CANVAS (PSC) SIAP
+                                      </div>
+                                      <div style={{ fontSize: '0.73rem', color: '#0f172a', fontWeight: 600 }}>
+                                        {itemPscData.title || canvasData.title} ({itemPscData.scheme || canvasData.scheme})
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap' }}>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setCanvasData(prev => ({ ...prev, ...itemPscData }))
+                                        setCanvasModalOpen(true)
+                                      }}
+                                      style={{
+                                        padding: '0.4rem 0.75rem',
+                                        fontSize: '0.74rem',
+                                        fontWeight: 600,
+                                        borderRadius: '8px',
+                                        border: '1px solid #0284c7',
+                                        background: '#ffffff',
+                                        color: '#0284c7',
+                                        cursor: 'pointer',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '0.3rem'
+                                      }}
+                                    >
+                                      <FileText size={13} />
+                                      <span>Buka / Edit Canvas</span>
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => printCanvasToPdf({ ...canvasData, ...itemPscData })}
+                                      style={{
+                                        padding: '0.4rem 0.85rem',
+                                        fontSize: '0.74rem',
+                                        fontWeight: 600,
+                                        borderRadius: '8px',
+                                        border: 'none',
+                                        background: 'linear-gradient(135deg, #0284c7, #0369a1)',
+                                        color: '#ffffff',
+                                        cursor: 'pointer',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '0.3rem',
+                                        boxShadow: '0 2px 6px rgba(2, 132, 199, 0.3)'
+                                      }}
+                                    >
+                                      <Printer size={13} />
+                                      <span>Unduh / Cetak PDF</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <div
+                                style={{
+                                  marginTop: '0.85rem',
+                                  padding: '0.75rem 1rem',
+                                  background: '#f8fafc',
+                                  border: '1px dashed #cbd5e1',
+                                  borderRadius: '12px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                  flexWrap: 'wrap',
+                                  gap: '0.6rem'
+                                }}
+                              >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
                                   <div
                                     style={{
-                                      width: 32,
-                                      height: 32,
-                                      borderRadius: '8px',
-                                      background: '#0284c7',
-                                      color: '#ffffff',
+                                      width: 28,
+                                      height: 28,
+                                      borderRadius: '6px',
+                                      background: '#e2e8f0',
+                                      color: '#64748b',
                                       display: 'flex',
                                       alignItems: 'center',
                                       justifyContent: 'center'
                                     }}
                                   >
-                                    <FileText size={17} />
+                                    <Lock size={15} />
                                   </div>
                                   <div>
-                                    <div style={{ fontWeight: 800, fontSize: '0.82rem', color: '#0369a1' }}>
-                                      PKM STRATEGY CANVAS (PSC) SIAP
+                                    <div style={{ fontWeight: 700, fontSize: '0.78rem', color: '#475569' }}>
+                                      PKM Strategy Canvas (PSC) Tersedia untuk Akun Terdaftar
                                     </div>
-                                    <div style={{ fontSize: '0.73rem', color: '#0f172a', fontWeight: 600 }}>
-                                      {itemPscData.title || canvasData.title} ({itemPscData.scheme || canvasData.scheme})
+                                    <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                                      Silakan masuk dengan akun Mahasiswa Unila untuk membuka pratinjau kanvas dan mengunduh format PDF resmi.
                                     </div>
                                   </div>
                                 </div>
-
-                                <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap' }}>
+                                {onLogin && (
                                   <button
                                     type="button"
-                                    onClick={() => {
-                                      setCanvasData(prev => ({ ...prev, ...itemPscData }))
-                                      setCanvasModalOpen(true)
-                                    }}
+                                    onClick={onLogin}
                                     style={{
-                                      padding: '0.4rem 0.75rem',
-                                      fontSize: '0.74rem',
-                                      fontWeight: 600,
-                                      borderRadius: '8px',
-                                      border: '1px solid #0284c7',
-                                      background: '#ffffff',
-                                      color: '#0284c7',
-                                      cursor: 'pointer',
-                                      display: 'inline-flex',
-                                      alignItems: 'center',
-                                      gap: '0.3rem'
-                                    }}
-                                  >
-                                    <FileText size={13} />
-                                    <span>Buka / Edit Canvas</span>
-                                  </button>
-
-                                  <button
-                                    type="button"
-                                    onClick={() => printCanvasToPdf({ ...canvasData, ...itemPscData })}
-                                    style={{
-                                      padding: '0.4rem 0.85rem',
-                                      fontSize: '0.74rem',
-                                      fontWeight: 600,
+                                      padding: '0.35rem 0.75rem',
+                                      fontSize: '0.72rem',
+                                      fontWeight: 700,
                                       borderRadius: '8px',
                                       border: 'none',
-                                      background: 'linear-gradient(135deg, #0284c7, #0369a1)',
+                                      background: '#0284c7',
                                       color: '#ffffff',
-                                      cursor: 'pointer',
-                                      display: 'inline-flex',
-                                      alignItems: 'center',
-                                      gap: '0.3rem',
-                                      boxShadow: '0 2px 6px rgba(2, 132, 199, 0.3)'
+                                      cursor: 'pointer'
                                     }}
                                   >
-                                    <Printer size={13} />
-                                    <span>Unduh / Cetak PDF</span>
+                                    Masuk Akun &rarr;
                                   </button>
-                                </div>
+                                )}
                               </div>
-                            </div>
+                            )
                           )}
                         </>
                       )
@@ -1247,74 +1324,101 @@ export function IdeaLab({ user, onLogin }) {
               <span>💬 /tanya (Konsultasi Bebas)</span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                setActiveMode('canvas')
-                sendIdea('/canvas')
-              }}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                padding: '0.35rem 0.75rem',
-                borderRadius: '8px',
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                background: activeMode === 'canvas' ? '#e0f2fe' : '#f8fafc',
-                border: `1px solid ${activeMode === 'canvas' ? '#0284c7' : '#cbd5e1'}`,
-                color: activeMode === 'canvas' ? '#0369a1' : '#475569',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <span>📋 /canvas (PKM Strategy Canvas)</span>
-            </button>
+            {isLoggedIn ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveMode('canvas')
+                  sendIdea('/canvas')
+                }}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  padding: '0.35rem 0.75rem',
+                  borderRadius: '8px',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  background: activeMode === 'canvas' ? '#e0f2fe' : '#f8fafc',
+                  border: `1px solid ${activeMode === 'canvas' ? '#0284c7' : '#cbd5e1'}`,
+                  color: activeMode === 'canvas' ? '#0369a1' : '#475569',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <span>📋 /canvas (PKM Strategy Canvas)</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onLogin?.()}
+                title="Fitur PKM Strategy Canvas hanya tersedia bagi pengguna yang telah masuk akun. Klik untuk masuk."
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  padding: '0.35rem 0.75rem',
+                  borderRadius: '8px',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  background: '#f1f5f9',
+                  border: '1px dashed #cbd5e1',
+                  color: '#64748b',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <Lock size={12} color="#64748b" />
+                <span>📋 /canvas (Perlu Login 🔒)</span>
+              </button>
+            )}
           </div>
 
-          <div style={{ display: 'flex', gap: '0.45rem' }}>
-            <button
-              type="button"
-              onClick={() => setCanvasModalOpen(true)}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                padding: '0.35rem 0.75rem',
-                borderRadius: '8px',
-                fontSize: '0.74rem',
-                fontWeight: 600,
-                background: '#ffffff',
-                border: '1px solid #cbd5e1',
-                color: '#0f172a',
-                cursor: 'pointer'
-              }}
-            >
-              <FileText size={13} color="#0284c7" />
-              <span>Pratinjau Canvas</span>
-            </button>
+          {isLoggedIn && (
+            <div style={{ display: 'flex', gap: '0.45rem' }}>
+              <button
+                type="button"
+                onClick={() => setCanvasModalOpen(true)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  padding: '0.35rem 0.75rem',
+                  borderRadius: '8px',
+                  fontSize: '0.74rem',
+                  fontWeight: 600,
+                  background: '#ffffff',
+                  border: '1px solid #cbd5e1',
+                  color: '#0f172a',
+                  cursor: 'pointer'
+                }}
+              >
+                <FileText size={13} color="#0284c7" />
+                <span>Pratinjau Canvas</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => printCanvasToPdf(canvasData)}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                padding: '0.35rem 0.75rem',
-                borderRadius: '8px',
-                fontSize: '0.74rem',
-                fontWeight: 600,
-                background: 'linear-gradient(135deg, #0284c7, #0369a1)',
-                border: 'none',
-                color: '#ffffff',
-                cursor: 'pointer'
-              }}
-            >
-              <Printer size={13} />
-              <span>Cetak PDF</span>
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={() => printCanvasToPdf(canvasData)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  padding: '0.35rem 0.75rem',
+                  borderRadius: '8px',
+                  fontSize: '0.74rem',
+                  fontWeight: 600,
+                  background: 'linear-gradient(135deg, #0284c7, #0369a1)',
+                  border: 'none',
+                  color: '#ffffff',
+                  cursor: 'pointer'
+                }}
+              >
+                <Printer size={13} />
+                <span>Cetak PDF</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Chat Input Bar */}
@@ -1357,9 +1461,11 @@ export function IdeaLab({ user, onLogin }) {
                   ? (!isMahasiswa
                       ? 'Batas kuota 10 chat sesi tamu telah tercapai. Silakan masuk akun mahasiswa...'
                       : 'Batas kuota 50 chat hari ini telah tercapai. Kuota direset besok pukul 00:00 WIB...')
-                  : activeMode === 'canvas'
-                    ? 'Ketik /canvas atau ceritakan ide usulan Anda (Shift + Enter untuk baris baru)...'
-                    : 'Ketik /tanya, /canvas, atau tuliskan pertanyaan / gagasan inovasi (Shift + Enter untuk baris baru)...'
+                  : !isLoggedIn
+                    ? 'Tuliskan pertanyaan atau gagasan inovasi PKM-mu... (Shift + Enter untuk baris baru)'
+                    : activeMode === 'canvas'
+                      ? 'Ketik /canvas atau ceritakan ide usulan Anda (Shift + Enter untuk baris baru)...'
+                      : 'Ketik /tanya, /canvas, atau tuliskan pertanyaan / gagasan inovasi (Shift + Enter untuk baris baru)...'
               }
               disabled={loading || isQuotaExceeded}
               style={{

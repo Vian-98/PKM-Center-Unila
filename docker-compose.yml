@@ -1,6 +1,7 @@
 services:
   db:
     image: postgres:16-alpine
+    restart: unless-stopped
     environment:
       POSTGRES_DB: pkmcenter
       POSTGRES_USER: pkm
@@ -50,6 +51,7 @@ services:
 
   backend:
     build: ./backend
+    restart: unless-stopped
     environment:
       PORT: "8080"
       DATABASE_URL: postgres://pkm:pkm_dev_password@db:5432/pkmcenter?sslmode=disable
@@ -77,6 +79,7 @@ services:
     build:
       context: ./frontend
       target: development
+    restart: unless-stopped
     environment:
       # Gunakan path relatif agar request browser lewat reverse proxy (nginx) /
       # proxy Vite, bukan mengarah ke localhost mesin pengguna.
