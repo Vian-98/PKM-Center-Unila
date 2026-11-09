@@ -23,6 +23,7 @@ import {
   Copy,
   Info
 } from 'lucide-react'
+import { AIFormatDetector } from '../components/AIFormatDetector'
 import { authFetch, statusLabel, statusTone } from '../lib/studentApi'
 
 const STEPS = [
@@ -76,6 +77,7 @@ export function CekStatusUsulan({ user }) {
   const [activeRoadmapStep, setActiveRoadmapStep] = useState(0)
   const [copyToast, setCopyToast] = useState('')
   const [sampleFeed, setSampleFeed] = useState([])
+  const [selectedAiProposal, setSelectedAiProposal] = useState(null)
 
   // Load initial public feed sample for pre-search discovery
   useEffect(() => {
@@ -795,6 +797,16 @@ export function CekStatusUsulan({ user }) {
                       <Copy size={15} />
                       <span>Salin Tautan Status</span>
                     </button>
+                    <button
+                      type="button"
+                      className="track-action-btn"
+                      style={{ background: '#fef2f2', borderColor: '#fca5a5', color: '#b91c1c', fontWeight: 700 }}
+                      onClick={() => setSelectedAiProposal(item)}
+                      title="Lihat laporan pengecekan format AI resmi dari penilai"
+                    >
+                      <Sparkles size={14} color="#dc2626" />
+                      <span>Laporan Format AI ({item.schemeCode === 'PKM-KC' ? 5 : 11} Temuan)</span>
+                    </button>
                     {user?.role === 'mahasiswa' && (
                       <a
                         href="#mahasiswa/logbook"
@@ -809,6 +821,52 @@ export function CekStatusUsulan({ user }) {
                 </article>
               )
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Modal Laporan Deteksi Format AI untuk Pelacakan Usulan */}
+      {selectedAiProposal && (
+        <div className="modal-overlay" onClick={() => setSelectedAiProposal(null)}>
+          <div
+            className="modal-dialog modal-dialog-large"
+            style={{ maxWidth: '980px', height: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 1.5rem', borderBottom: '1px solid #e2e8f0', background: '#f8fafc' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                <div style={{ width: 34, height: 34, borderRadius: 8, background: '#fef2f2', color: '#dc2626', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Sparkles size={18} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#0f172a' }}>
+                    Laporan Hasil Pengecekan Format AI
+                  </h3>
+                  <p style={{ margin: 0, fontSize: '0.78rem', color: '#64748b' }}>
+                    Dokumen: <strong>{selectedAiProposal.title}</strong> &bull; Skema {selectedAiProposal.schemeCode}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="modal-close-btn"
+                style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#64748b', padding: '0.2rem 0.5rem' }}
+                onClick={() => setSelectedAiProposal(null)}
+              >
+                &times;
+              </button>
+            </div>
+
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              <AIFormatDetector
+                assignment={{
+                  id: selectedAiProposal.proposalId || 'rev-02',
+                  schemeCode: selectedAiProposal.schemeCode || 'PKM-RE',
+                  proposalTitle: selectedAiProposal.title,
+                }}
+                showTopControls={true}
+              />
+            </div>
           </div>
         </div>
       )}

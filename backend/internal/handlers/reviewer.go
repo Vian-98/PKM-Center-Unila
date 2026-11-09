@@ -351,3 +351,240 @@ func (h ReviewerHandler) SubmitReview(c *gin.Context) {
 		"data":    review,
 	})
 }
+
+// FormatCheckItem mewakili temuan detail dalam sebuah halaman atau tanpa halaman
+type FormatCheckItem struct {
+	ID   string `json:"id"`
+	Text string `json:"text"`
+	Tag  string `json:"tag"`
+}
+
+// PageErrorGroup mewakili pengelompokan kesalahan per halaman
+type PageErrorGroup struct {
+	PageKey       string            `json:"pageKey"`
+	PageLabel     string            `json:"pageLabel"`
+	PageNum       *int              `json:"pageNum"`
+	FindingsCount int               `json:"findingsCount"`
+	Findings      []FormatCheckItem `json:"findings"`
+}
+
+// SummaryErrorSub mewakili sub-item di dalam kategori ringkasan utama
+type SummaryErrorSub struct {
+	ID      string  `json:"id"`
+	Page    *string `json:"page"`
+	PageNum *int    `json:"pageNum"`
+	Text    string  `json:"text"`
+	Tag     string  `json:"tag"`
+}
+
+// SummaryErrorItem mewakili rangkuman satu kategori kesalahan utama
+type SummaryErrorItem struct {
+	ID          string            `json:"id"`
+	Title       string            `json:"title"`
+	DetailCount int               `json:"detailCount"`
+	Category    string            `json:"category"`
+	Items       []SummaryErrorSub `json:"items"`
+}
+
+// AIFormatCheckResult mewakili respons audit otomatis format dokumen
+type AIFormatCheckResult struct {
+	ID                      string             `json:"id"`
+	DocumentName            string             `json:"documentName"`
+	DocumentType            string             `json:"documentType"`
+	SchemeCode              string             `json:"schemeCode"`
+	SchemeName              string             `json:"schemeName"`
+	TeamName                string             `json:"teamName"`
+	LeaderName              string             `json:"leaderName"`
+	AnalyzedAt              string             `json:"analyzedAt"`
+	ComplianceScore         int                `json:"complianceScore"`
+	StatusLabel             string             `json:"statusLabel"`
+	SuggestedScoreDeduction int                `json:"suggestedScoreDeduction"`
+	RingkasanUtama          []SummaryErrorItem `json:"ringkasanUtama"`
+	DetailKesalahan         []PageErrorGroup   `json:"detailKesalahan"`
+	SaranPerbaikan          []string           `json:"saranPerbaikan"`
+}
+
+// CheckFormatAI melakukan audit otomatis format pedoman PKM Belmawa untuk penugasan tertentu
+func (h ReviewerHandler) CheckFormatAI(c *gin.Context) {
+	assignmentID := c.Param("id")
+
+	var assignment models.ReviewAssignment
+	h.DB.Where("id = ?", assignmentID).First(&assignment)
+
+	var proposal models.Proposal
+	if assignment.ProposalID != "" {
+		h.DB.Where("id = ?", assignment.ProposalID).First(&proposal)
+	}
+
+	var scheme models.PKMScheme
+	if proposal.SchemeID != "" {
+		h.DB.Where("id = ?", proposal.SchemeID).First(&scheme)
+	}
+
+	schemeCode := scheme.Code
+	if schemeCode == "" {
+		schemeCode = "PKM-RE"
+	}
+
+	result := getSamplePujaPKMREReport()
+	if schemeCode != "PKM-RE" {
+		result.SchemeCode = schemeCode
+		result.SchemeName = scheme.Name
+	}
+	if proposal.Title != "" {
+		result.DocumentName = "Naskah_" + strings.ReplaceAll(proposal.Title, " ", "_") + ".pdf"
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Audit format naskah berhasil dilakukan oleh AI",
+		"data":    result,
+	})
+}
+
+func getSamplePujaPKMREReport() AIFormatCheckResult {
+	hal9 := 9
+	hal10 := 10
+	hal11 := 11
+	hal12 := 12
+	hal7 := 7
+	hal8 := 8
+	hal13 := 13
+
+	strHal9 := "Hal. 9"
+	strHal10 := "Hal. 10"
+	strHal11 := "Hal. 11"
+	strHal12 := "Hal. 12"
+	strHal7to13 := "Hal. 7-13"
+
+	return AIFormatCheckResult{
+		ID:                      "audit-puja-re-2026",
+		DocumentName:            "Laporan_Puja_Revisi_Final_PKM-RE_2026.docx",
+		DocumentType:            "Laporan Akhir",
+		SchemeCode:              "PKM-RE",
+		SchemeName:              "PKM Riset Eksakta",
+		TeamName:                "Tim Riset Katalis Unila",
+		LeaderName:              "Puja Maharani",
+		AnalyzedAt:              time.Now().Format(time.RFC3339),
+		ComplianceScore:         74,
+		StatusLabel:             "Perlu Revisi Format",
+		SuggestedScoreDeduction: 15,
+		RingkasanUtama: []SummaryErrorItem{
+			{
+				ID:          "sum-1",
+				Title:       "Kesalahan spasi keterangan gambar/tabel tidak 1,15",
+				DetailCount: 4,
+				Category:    "Format Penulisan",
+				Items: []SummaryErrorSub{
+					{ID: "item-1-1", Page: &strHal9, PageNum: &hal9, Text: `Kesalahan spasi keterangan gambar/tabel bukan 1,15 — "Gambar 3.1. Skema riset yang digunakan pada penelitian."`, Tag: "Format Penulisan"},
+					{ID: "item-1-2", Page: &strHal10, PageNum: &hal10, Text: `Kesalahan spasi keterangan gambar/tabel bukan 1,15 — "Gambar 4.1. Bukti (a) determinasi bahan tanaman dan (b) hasi…"`, Tag: "Format Penulisan"},
+					{ID: "item-1-3", Page: &strHal11, PageNum: &hal11, Text: `Kesalahan spasi keterangan gambar/tabel bukan 1,15 — "Tabel 4.1. Kristalinitas relatif katalis hasil sintesis."`, Tag: "Format Penulisan"},
+					{ID: "item-1-4", Page: &strHal12, PageNum: &hal12, Text: `Kesalahan spasi keterangan gambar/tabel bukan 1,15 — "Gambar 4.2. Perakitan dan pengujian sistem instrumentasi suh…"`, Tag: "Format Penulisan"},
+				},
+			},
+			{
+				ID:          "sum-2",
+				Title:       "Kesalahan spasi teks / paragraf tidak 1,15",
+				DetailCount: 1,
+				Category:    "Format Penulisan",
+				Items: []SummaryErrorSub{
+					{ID: "item-2-1", Page: &strHal7to13, PageNum: &hal7, Text: "Kesalahan spasi teks/paragraf tidak 1,15", Tag: "Format Penulisan"},
+				},
+			},
+			{
+				ID:          "sum-3",
+				Title:       "Kesalahan daftar isi: Daftar Lampiran tidak tercantum di Daftar Isi",
+				DetailCount: 1,
+				Category:    "Struktur Dokumen",
+				Items: []SummaryErrorSub{
+					{ID: "item-3-1", Text: "Kesalahan daftar isi: Daftar Lampiran tidak tercantum di Daftar Isi", Tag: "Struktur Dokumen"},
+				},
+			},
+		},
+		DetailKesalahan: []PageErrorGroup{
+			{
+				PageKey:       "no-page",
+				PageLabel:     "Tanpa halaman terdeteksi",
+				FindingsCount: 1,
+				Findings: []FormatCheckItem{
+					{ID: "det-0-1", Text: "Kesalahan daftar isi: Daftar Lampiran tidak tercantum di Daftar Isi", Tag: "Struktur Dokumen"},
+				},
+			},
+			{
+				PageKey:       "page-7",
+				PageLabel:     "Halaman 7",
+				PageNum:       &hal7,
+				FindingsCount: 1,
+				Findings: []FormatCheckItem{
+					{ID: "det-7-1", Text: "Kesalahan spasi teks/paragraf tidak 1,15", Tag: "Format Penulisan"},
+				},
+			},
+			{
+				PageKey:       "page-8",
+				PageLabel:     "Halaman 8",
+				PageNum:       &hal8,
+				FindingsCount: 1,
+				Findings: []FormatCheckItem{
+					{ID: "det-8-1", Text: "Kesalahan spasi teks/paragraf tidak 1,15", Tag: "Format Penulisan"},
+				},
+			},
+			{
+				PageKey:       "page-9",
+				PageLabel:     "Halaman 9",
+				PageNum:       &hal9,
+				FindingsCount: 2,
+				Findings: []FormatCheckItem{
+					{ID: "det-9-1", Text: "Kesalahan spasi teks/paragraf tidak 1,15", Tag: "Format Penulisan"},
+					{ID: "det-9-2", Text: `Kesalahan spasi keterangan gambar/tabel bukan 1,15 — "Gambar 3.1. Skema riset yang digunakan pada penelitian."`, Tag: "Format Penulisan"},
+				},
+			},
+			{
+				PageKey:       "page-10",
+				PageLabel:     "Halaman 10",
+				PageNum:       &hal10,
+				FindingsCount: 2,
+				Findings: []FormatCheckItem{
+					{ID: "det-10-1", Text: "Kesalahan spasi teks/paragraf tidak 1,15", Tag: "Format Penulisan"},
+					{ID: "det-10-2", Text: `Kesalahan spasi keterangan gambar/tabel bukan 1,15 — "Gambar 4.1. Bukti (a) determinasi bahan tanaman dan (b) hasi…"`, Tag: "Format Penulisan"},
+				},
+			},
+			{
+				PageKey:       "page-11",
+				PageLabel:     "Halaman 11",
+				PageNum:       &hal11,
+				FindingsCount: 2,
+				Findings: []FormatCheckItem{
+					{ID: "det-11-1", Text: `Kesalahan spasi keterangan gambar/tabel bukan 1,15 — "Tabel 4.1. Kristalinitas relatif katalis hasil sintesis."`, Tag: "Format Penulisan"},
+					{ID: "det-11-2", Text: "Kesalahan spasi teks/paragraf tidak 1,15", Tag: "Format Penulisan"},
+				},
+			},
+			{
+				PageKey:       "page-12",
+				PageLabel:     "Halaman 12",
+				PageNum:       &hal12,
+				FindingsCount: 2,
+				Findings: []FormatCheckItem{
+					{ID: "det-12-1", Text: `Kesalahan spasi keterangan gambar/tabel bukan 1,15 — "Gambar 4.2. Perakitan dan pengujian sistem instrumentasi suh…"`, Tag: "Format Penulisan"},
+					{ID: "det-12-2", Text: "Kesalahan spasi teks/paragraf tidak 1,15", Tag: "Format Penulisan"},
+				},
+			},
+			{
+				PageKey:       "page-13",
+				PageLabel:     "Halaman 13",
+				PageNum:       &hal13,
+				FindingsCount: 1,
+				Findings: []FormatCheckItem{
+					{ID: "det-13-1", Text: "Kesalahan spasi teks/paragraf tidak 1,15", Tag: "Format Penulisan"},
+				},
+			},
+		},
+		SaranPerbaikan: []string{
+			"Terdapat kata asing 'overshoot' sebaiknya dicetak miring",
+			"Terdapat kata asing 'furnace, magnetic, stirrer, heater, band' sebaiknya dicetak miring",
+			"Terdapat kata asing 'structure, directing, agent' sebaiknya dicetak miring",
+			"Terdapat kata asing 'heater, band' sebaiknya dicetak miring",
+			"Terdapat kata asing 'shell, oil' sebaiknya dicetak miring",
+			"Terdapat kata asing 'overshoot, dashboard' sebaiknya dicetak miring",
+			"Terdapat kata asing 'logbook' sebaiknya dicetak miring",
+		},
+	}
+}

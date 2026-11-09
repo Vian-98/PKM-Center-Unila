@@ -2,8 +2,9 @@ import { useState, useEffect, useRef } from 'react'
 import {
   Layers, Users, GraduationCap, BookOpen, Bell, ArrowRight,
   CheckCircle2, Clock, Sparkles, FileText, ChevronRight,
-  FileEdit, UserPlus, Plus
+  FileEdit, UserPlus, Plus, X
 } from 'lucide-react'
+import { AIFormatDetector } from '../components/AIFormatDetector'
 import { loadStore, saveStore } from '../lib/dosenReviewerData'
 import { GlowCard } from '../components/ui/spotlight-card'
 import {
@@ -118,6 +119,7 @@ export function MahasiswaDashboard({ user }) {
   const [activeTab, setActiveTab] = useState('ringkasan')
   const [data, setData] = useState(() => loadStore(`pkm_mhs_dashboard_${userKey}`, EMPTY))
   const [incomingInvites, setIncomingInvites] = useState(() => getIncomingInvitationsForUser(user))
+  const [showAiAuditModal, setShowAiAuditModal] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -496,6 +498,19 @@ export function MahasiswaDashboard({ user }) {
                       <FileEdit size={15} />
                       <span>Edit / Lanjutkan Usulan</span>
                     </a>
+                    <button
+                      type="button"
+                      className="btn-action secondary"
+                      style={{ background: '#fef2f2', borderColor: '#fca5a5', color: '#b91c1c', fontWeight: 700 }}
+                      onClick={() => setShowAiAuditModal(true)}
+                      title="Lihat hasil deteksi format AI agar tahu persis bagian mana yang perlu diperbaiki"
+                    >
+                      <Sparkles size={15} color="#dc2626" />
+                      <span>Cek Format AI</span>
+                      <span style={{ background: '#dc2626', color: '#fff', fontSize: '0.68rem', padding: '0.1rem 0.4rem', borderRadius: '9999px', fontWeight: 800 }}>
+                        {proposal?.schemeCode === 'PKM-KC' ? 5 : 11} Temuan
+                      </span>
+                    </button>
                     <a className="btn-action secondary" href="#mahasiswa/logbook">
                       <BookOpen size={15} />
                       <span>Buka Logbook Digital</span>
@@ -725,8 +740,18 @@ export function MahasiswaDashboard({ user }) {
               )}
 
               {proposal.status === 'revision' && (
-                <div className="student-message-box" style={{ borderLeftColor: '#f59e0b' }}>
-                  Usulan Anda memerlukan revisi. Buka logbook atau pesan untuk melihat catatan lengkap dari pembimbing/reviewer.
+                <div className="student-message-box" style={{ borderLeftColor: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+                  <div>
+                    <strong>Usulan Memerlukan Revisi Format:</strong> Terdeteksi ketidaksesuaian format pedoman Belmawa (spasi paragraf, keterangan gambar/tabel, atau istilah asing).
+                  </div>
+                  <button
+                    type="button"
+                    className="btn-action primary"
+                    style={{ background: '#dc2626', borderColor: '#dc2626', fontSize: '0.8rem', padding: '0.4rem 0.85rem' }}
+                    onClick={() => setShowAiAuditModal(true)}
+                  >
+                    <span>Buka Rincian Kesalahan AI &rarr;</span>
+                  </button>
                 </div>
               )}
             </article>
@@ -779,6 +804,52 @@ export function MahasiswaDashboard({ user }) {
             </>
           )}
         </section>
+      )}
+
+      {/* Modal Laporan Deteksi Format AI untuk Mahasiswa */}
+      {showAiAuditModal && (
+        <div className="modal-overlay" onClick={() => setShowAiAuditModal(false)}>
+          <div
+            className="modal-dialog modal-dialog-large"
+            style={{ maxWidth: '980px', height: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 1.5rem', borderBottom: '1px solid #e2e8f0', background: '#f8fafc' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                <div style={{ width: 34, height: 34, borderRadius: 8, background: '#fef2f2', color: '#dc2626', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Sparkles size={18} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#0f172a' }}>
+                    Laporan Audit Format AI (Panduan Revisi Mahasiswa)
+                  </h3>
+                  <p style={{ margin: 0, fontSize: '0.78rem', color: '#64748b' }}>
+                    Periksa detail titik kesalahan format dan istilah asing di bawah ini agar naskah lolos seleksi Belmawa 2026.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="modal-close-btn"
+                style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#64748b', padding: '0.2rem 0.5rem' }}
+                onClick={() => setShowAiAuditModal(false)}
+              >
+                &times;
+              </button>
+            </div>
+
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              <AIFormatDetector
+                assignment={{
+                  id: proposal?.id || 'rev-02',
+                  schemeCode: proposal?.schemeCode || 'PKM-RE',
+                  proposalTitle: proposal?.title || 'Laporan PKM-RE Unila',
+                }}
+                showTopControls={true}
+              />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

@@ -108,6 +108,8 @@ func main() {
 	reviewerGroup.GET("/assignments/:id", reviewer.GetAssignmentDetail)
 	reviewerGroup.POST("/assignments/:id/save", reviewer.SaveReview)
 	reviewerGroup.POST("/assignments/:id/submit", reviewer.SubmitReview)
+	reviewerGroup.POST("/assignments/:id/ai-check", reviewer.CheckFormatAI)
+	reviewerGroup.GET("/assignments/:id/ai-check", reviewer.CheckFormatAI)
 
 	// --- Modul Pesan & Feedback ---
 	authGroup := api.Group("", middleware.RequireAuth(secret))

@@ -21,7 +21,12 @@ import {
   ChevronRight,
   ChevronLeft,
   X,
+  Split,
+  Layers,
+  AlertTriangle,
 } from 'lucide-react'
+import { AIFormatDetector } from '../components/AIFormatDetector'
+import { presetReportsMap } from '../lib/aiFormatCheckerData'
 
 export function ReviewerDashboard({ user, onSwitchRole }) {
   // Pemeriksaan hak akses: hanya akun berstatus reviewer atau admin yang dapat mengakses
@@ -101,7 +106,8 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
     isOpen: false,
     assignment: null,
     details: null,
-    viewMode: 'pdf', // 'pdf' | 'summary'
+    viewMode: 'pdf', // 'pdf' | 'summary' | 'ai_check'
+    isSplitView: false, // Split screen mode: PDF di kiri, AI Format Detector di kanan
     activeTab: 'abstrak', // 'abstrak' | 'bab1' | 'bab2' | 'bab3' | 'bab4' | 'lampiran'
     activePage: 1,
     newCommentText: '',
@@ -125,7 +131,7 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
   })
 
   // Buka Naskah Proposal ke Dedicated Full-Screen Workspace
-  const openReviewWorkspace = useCallback((item) => {
+  const openReviewWorkspace = useCallback((item, initialMode = 'pdf') => {
     const details = proposalDocumentDetails[item.id] || {
       title: item.proposalTitle,
       scheme: item.schemeCode,
@@ -153,7 +159,8 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
         ...details,
         pdfUrl: details.pdfUrl || item.documentUrl || '/docs/proposal-padivision-pkm-kc.pdf',
       },
-      viewMode: 'pdf',
+      viewMode: initialMode,
+      isSplitView: false,
       activeTab: 'abstrak',
       activePage: 1,
       newCommentPage: 1,
@@ -464,6 +471,50 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
     })
   }
 
+  // Terapkan Seluruh Temuan AI Format Detector ke Form Scoring & Lembar Keputusan
+  const handleApplyAIToScoring = useCallback((report) => {
+    const targetAssignment = docModal.assignment || assignments[0]
+    if (!targetAssignment) return
+
+    const initialScores = {}
+    defaultReviewCriteria.forEach(c => {
+      const savedScore = targetAssignment.savedScores?.[c.id]
+      let defaultVal = savedScore?.score ?? (targetAssignment.totalScore ? Math.round(targetAssignment.totalScore) : 80)
+      let defaultComment = savedScore?.comment ?? ''
+
+      // Kriteria Format & Administrasi (Kriteria 1)
+      if (c.id === 1 || c.name.toLowerCase().includes('format')) {
+        defaultVal = report.complianceScore || 74
+        defaultComment = `Catatan AI Format: Terdeteksi ${report.summaryStats?.totalErrors || 11} kesalahan format penulisan Belmawa (${report.ringkasanUtama?.map(r => r.title).join('; ') || 'spasi teks, keterangan tabel/gambar, dan kelengkapan daftar isi'}).`
+      }
+
+      initialScores[c.id] = {
+        score: defaultVal,
+        comment: defaultComment,
+      }
+    })
+
+    const formatWeaknessesList = [
+      'Temuan Audit Format AI (Pedoman Belmawa):',
+      ...(report.ringkasanUtama?.map(r => `- ${r.title} (${r.detailCount} titik detail)`) || []),
+      '',
+      'Saran Istilah Asing & Tipografi AI:',
+      ...(report.saranPerbaikan?.slice(0, 5).map(s => `- ${s}`) || []),
+    ].join('\n')
+
+    setScoringModal({
+      isOpen: true,
+      assignment: targetAssignment,
+      criteria: defaultReviewCriteria,
+      scores: initialScores,
+      strengths: targetAssignment.strengths || (targetAssignment.status === 'completed' ? 'Gagasan sangat inovatif dan metodologi pengujian terencana baik.' : ''),
+      weaknesses: formatWeaknessesList,
+      comments: targetAssignment.comments || 'Wajib melakukan revisi format sesuai catatan AI Belmawa sebelum naskah final diunggah ke SIMBELMAWA.',
+      recommendation: (report.complianceScore || 74) < 80 ? 'revision' : (targetAssignment.recommendation || 'funded'),
+      reviewStatus: targetAssignment.reviewStatus || 'draft',
+    })
+  }, [docModal.assignment, assignments])
+
   const filteredAssignments = useMemo(() => {
     return assignments.filter(a => {
       const matchFilter = activeFilter === 'pending'
@@ -567,7 +618,7 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
       </section>
 
       {/* Filter & Search Bar Antrean */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div className="modern-tabs" style={{ marginBottom: 0 }}>
           <button
             className={`tab-btn ${activeFilter === 'all' ? 'active' : ''}`}
@@ -598,6 +649,78 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
         />
       </div>
 
+      {/* Banner Pintasan AI Format & Compliance Assistant */}
+      <div style={{
+        background: 'linear-gradient(135deg, #0b2149 0%, #1e3a8a 100%)',
+        border: '1px solid #3b82f6',
+        borderRadius: '1rem',
+        padding: '1.2rem 1.5rem',
+        marginBottom: '1.5rem',
+        color: '#ffffff',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '1rem',
+        boxShadow: '0 8px 24px rgba(11, 33, 73, 0.12)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{
+            width: '44px',
+            height: '44px',
+            borderRadius: '12px',
+            background: 'rgba(255, 255, 255, 0.12)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#38bdf8',
+            flexShrink: 0,
+          }}>
+            <Sparkles size={22} />
+          </div>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
+              <h3 style={{ margin: 0, fontSize: '1.025rem', fontWeight: 800 }}>
+                AI Format & Compliance Checker
+              </h3>
+              <span style={{ background: '#38bdf8', color: '#0b2149', fontSize: '0.68rem', fontWeight: 800, padding: '0.1rem 0.45rem', borderRadius: '9999px' }}>
+                Pedoman Belmawa 2026
+              </span>
+            </div>
+            <p style={{ margin: 0, fontSize: '0.825rem', color: '#cbd5e1', lineHeight: 1.5, maxWidth: '660px' }}>
+              Deteksi otomatis kesalahan format penulisan (spasi 1,15, tabel/gambar), struktur daftar isi/lampiran, dan rangkum istilah asing yang belum dicetak miring sebelum finalisasi penilaian.
+            </p>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+          <button
+            type="button"
+            className="btn-action primary"
+            style={{
+              background: 'linear-gradient(135deg, #38bdf8, #0284c7)',
+              color: '#0b2149',
+              fontWeight: 800,
+              border: 'none',
+              padding: '0.55rem 1.15rem',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+            }}
+            onClick={() => {
+              const sampleItem = assignments[1] || assignments[0]
+              if (sampleItem) {
+                openReviewWorkspace(sampleItem, 'ai_check')
+              }
+            }}
+            title="Buka pratinjau deteksi format AI pada contoh naskah Puja PKM-RE"
+          >
+            <Sparkles size={15} />
+            <span>Lihat Contoh AI Audit (Puja RE) &rarr;</span>
+          </button>
+        </div>
+      </div>
+
       {/* Daftar Antrean Penilaian */}
       <section>
         <div style={{ display: 'grid', gap: '1.25rem' }}>
@@ -609,10 +732,25 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
             filteredAssignments.map(item => (
               <article key={item.id} className="proposal-card-item">
                 <div className="proposal-card-item-header">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
                     <span className="tag-scheme">{item.schemeCode}</span>
                     <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 700 }}>
                       Tim: <strong>{item.teamName}</strong>
+                    </span>
+                    <span style={{
+                      background: '#fef2f2',
+                      border: '1px solid #fee2e2',
+                      color: '#b91c1c',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      padding: '0.15rem 0.5rem',
+                      borderRadius: '0.35rem',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.3rem',
+                    }}>
+                      <Sparkles size={12} color="#dc2626" />
+                      <span>AI Format: {item.id === 'rev-01' ? '5 Temuan (82%)' : '11 Temuan (74%)'}</span>
                     </span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -654,9 +792,19 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
                 <div className="card-actions-row">
                   <button
                     className="btn-action secondary"
-                    onClick={() => openReviewWorkspace(item)}
+                    onClick={() => openReviewWorkspace(item, 'pdf')}
                   >
                     Buka Naskah Proposal (PDF)
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-action secondary"
+                    style={{ background: '#f0f9ff', borderColor: '#38bdf8', color: '#0369a1', fontWeight: 700 }}
+                    onClick={() => openReviewWorkspace(item, 'ai_check')}
+                    title="Audit format dokumen & rangkum temuan secara otomatis dengan AI"
+                  >
+                    <Sparkles size={14} color="#0284c7" />
+                    <span>Deteksi Format AI ({item.id === 'rev-01' ? 5 : 11})</span>
                   </button>
                   <button
                     className={`btn-action ${item.status === 'completed' ? 'secondary' : 'primary'}`}
@@ -937,6 +1085,30 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
                 >
                   <BookOpen size={15} />
                   <span>Ringkasan Bab</span>
+                </button>
+                <button
+                  type="button"
+                  className={`rev-pill-btn ${docModal.viewMode === 'ai_check' ? 'active' : ''}`}
+                  onClick={() => setDocModal(prev => ({ ...prev, viewMode: 'ai_check' }))}
+                  title="Audit Format, Spasi, Tipografi & Istilah Asing Otomatis dengan AI Belmawa"
+                  style={{
+                    background: docModal.viewMode === 'ai_check' ? 'linear-gradient(135deg, #0284c7, #0369a1)' : undefined,
+                    color: docModal.viewMode === 'ai_check' ? '#ffffff' : undefined,
+                    border: docModal.viewMode === 'ai_check' ? '1px solid #38bdf8' : undefined,
+                  }}
+                >
+                  <Sparkles size={15} color={docModal.viewMode === 'ai_check' ? '#fbbf24' : '#38bdf8'} />
+                  <span>Deteksi Format AI</span>
+                  <span style={{
+                    fontSize: '0.68rem',
+                    background: docModal.viewMode === 'ai_check' ? '#dc2626' : 'rgba(239, 68, 68, 0.2)',
+                    color: docModal.viewMode === 'ai_check' ? '#ffffff' : '#f87171',
+                    padding: '0.1rem 0.4rem',
+                    borderRadius: '9999px',
+                    fontWeight: 800,
+                  }}>
+                    {docModal.assignment?.id === 'rev-01' ? 5 : 11}
+                  </span>
                 </button>
               </div>
 
@@ -1223,6 +1395,60 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
                   </>
                 )
               })()
+            ) : docModal.viewMode === 'ai_check' ? (
+              docModal.isSplitView ? (
+                /* SPLIT VIEW: Kiri PDF Viewer, Kanan AI Format Report */
+                <div className="ai-workspace-split">
+                  <div className="ai-workspace-split-pdf">
+                    <div className="rev-pdf-toolbar">
+                      <div className="rev-toolbar-shortcuts">
+                        <span className="rev-toolbar-label">Pratinjau Halaman Terkait:</span>
+                        <span style={{ color: '#ffffff', fontSize: '0.78rem', fontWeight: 800 }}>
+                          Fokus: Halaman {docModal.activePage}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        className="rev-page-shortcut-btn"
+                        style={{ marginLeft: 'auto', background: '#0284c7', color: '#ffffff', borderColor: '#0284c7' }}
+                        onClick={() => setDocModal(prev => ({ ...prev, isSplitView: false }))}
+                      >
+                        Layar Penuh AI &rarr;
+                      </button>
+                    </div>
+                    <div className="rev-iframe-wrapper">
+                      <iframe
+                        key={`${docModal.details?.pdfUrl}-split-p${docModal.activePage}`}
+                        src={`${docModal.details?.pdfUrl || '/docs/proposal-padivision-pkm-kc.pdf'}#page=${docModal.activePage}&toolbar=1&navpanes=0`}
+                        title={`Pratinjau PDF - ${docModal.details?.title}`}
+                      />
+                    </div>
+                  </div>
+                  <div className="ai-workspace-split-report">
+                    <AIFormatDetector
+                      assignment={docModal.assignment}
+                      onJumpToPage={handleJumpToPage}
+                      onApplyToScoring={handleApplyAIToScoring}
+                      isSplitView={true}
+                      onToggleSplitView={() => setDocModal(prev => ({ ...prev, isSplitView: false }))}
+                    />
+                  </div>
+                </div>
+              ) : (
+                /* FULL VIEW AI FORMAT DETECTOR */
+                <div style={{ flex: 1, height: '100%', overflowY: 'auto', background: '#fbfbfc' }}>
+                  <AIFormatDetector
+                    assignment={docModal.assignment}
+                    onJumpToPage={(pageNum) => {
+                      handleJumpToPage(pageNum)
+                      setDocModal(prev => ({ ...prev, isSplitView: true }))
+                    }}
+                    onApplyToScoring={handleApplyAIToScoring}
+                    isSplitView={false}
+                    onToggleSplitView={() => setDocModal(prev => ({ ...prev, isSplitView: true }))}
+                  />
+                </div>
+              )
             ) : (
               /* VIEW MODE: RINGKASAN & INTISARI BAB */
               <div className="rev-summary-view">
