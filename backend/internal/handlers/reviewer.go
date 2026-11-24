@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"time"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -417,7 +418,7 @@ func (h ReviewerHandler) CheckFormatAI(c *gin.Context) {
 	}
 
 	var scheme models.PKMScheme
-	if proposal.SchemeID != "" {
+	if proposal.SchemeID != 0 {
 		h.DB.Where("id = ?", proposal.SchemeID).First(&scheme)
 	}
 
