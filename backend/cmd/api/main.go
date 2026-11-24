@@ -68,6 +68,7 @@ func main() {
 	msgFeedback := handlers.MessageFeedbackHandler{DB: db}
 	student := handlers.StudentHandler{DB: db}
 	ai := handlers.AIHandler{DB: db}
+	idea := handlers.IdeaHandler{DB: db}
 
 	api := r.Group("/api")
 	api.POST("/auth/login", auth.Login)
@@ -83,6 +84,7 @@ func main() {
 	api.GET("/portfolio", portfolio.List)
 	api.GET("/stats", stats.List)
 	api.GET("/contact", contact.Get)
+	api.GET("/fields", idea.ListFields) // daftar bidang baku (form ide, proposal, admin)
 	api.POST("/feedback", feedback.Create)
 
 	// --- Modul Admin Akun (Verifikasi KTM & Manajemen Akun Mahasiswa) ---
@@ -112,6 +114,9 @@ func main() {
 	// --- Modul Reviewer ---
 	reviewerGroup := api.Group("/reviewer", middleware.RequireAuth(secret, "reviewer", "admin"))
 	reviewerGroup.GET("/overview", reviewer.GetOverview)
+	reviewerGroup.GET("/fields", idea.ReviewerFields)
+	reviewerGroup.GET("/ideas", idea.ReviewerList)
+	reviewerGroup.POST("/ideas/:id/decision", idea.ReviewerDecide)
 	reviewerGroup.GET("/assignments", reviewer.GetAssignments)
 	reviewerGroup.GET("/assignments/:id", reviewer.GetAssignmentDetail)
 	reviewerGroup.POST("/assignments/:id/save", reviewer.SaveReview)
@@ -134,6 +139,9 @@ func main() {
 	api.GET("/students", student.GetStudents)          // publik: direktori mahasiswa terdaftar di database
 	studentGroup := api.Group("/student", middleware.RequireAuth(secret, "mahasiswa", "admin"))
 	studentGroup.GET("/dashboard", student.GetDashboard)
+	studentGroup.GET("/ideas", idea.StudentList)
+	studentGroup.POST("/ideas", idea.StudentSubmit)
+	studentGroup.PUT("/ideas/:id", idea.StudentUpdate)
 	studentGroup.GET("/schemes", student.GetSchemes)
 	studentGroup.GET("/supervisors", student.GetSupervisors)
 	studentGroup.GET("/students", student.GetStudents)
@@ -175,6 +183,8 @@ func main() {
 	admin.GET("/contact", contact.Get)
 	admin.PUT("/contact", contact.Update)
 	admin.GET("/ai/overview", ai.AdminOverview)
+	admin.GET("/reviewers", idea.AdminListReviewers)
+	admin.PUT("/reviewers/:id/fields", idea.AdminSetReviewerFields)
 	r.Run(":" + config.Env("PORT", "8080"))
 }
 
@@ -631,6 +641,17 @@ func seedV2(db *gorm.DB) {
 	var reviewer models.User
 	db.Where("email = ?", "dosen@pkm.unila.ac.id").First(&dosen)
 	db.Where("email = ?", "reviewer@pkm.unila.ac.id").First(&reviewer)
+
+	// Reviewer demo memegang tiga bidang agar antrean seleksi ide/proposal per bidang langsung terisi
+	var reviewerFieldCount int64
+	db.Model(&models.UserExpertise{}).Where("user_id = ?", reviewer.ID).Count(&reviewerFieldCount)
+	if reviewer.ID != "" && reviewerFieldCount == 0 {
+		var demoFields []models.ExpertiseField
+		db.Where("name IN ?", []string{"Teknologi & Rekayasa", "Pertanian & Pangan", "MIPA & Lingkungan"}).Find(&demoFields)
+		for _, field := range demoFields {
+			db.Create(&models.UserExpertise{UserID: reviewer.ID, ExpertiseID: field.ID, ExpertiseLevel: "expert"})
+		}
+	}
 
 	var demoProposal models.Proposal
 	if db.Where("team_id = ?", team.ID).First(&demoProposal).Error == gorm.ErrRecordNotFound {

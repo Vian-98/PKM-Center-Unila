@@ -13,6 +13,8 @@ type Proposal struct {
 	Abstract       string     `json:"abstract"`
 	Keywords       string     `json:"keywords"`
 	FieldOfStudy   string     `json:"fieldOfStudy" gorm:"column:field_of_study"`
+	// Bidang baku (expertise_fields) untuk antrean reviewer per bidang.
+	ExpertiseFieldID *int64   `json:"fieldId" gorm:"column:expertise_field_id"`
 	Status         string     `json:"status" gorm:"default:draft"`
 	CurrentStageID *string    `json:"currentStageId" gorm:"column:current_stage_id;type:uuid"`
 	IsFunded       bool       `json:"isFunded" gorm:"column:is_funded;default:false"`

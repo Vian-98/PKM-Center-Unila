@@ -206,6 +206,7 @@ func (h StudentHandler) GetDashboard(c *gin.Context) {
 		Abstract     string     `json:"abstract"`
 		Keywords     string     `json:"keywords"`
 		FieldOfStudy string     `json:"fieldOfStudy"`
+		FieldID      *int64     `json:"fieldId"`
 		Status       string     `json:"status"`
 		SchemeCode   string     `json:"schemeCode"`
 		SchemeName   string     `json:"schemeName"`
@@ -219,7 +220,7 @@ func (h StudentHandler) GetDashboard(c *gin.Context) {
 	proposalFound := false
 	if teamFound {
 		h.DB.Table("proposals p").
-			Select(`p.id, p.title, p.abstract, p.keywords, p.field_of_study, p.status, s.code as scheme_code, s.name as scheme_name,
+			Select(`p.id, p.title, p.abstract, p.keywords, p.field_of_study, p.expertise_field_id as field_id, p.status, s.code as scheme_code, s.name as scheme_name,
 			        p.is_funded, p.submitted_at, p.created_at, p.updated_at,
 			        COALESCE(st.name, '') as stage_name,
 			        (SELECT COUNT(*) FROM logbook_entries le WHERE le.proposal_id = p.id) as logbook_count`).
@@ -344,6 +345,7 @@ func (h StudentHandler) GetDashboard(c *gin.Context) {
 			"abstract":       proposal.Abstract,
 			"keywords":       proposal.Keywords,
 			"fieldOfStudy":   proposal.FieldOfStudy,
+			"fieldId":        proposal.FieldID,
 			"status":         proposal.Status,
 			"schemeCode":     proposal.SchemeCode,
 			"schemeName":     proposal.SchemeName,
@@ -483,6 +485,7 @@ func (h StudentHandler) CreateProposal(c *gin.Context) {
 		Abstract             string `json:"abstract"`
 		Keywords             string `json:"keywords"`
 		FieldOfStudy         string `json:"fieldOfStudy"`
+		FieldID              *int64 `json:"fieldId"`
 		SupervisorLecturerID string `json:"supervisorLecturerId"`
 		SupervisorMessage    string `json:"supervisorMessage"`
 		DocURL               string `json:"docUrl"`
@@ -546,6 +549,9 @@ func (h StudentHandler) CreateProposal(c *gin.Context) {
 		if strings.TrimSpace(input.FieldOfStudy) != "" {
 			proposal.FieldOfStudy = input.FieldOfStudy
 		}
+		if input.FieldID != nil && *input.FieldID > 0 {
+			proposal.ExpertiseFieldID = input.FieldID
+		}
 		proposal.UpdatedAt = now
 
 		if input.Submit {
@@ -598,6 +604,9 @@ func (h StudentHandler) CreateProposal(c *gin.Context) {
 			Status:       "draft",
 			CreatedAt:    now,
 			UpdatedAt:    now,
+		}
+		if input.FieldID != nil && *input.FieldID > 0 {
+			proposal.ExpertiseFieldID = input.FieldID
 		}
 		if input.Submit {
 			proposal.Status = "submitted"

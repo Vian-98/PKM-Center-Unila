@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { api } from '../lib/content'
 import { getAuthToken } from '../lib/authSession'
+import { authFetch, resolveAssetUrl } from '../lib/studentApi'
 import {
   loadStore,
   saveStore,
@@ -26,6 +27,7 @@ import {
   AlertTriangle,
 } from 'lucide-react'
 import { AIFormatDetector } from '../components/AIFormatDetector'
+import { ReviewerIdeaSelection } from '../components/ReviewerIdeaSelection'
 import { presetReportsMap } from '../lib/aiFormatCheckerData'
 
 export function ReviewerDashboard({ user, onSwitchRole }) {
@@ -94,8 +96,12 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
   }
 
   // Persistent State agar tidak statis
-  const [overview, setOverview] = useState(() => loadStore('pkm_reviewer_overview', initialReviewerOverview))
-  const [assignments, setAssignments] = useState(() => loadStore('pkm_reviewer_assignments', initialReviewAssignments))
+  // Saat login, data asli dimuat dari API; data contoh hanya untuk mode tanpa backend
+  const hasSession = Boolean(getAuthToken())
+  const [overview, setOverview] = useState(() => (hasSession ? { totalAssignments: 0, pendingCount: 0, inProgressCount: 0, completedCount: 0 } : loadStore('pkm_reviewer_overview', initialReviewerOverview)))
+  const [assignments, setAssignments] = useState(() => (hasSession ? [] : loadStore('pkm_reviewer_assignments', initialReviewAssignments)))
+  // Tahap kerja reviewer: seleksi ide (tahap 2) atau seleksi proposal internal (tahap 3)
+  const [reviewTab, setReviewTab] = useState('ide')
   const [annotations, setAnnotations] = useState(() => loadStore('pkm_pdf_annotations', initialPdfAnnotations))
   
   const [activeFilter, setActiveFilter] = useState('all') // 'all' | 'pending' | 'completed'
@@ -140,7 +146,7 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
       faculty: item.faculty,
       version: 'Naskah_Proposal_v1.0.pdf',
       fileSize: '4.8 MB',
-      pdfUrl: item.documentUrl || '/docs/proposal-padivision-pkm-kc.pdf',
+      pdfUrl: item.documentUrl ? resolveAssetUrl(item.documentUrl) : '/docs/proposal-padivision-pkm-kc.pdf',
       fileName: 'proposal-pkm.pdf',
       submittedDate: '10 Oktober 2026',
       abstract: item.abstract,
@@ -157,7 +163,7 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
       assignment: item,
       details: {
         ...details,
-        pdfUrl: details.pdfUrl || item.documentUrl || '/docs/proposal-padivision-pkm-kc.pdf',
+        pdfUrl: item.documentUrl ? resolveAssetUrl(item.documentUrl) : (details.pdfUrl || '/docs/proposal-padivision-pkm-kc.pdf'),
       },
       viewMode: initialMode,
       isSplitView: false,
@@ -221,8 +227,8 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
   const token = getAuthToken()
 
   // Sinkronisasi otomatis ke LocalStorage
-  useEffect(() => { saveStore('pkm_reviewer_overview', overview) }, [overview])
-  useEffect(() => { saveStore('pkm_reviewer_assignments', assignments) }, [assignments])
+  useEffect(() => { if (!hasSession) saveStore('pkm_reviewer_overview', overview) }, [overview, hasSession])
+  useEffect(() => { if (!hasSession) saveStore('pkm_reviewer_assignments', assignments) }, [assignments, hasSession])
   useEffect(() => { saveStore('pkm_pdf_annotations', annotations) }, [annotations])
 
   // Fetch dari API jika terhubung ke backend
@@ -237,7 +243,7 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
 
     fetch(`${api}/reviewer/assignments`, { headers })
       .then(res => res.ok ? res.json() : null)
-      .then(res => { if (res?.data?.length) setAssignments(res.data) })
+      .then(res => { if (Array.isArray(res?.data)) setAssignments(res.data) })
       .catch(() => {})
   }, [token])
 
@@ -253,26 +259,37 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
   }, [scoringModal.scores, scoringModal.criteria, scoringModal.isOpen])
 
   // Buka Form Scoring untuk Penugasan tertentu (memulihkan nilai tersimpan jika ada)
-  const openScoringForm = (assignment) => {
-    const initialScores = {}
-    defaultReviewCriteria.forEach(c => {
-      const savedScore = assignment.savedScores?.[c.id]
-      initialScores[c.id] = {
-        score: savedScore?.score ?? (assignment.totalScore ? Math.round(assignment.totalScore) : 80),
-        comment: savedScore?.comment ?? '',
+  const openScoringForm = async (assignment) => {
+    // Kriteria rubrik dan nilai tersimpan diambil dari backend agar id kriteria cocok dengan database
+    let criteria = defaultReviewCriteria
+    let saved = { scores: [], review: null }
+    if (hasSession) {
+      try {
+        const res = await authFetch(`/reviewer/assignments/${assignment.id}`)
+        if (res.data?.criteria?.length) criteria = res.data.criteria
+        saved = { scores: res.data?.scores || [], review: res.data?.review?.id ? res.data.review : null }
+      } catch (err) {
+        alert(`Gagal memuat rubrik penilaian: ${err.message}`)
+        return
       }
+    }
+    const initialScores = {}
+    criteria.forEach(c => {
+      const savedScore = saved.scores.find(sc => sc.criterionId === c.id) || assignment.savedScores?.[c.id]
+      initialScores[c.id] = { score: savedScore?.score ?? 0, comment: savedScore?.comment ?? '' }
     })
+    const review = saved.review || assignment
 
     setScoringModal({
       isOpen: true,
       assignment,
-      criteria: defaultReviewCriteria,
+      criteria,
       scores: initialScores,
-      strengths: assignment.strengths || (assignment.status === 'completed' ? 'Gagasan sangat solutif dan metode uji lapangan sangat jelas.' : ''),
-      weaknesses: assignment.weaknesses || (assignment.status === 'completed' ? 'Rincian luaran paten sederhana perlu diperkuat.' : ''),
-      comments: assignment.comments || (assignment.status === 'completed' ? 'Sangat direkomendasikan untuk didanai Belmawa.' : ''),
-      recommendation: assignment.recommendation || 'funded',
-      reviewStatus: assignment.reviewStatus || 'draft',
+      strengths: review.strengths || '',
+      weaknesses: review.weaknesses || '',
+      comments: review.comments || '',
+      recommendation: review.recommendation || 'accepted',
+      reviewStatus: review.reviewStatus || 'draft',
     })
   }
 
@@ -328,13 +345,19 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
         const endpoint = isFinal
           ? `${api}/reviewer/assignments/${assignment.id}/submit`
           : `${api}/reviewer/assignments/${assignment.id}/save`
-        await fetch(endpoint, {
+        const res = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify(payload),
         })
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}))
+          alert(`Penilaian gagal disimpan: ${body.message || res.status}`)
+          return
+        }
       } catch (err) {
-        console.warn('Backend offline, menyimpan ke state lokal.', err)
+        alert(`Penilaian gagal disimpan: ${err.message}`)
+        return
       }
     }
 
@@ -617,6 +640,19 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
         </div>
       </section>
 
+      {/* Pilihan tahap kerja reviewer */}
+      <div className="modern-tabs reviewer-stage-tabs">
+        <button type="button" className={`tab-btn ${reviewTab === 'ide' ? 'active' : ''}`} onClick={() => setReviewTab('ide')}>
+          Tahap 2 · Seleksi Ide
+        </button>
+        <button type="button" className={`tab-btn ${reviewTab === 'proposal' ? 'active' : ''}`} onClick={() => setReviewTab('proposal')}>
+          Tahap 3 · Seleksi Proposal ({assignments.length})
+        </button>
+      </div>
+
+      {reviewTab === 'ide' && <ReviewerIdeaSelection />}
+
+      {reviewTab === 'proposal' && (<>
       {/* Filter & Search Bar Antrean */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div className="modern-tabs" style={{ marginBottom: 0 }}>
@@ -776,8 +812,9 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
 
                 <div className="proposal-card-meta">
                   <span>Ketua Pengusul: <strong>{item.leaderName}</strong></span>
-                  <span>Fakultas: {item.faculty}</span>
-                  <span>Batas Waktu Review: <strong>{item.reviewDeadline || '18 Oktober 2026'}</strong></span>
+                  <span>Fakultas: {item.faculty || '-'}</span>
+                  {item.fieldName && <span>Bidang: <strong>{item.fieldName}</strong></span>}
+                  {item.reviewDeadline && <span>Batas Waktu Review: <strong>{new Date(item.reviewDeadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</strong></span>}
                   {item.recommendation && (
                     <span>
                       Rekomendasi: <strong style={{ textTransform: 'capitalize', color: item.recommendation === 'funded' ? '#059669' : item.recommendation === 'rejected' ? '#dc2626' : '#d97706' }}>{item.recommendation}</strong>
@@ -818,6 +855,7 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
           )}
         </div>
       </section>
+      </>)}
 
       {/* MODAL FORM SCORING & RUBRIK PENILAIAN */}
       {scoringModal.isOpen && (

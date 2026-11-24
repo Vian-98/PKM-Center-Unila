@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import {
+  Lightbulb,
   LayoutDashboard,
   FilePlus,
   ClipboardList,
@@ -64,6 +65,7 @@ export function DesktopSidebarLayout({ user, active, routePrefix, onLogout, onSw
       default:
         return [
           { label: 'Dashboard', href: '#mahasiswa', icon: <LayoutDashboard size={17} /> },
+          { label: 'Ajukan Ide', href: '#mahasiswa/ajukan-ide', icon: <Lightbulb size={17} /> },
           { label: 'Ajukan Proposal', href: '#mahasiswa/ajukan-proposal', icon: <FilePlus size={17} /> },
           { label: 'Logbook Digital', href: '#mahasiswa/logbook', icon: <ClipboardList size={17} /> },
           { label: 'Manajemen & Cari Tim', href: '#mahasiswa/tim', icon: <Users size={17} /> },

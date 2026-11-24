@@ -542,12 +542,76 @@ function AIGatewayView() {
 
 /* ---------------- Panel utama ---------------- */
 
+/* ---------------- Bidang reviewer (akses seleksi ide & proposal) ---------------- */
+
+function ReviewerFieldsView() {
+  const { items, load, token, message } = useAdminList('/reviewers')
+  const [fields, setFields] = useState([])
+  const [draft, setDraft] = useState({})
+  const [saving, setSaving] = useState('')
+  const [notice, setNotice] = useState('')
+
+  useEffect(() => {
+    fetch(`${api}/fields`).then(r => r.json()).then(r => setFields(r.data || [])).catch(() => {})
+  }, [])
+
+  const selected = (reviewer) => draft[reviewer.id] ?? reviewer.fieldIds ?? []
+  const toggle = (reviewer, fieldId) => {
+    const current = selected(reviewer)
+    const next = current.includes(fieldId) ? current.filter(id => id !== fieldId) : [...current, fieldId]
+    setDraft(d => ({ ...d, [reviewer.id]: next }))
+  }
+  const save = async (reviewer) => {
+    setSaving(reviewer.id)
+    try {
+      await adminRequest(token, `/reviewers/${reviewer.id}/fields`, 'PUT', { fieldIds: selected(reviewer) })
+      setDraft(d => { const n = { ...d }; delete n[reviewer.id]; return n })
+      setNotice(`Bidang ${reviewer.name} tersimpan.`)
+      load()
+    } catch (err) {
+      setNotice(err.message)
+    } finally {
+      setSaving('')
+    }
+  }
+
+  return (
+    <section className="admin-reviewer-fields">
+      <div className="form-heading"><h2>Bidang reviewer</h2><span>Reviewer hanya melihat ide dan proposal dari bidang yang dicentang</span></div>
+      {(notice || message) && <p className="form-message">{notice || message}</p>}
+      {items.length === 0 && <p className="empty-state">Belum ada akun dengan peran reviewer.</p>}
+      {items.map((reviewer) => (
+        <article className="admin-item reviewer-field-item" key={reviewer.id}>
+          <div>
+            <h3>{reviewer.name}</h3>
+            <p className="card-meta">{reviewer.email}</p>
+            <div className="reviewer-field-options">
+              {fields.map((field) => (
+                <label key={field.id} className={selected(reviewer).includes(field.id) ? 'checked' : ''}>
+                  <input type="checkbox" checked={selected(reviewer).includes(field.id)} onChange={() => toggle(reviewer, field.id)} />
+                  {field.name}
+                </label>
+              ))}
+            </div>
+          </div>
+          <div className="admin-actions">
+            <button onClick={() => save(reviewer)} disabled={saving === reviewer.id || !draft[reviewer.id]}>
+              {saving === reviewer.id ? 'Menyimpan...' : 'Simpan bidang'}
+            </button>
+          </div>
+        </article>
+      ))}
+    </section>
+  )
+}
+
 const TABS = [
   ['konten', 'Konten'],
   ['timeline', 'Timeline'],
   ['pedoman', 'Pedoman'],
   ['portofolio', 'Portofolio'],
   ['masukan', 'Masukan'],
+  ['reviewer', 'Bidang Reviewer'],
   ['statistik', 'Statistik'],
   ['kontak', 'Kontak'],
   ['ai-gateway', 'AI Gateway (9Router)'],
@@ -585,6 +649,7 @@ export function AdminPanel({ user }) {
       {view === 'pedoman' && <PedomanView />}
       {view === 'portofolio' && <PortfolioView />}
       {view === 'masukan' && <FeedbackView />}
+      {view === 'reviewer' && <ReviewerFieldsView />}
       {view === 'statistik' && <StatsView />}
       {view === 'kontak' && <ContactView />}
       {view === 'ai-gateway' && <AIGatewayView />}

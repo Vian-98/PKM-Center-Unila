@@ -13,6 +13,7 @@ import { ReviewerDashboard } from './pages/ReviewerDashboard'
 import { PesanFeedback } from './pages/PesanFeedback'
 import { MahasiswaDashboard } from './pages/MahasiswaDashboard'
 import { AjukanProposal } from './pages/AjukanProposal'
+import { AjukanIde } from './pages/AjukanIde'
 import { LogbookPKM } from './pages/LogbookPKM'
 import { CekStatusUsulan } from './pages/CekStatusUsulan'
 import { IdeaLab } from './pages/IdeaLab'
@@ -1381,7 +1382,8 @@ function App() {
   // ── Portal Mahasiswa ──────────────────────────────────────────────
   else if (raw === 'mahasiswa') {
     if (user && user.role === 'mahasiswa') {
-      if (sub === 'ajukan-proposal') view = <AjukanProposal user={user} />
+      if (sub === 'ajukan-ide') view = <AjukanIde />
+      else if (sub === 'ajukan-proposal') view = <AjukanProposal user={user} />
       else if (sub === 'logbook') view = <LogbookPKM user={user} />
       else if (sub === 'cek-status') view = <CekStatusUsulan user={user} />
       else if (sub === 'idealab' || sub === 'pkmate') view = <IdeaLab user={user} onLogin={() => setModal(true)} />

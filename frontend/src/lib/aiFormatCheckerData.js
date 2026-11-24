@@ -30,28 +30,28 @@ export const samplePujaPkmReReport = {
           id: 'item-1-1',
           page: 'Hal. 9',
           pageNum: 9,
-          text: 'Kesalahan spasi keterangan gambar/tabel bukan 1,15 — "Gambar 3.1. Skema riset yang digunakan pada penelitian."',
+          text: 'Kesalahan spasi keterangan gambar/tabel bukan 1,15: "Gambar 3.1. Skema riset yang digunakan pada penelitian."',
           tag: 'Format Penulisan',
         },
         {
           id: 'item-1-2',
           page: 'Hal. 10',
           pageNum: 10,
-          text: 'Kesalahan spasi keterangan gambar/tabel bukan 1,15 — "Gambar 4.1. Bukti (a) determinasi bahan tanaman dan (b) hasi…"',
+          text: 'Kesalahan spasi keterangan gambar/tabel bukan 1,15: "Gambar 4.1. Bukti (a) determinasi bahan tanaman dan (b) hasi…"',
           tag: 'Format Penulisan',
         },
         {
           id: 'item-1-3',
           page: 'Hal. 11',
           pageNum: 11,
-          text: 'Kesalahan spasi keterangan gambar/tabel bukan 1,15 — "Tabel 4.1. Kristalinitas relatif katalis hasil sintesis."',
+          text: 'Kesalahan spasi keterangan gambar/tabel bukan 1,15: "Tabel 4.1. Kristalinitas relatif katalis hasil sintesis."',
           tag: 'Format Penulisan',
         },
         {
           id: 'item-1-4',
           page: 'Hal. 12',
           pageNum: 12,
-          text: 'Kesalahan spasi keterangan gambar/tabel bukan 1,15 — "Gambar 4.2. Perakitan dan pengujian sistem instrumentasi suh…"',
+          text: 'Kesalahan spasi keterangan gambar/tabel bukan 1,15: "Gambar 4.2. Perakitan dan pengujian sistem instrumentasi suh…"',
           tag: 'Format Penulisan',
         },
       ],
@@ -140,7 +140,7 @@ export const samplePujaPkmReReport = {
         },
         {
           id: 'det-9-2',
-          text: 'Kesalahan spasi keterangan gambar/tabel bukan 1,15 — "Gambar 3.1. Skema riset yang digunakan pada penelitian."',
+          text: 'Kesalahan spasi keterangan gambar/tabel bukan 1,15: "Gambar 3.1. Skema riset yang digunakan pada penelitian."',
           tag: 'Format Penulisan',
         },
       ],
@@ -158,7 +158,7 @@ export const samplePujaPkmReReport = {
         },
         {
           id: 'det-10-2',
-          text: 'Kesalahan spasi keterangan gambar/tabel bukan 1,15 — "Gambar 4.1. Bukti (a) determinasi bahan tanaman dan (b) hasi…"',
+          text: 'Kesalahan spasi keterangan gambar/tabel bukan 1,15: "Gambar 4.1. Bukti (a) determinasi bahan tanaman dan (b) hasi…"',
           tag: 'Format Penulisan',
         },
       ],
@@ -171,7 +171,7 @@ export const samplePujaPkmReReport = {
       findings: [
         {
           id: 'det-11-1',
-          text: 'Kesalahan spasi keterangan gambar/tabel bukan 1,15 — "Tabel 4.1. Kristalinitas relatif katalis hasil sintesis."',
+          text: 'Kesalahan spasi keterangan gambar/tabel bukan 1,15: "Tabel 4.1. Kristalinitas relatif katalis hasil sintesis."',
           tag: 'Format Penulisan',
         },
         {
@@ -189,7 +189,7 @@ export const samplePujaPkmReReport = {
       findings: [
         {
           id: 'det-12-1',
-          text: 'Kesalahan spasi keterangan gambar/tabel bukan 1,15 — "Gambar 4.2. Perakitan dan pengujian sistem instrumentasi suh…"',
+          text: 'Kesalahan spasi keterangan gambar/tabel bukan 1,15: "Gambar 4.2. Perakitan dan pengujian sistem instrumentasi suh…"',
           tag: 'Format Penulisan',
         },
         {

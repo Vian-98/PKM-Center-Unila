@@ -1,9 +1,10 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
-	"time"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -14,6 +15,24 @@ type ReviewerHandler struct {
 	DB *gorm.DB
 }
 
+// ensureFieldAssignments memasukkan proposal yang sudah diajukan dari bidang reviewer
+// ke antreannya, sehingga reviewer otomatis menerima proposal sebidang tanpa penugasan manual.
+func (h ReviewerHandler) ensureFieldAssignments(userID string) {
+	fieldIDs := reviewerFieldIDs(h.DB, userID)
+	if len(fieldIDs) == 0 {
+		return
+	}
+	h.DB.Exec(`
+		INSERT INTO review_assignments (proposal_id, reviewer_id, status, assigned_at)
+		SELECT p.id, ?, 'assigned', NOW()
+		FROM proposals p
+		WHERE p.status IN ('submitted', 'under_review')
+		  AND p.expertise_field_id IN ?
+		  AND NOT EXISTS (
+		      SELECT 1 FROM review_assignments ra WHERE ra.proposal_id = p.id AND ra.reviewer_id = ?
+		  )`, userID, fieldIDs, userID)
+}
+
 // GetOverview mengembalikan statistik antrean penilaian reviewer
 func (h ReviewerHandler) GetOverview(c *gin.Context) {
 	userID := getUserIDFromContext(c)
@@ -21,6 +40,7 @@ func (h ReviewerHandler) GetOverview(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": "Akses tidak diizinkan"})
 		return
 	}
+	h.ensureFieldAssignments(userID)
 
 	var totalAssignments int64
 	h.DB.Model(&models.ReviewAssignment{}).Where("reviewer_id = ?", userID).Count(&totalAssignments)
@@ -51,11 +71,15 @@ func (h ReviewerHandler) GetAssignments(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": "Akses tidak diizinkan"})
 		return
 	}
+	h.ensureFieldAssignments(userID)
 
 	type AssignmentItem struct {
 		ID             string     `json:"id"`
 		ProposalID     string     `json:"proposalId"`
 		ProposalTitle  string     `json:"proposalTitle"`
+		Abstract       string     `json:"abstract"`
+		FieldName      *string    `json:"fieldName"`
+		DocumentURL    *string    `json:"documentUrl"`
 		SchemeCode     string     `json:"schemeCode"`
 		SchemeName     string     `json:"schemeName"`
 		TeamName       string     `json:"teamName"`
@@ -69,9 +93,12 @@ func (h ReviewerHandler) GetAssignments(c *gin.Context) {
 		ReviewStatus   *string    `json:"reviewStatus"`
 	}
 
-	var items []AssignmentItem
+	items := []AssignmentItem{}
 	rows, err := h.DB.Table("review_assignments ra").
-		Select(`ra.id, ra.proposal_id, p.title as proposal_title, s.code as scheme_code,
+		Select(`ra.id, ra.proposal_id, p.title as proposal_title, p.abstract, f.name as field_name,
+		        (SELECT pd.file_url FROM proposal_documents pd WHERE pd.proposal_id = p.id
+		         ORDER BY pd.version_number DESC LIMIT 1) as document_url,
+		        s.code as scheme_code,
 		        s.name as scheme_name, t.name as team_name, u.full_name as leader_name,
 		        sp.faculty, ra.status, ra.review_deadline, ra.assigned_at,
 		        r.total_score, r.recommendation, r.review_status`).
@@ -81,7 +108,8 @@ func (h ReviewerHandler) GetAssignments(c *gin.Context) {
 		Joins("JOIN users u ON u.id = t.leader_id").
 		Joins("LEFT JOIN student_profiles sp ON sp.user_id = u.id").
 		Joins("LEFT JOIN reviews r ON r.assignment_id = ra.id").
-		Where("ra.reviewer_id = ?", userID).
+		Joins("LEFT JOIN expertise_fields f ON f.id = p.expertise_field_id").
+		Where("ra.reviewer_id = ? AND ra.status <> 'cancelled'", userID).
 		Order("ra.assigned_at DESC").
 		Rows()
 
@@ -197,6 +225,31 @@ type ReviewSaveInput struct {
 	Recommendation string           `json:"recommendation"` // 'funded' | 'revision' | 'rejected' | 'accepted'
 }
 
+// proposalStatusByRecommendation memetakan keputusan seleksi proposal internal (tahap 3)
+// ke status proposal. "accepted" = lolos seleksi internal, "funded" = direkomendasikan didanai.
+var proposalStatusByRecommendation = map[string]string{
+	"accepted": "approved",
+	"funded":   "funded",
+	"revision": "revision",
+	"rejected": "rejected",
+}
+
+var recommendationLabel = map[string]string{
+	"accepted": "lolos seleksi proposal internal",
+	"funded":   "direkomendasikan untuk didanai",
+	"revision": "perlu revisi",
+	"rejected": "tidak lolos seleksi proposal internal",
+}
+
+// notifyProposalTeam mengirim notifikasi ke ketua tim pengusul proposal.
+func (h ReviewerHandler) notifyProposalTeam(proposalID, title, message string) {
+	var leaderID string
+	h.DB.Raw(`SELECT t.leader_id FROM proposals p JOIN teams t ON t.id = p.team_id WHERE p.id = ?`, proposalID).Scan(&leaderID)
+	if leaderID != "" {
+		StudentHandler{DB: h.DB}.notify(leaderID, "status_change", title, message, "#mahasiswa")
+	}
+}
+
 // SaveReview menyimpan draf penilaian atau pembaruan skor review
 func (h ReviewerHandler) SaveReview(c *gin.Context) {
 	userID := getUserIDFromContext(c)
@@ -211,6 +264,10 @@ func (h ReviewerHandler) SaveReview(c *gin.Context) {
 	var input ReviewSaveInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Format penilaian tidak valid"})
+		return
+	}
+	if _, ok := proposalStatusByRecommendation[input.Recommendation]; !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Rekomendasi tidak dikenal"})
 		return
 	}
 
@@ -261,6 +318,8 @@ func (h ReviewerHandler) SaveReview(c *gin.Context) {
 		assignment.Status = "in_progress"
 		h.DB.Save(&assignment)
 	}
+	// Proposal yang mulai dinilai berpindah ke status "under_review"
+	h.DB.Model(&models.Proposal{}).Where("id = ? AND status = 'submitted'", assignment.ProposalID).Update("status", "under_review")
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Draf penilaian berhasil disimpan",
@@ -285,7 +344,7 @@ func (h ReviewerHandler) SubmitReview(c *gin.Context) {
 		return
 	}
 
-	if input.Recommendation == "" {
+	if _, ok := proposalStatusByRecommendation[input.Recommendation]; !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Keputusan rekomendasi wajib dipilih"})
 		return
 	}
@@ -337,15 +396,18 @@ func (h ReviewerHandler) SubmitReview(c *gin.Context) {
 	assignment.Status = "completed"
 	h.DB.Save(&assignment)
 
-	// Jika rekomendasi funded / rejected, update status proposal jika relevan
-	if input.Recommendation == "funded" {
-		h.DB.Model(&models.Proposal{}).Where("id = ?", assignment.ProposalID).Updates(map[string]any{
-			"is_funded": true,
-			"status":    "funded",
-		})
-	} else if input.Recommendation == "revision" {
-		h.DB.Model(&models.Proposal{}).Where("id = ?", assignment.ProposalID).Update("status", "revision")
+	// Keputusan seleksi proposal menentukan status proposal dan dikabarkan ke ketua tim
+	h.DB.Model(&models.Proposal{}).Where("id = ?", assignment.ProposalID).Updates(map[string]any{
+		"status":    proposalStatusByRecommendation[input.Recommendation],
+		"is_funded": input.Recommendation == "funded",
+	})
+	var title string
+	h.DB.Raw("SELECT title FROM proposals WHERE id = ?", assignment.ProposalID).Scan(&title)
+	msg := fmt.Sprintf("Proposal \"%s\" %s oleh reviewer.", title, recommendationLabel[input.Recommendation])
+	if strings.TrimSpace(input.Comments) != "" {
+		msg += " Catatan reviewer: " + strings.TrimSpace(input.Comments)
 	}
+	h.notifyProposalTeam(assignment.ProposalID, "Hasil seleksi proposal", msg)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Penilaian dan rekomendasi berhasil difinalisasi",
@@ -410,7 +472,14 @@ func (h ReviewerHandler) CheckFormatAI(c *gin.Context) {
 	assignmentID := c.Param("id")
 
 	var assignment models.ReviewAssignment
-	h.DB.Where("id = ?", assignmentID).First(&assignment)
+	q := h.DB.Where("id = ?", assignmentID)
+	if !isAdmin(c) {
+		q = q.Where("reviewer_id = ?", getUserIDFromContext(c))
+	}
+	if err := q.First(&assignment).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Penugasan review tidak ditemukan"})
+		return
+	}
 
 	var proposal models.Proposal
 	if assignment.ProposalID != "" {
@@ -476,10 +545,10 @@ func getSamplePujaPKMREReport() AIFormatCheckResult {
 				DetailCount: 4,
 				Category:    "Format Penulisan",
 				Items: []SummaryErrorSub{
-					{ID: "item-1-1", Page: &strHal9, PageNum: &hal9, Text: `Kesalahan spasi keterangan gambar/tabel bukan 1,15 — "Gambar 3.1. Skema riset yang digunakan pada penelitian."`, Tag: "Format Penulisan"},
-					{ID: "item-1-2", Page: &strHal10, PageNum: &hal10, Text: `Kesalahan spasi keterangan gambar/tabel bukan 1,15 — "Gambar 4.1. Bukti (a) determinasi bahan tanaman dan (b) hasi…"`, Tag: "Format Penulisan"},
-					{ID: "item-1-3", Page: &strHal11, PageNum: &hal11, Text: `Kesalahan spasi keterangan gambar/tabel bukan 1,15 — "Tabel 4.1. Kristalinitas relatif katalis hasil sintesis."`, Tag: "Format Penulisan"},
-					{ID: "item-1-4", Page: &strHal12, PageNum: &hal12, Text: `Kesalahan spasi keterangan gambar/tabel bukan 1,15 — "Gambar 4.2. Perakitan dan pengujian sistem instrumentasi suh…"`, Tag: "Format Penulisan"},
+					{ID: "item-1-1", Page: &strHal9, PageNum: &hal9, Text: `Kesalahan spasi keterangan gambar/tabel bukan 1,15: "Gambar 3.1. Skema riset yang digunakan pada penelitian."`, Tag: "Format Penulisan"},
+					{ID: "item-1-2", Page: &strHal10, PageNum: &hal10, Text: `Kesalahan spasi keterangan gambar/tabel bukan 1,15: "Gambar 4.1. Bukti (a) determinasi bahan tanaman dan (b) hasi…"`, Tag: "Format Penulisan"},
+					{ID: "item-1-3", Page: &strHal11, PageNum: &hal11, Text: `Kesalahan spasi keterangan gambar/tabel bukan 1,15: "Tabel 4.1. Kristalinitas relatif katalis hasil sintesis."`, Tag: "Format Penulisan"},
+					{ID: "item-1-4", Page: &strHal12, PageNum: &hal12, Text: `Kesalahan spasi keterangan gambar/tabel bukan 1,15: "Gambar 4.2. Perakitan dan pengujian sistem instrumentasi suh…"`, Tag: "Format Penulisan"},
 				},
 			},
 			{
@@ -535,7 +604,7 @@ func getSamplePujaPKMREReport() AIFormatCheckResult {
 				FindingsCount: 2,
 				Findings: []FormatCheckItem{
 					{ID: "det-9-1", Text: "Kesalahan spasi teks/paragraf tidak 1,15", Tag: "Format Penulisan"},
-					{ID: "det-9-2", Text: `Kesalahan spasi keterangan gambar/tabel bukan 1,15 — "Gambar 3.1. Skema riset yang digunakan pada penelitian."`, Tag: "Format Penulisan"},
+					{ID: "det-9-2", Text: `Kesalahan spasi keterangan gambar/tabel bukan 1,15: "Gambar 3.1. Skema riset yang digunakan pada penelitian."`, Tag: "Format Penulisan"},
 				},
 			},
 			{
@@ -545,7 +614,7 @@ func getSamplePujaPKMREReport() AIFormatCheckResult {
 				FindingsCount: 2,
 				Findings: []FormatCheckItem{
 					{ID: "det-10-1", Text: "Kesalahan spasi teks/paragraf tidak 1,15", Tag: "Format Penulisan"},
-					{ID: "det-10-2", Text: `Kesalahan spasi keterangan gambar/tabel bukan 1,15 — "Gambar 4.1. Bukti (a) determinasi bahan tanaman dan (b) hasi…"`, Tag: "Format Penulisan"},
+					{ID: "det-10-2", Text: `Kesalahan spasi keterangan gambar/tabel bukan 1,15: "Gambar 4.1. Bukti (a) determinasi bahan tanaman dan (b) hasi…"`, Tag: "Format Penulisan"},
 				},
 			},
 			{
@@ -554,7 +623,7 @@ func getSamplePujaPKMREReport() AIFormatCheckResult {
 				PageNum:       &hal11,
 				FindingsCount: 2,
 				Findings: []FormatCheckItem{
-					{ID: "det-11-1", Text: `Kesalahan spasi keterangan gambar/tabel bukan 1,15 — "Tabel 4.1. Kristalinitas relatif katalis hasil sintesis."`, Tag: "Format Penulisan"},
+					{ID: "det-11-1", Text: `Kesalahan spasi keterangan gambar/tabel bukan 1,15: "Tabel 4.1. Kristalinitas relatif katalis hasil sintesis."`, Tag: "Format Penulisan"},
 					{ID: "det-11-2", Text: "Kesalahan spasi teks/paragraf tidak 1,15", Tag: "Format Penulisan"},
 				},
 			},
@@ -564,7 +633,7 @@ func getSamplePujaPKMREReport() AIFormatCheckResult {
 				PageNum:       &hal12,
 				FindingsCount: 2,
 				Findings: []FormatCheckItem{
-					{ID: "det-12-1", Text: `Kesalahan spasi keterangan gambar/tabel bukan 1,15 — "Gambar 4.2. Perakitan dan pengujian sistem instrumentasi suh…"`, Tag: "Format Penulisan"},
+					{ID: "det-12-1", Text: `Kesalahan spasi keterangan gambar/tabel bukan 1,15: "Gambar 4.2. Perakitan dan pengujian sistem instrumentasi suh…"`, Tag: "Format Penulisan"},
 					{ID: "det-12-2", Text: "Kesalahan spasi teks/paragraf tidak 1,15", Tag: "Format Penulisan"},
 				},
 			},

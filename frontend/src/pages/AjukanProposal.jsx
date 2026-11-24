@@ -36,7 +36,7 @@ function getInitialForm(u) {
   const leaderFaculty = u?.faculty || ''
 
   return {
-    scheme: '', title: '', abstract: '', keywords: '', fieldOfStudy: '',
+    scheme: '', title: '', abstract: '', keywords: '', fieldOfStudy: '', fieldId: '',
     supervisorLecturerId: '', supervisor: '', supervisorMessage: '',
     members: [{ npm: leaderNpm, name: leaderName, prodi: leaderProdi, faculty: leaderFaculty, isManual: false }],
     docUrl: '', docName: '', changeNotes: '',
@@ -49,6 +49,11 @@ export function AjukanProposal({ user }) {
   const userKey = user?.email ? user.email.toLowerCase().replace(/[^a-z0-9]/g, '_') : (user?.id || 'guest')
   const [step, setStep] = useState(1)
   const [schemes, setSchemes] = useState(FALLBACK_SCHEMES)
+  // Bidang baku untuk menentukan reviewer sebidang yang menilai proposal
+  const [fields, setFields] = useState([])
+  useEffect(() => {
+    authFetch('/fields').then(r => setFields(r.data || [])).catch(() => {})
+  }, [])
   const [supervisors, setSupervisors] = useState([])
   const [students, setStudents] = useState(FALLBACK_STUDENTS)
 
@@ -217,6 +222,9 @@ export function AjukanProposal({ user }) {
     if (!form.scheme || !form.title.trim()) {
       setState(s => ({ ...s, error: 'Data usulan belum lengkap.', success: '' })); return
     }
+    if (asSubmit && !form.fieldId) {
+      setState(s => ({ ...s, error: 'Pilih bidang proposal agar dinilai reviewer yang sesuai.', success: '' })); return
+    }
     setState({ loading: true, uploading: false, error: '', success: '' })
 
     const payload = {
@@ -225,6 +233,7 @@ export function AjukanProposal({ user }) {
       abstract: form.abstract.trim(),
       keywords: form.keywords.trim(),
       fieldOfStudy: form.fieldOfStudy.trim(),
+      fieldId: form.fieldId ? Number(form.fieldId) : null,
       supervisorLecturerId: form.supervisorLecturerId,
       supervisorMessage: form.supervisorMessage,
       members: form.members.filter(m => m.npm.trim() || m.name.trim()).map(m => ({
@@ -250,6 +259,7 @@ export function AjukanProposal({ user }) {
         abstract: form.abstract,
         keywords: form.keywords,
         fieldOfStudy: form.fieldOfStudy,
+        fieldId: form.fieldId ? Number(form.fieldId) : null,
         status: asSubmit ? 'submitted' : 'draft',
       }
       setExistingProposal(savedProposal)
@@ -340,6 +350,7 @@ export function AjukanProposal({ user }) {
             abstract: revisionForm.abstract,
             keywords: revisionForm.keywords,
             fieldOfStudy: existingProposal.fieldOfStudy,
+            fieldId: existingProposal.fieldId || null,
             submit: asSubmit,
           }),
         }).catch(() => {})
@@ -849,6 +860,15 @@ export function AjukanProposal({ user }) {
               <label className="student-label">Kata Kunci</label>
               <input className="student-input" type="text" value={form.keywords} onChange={e => update({ keywords: e.target.value })}
                 placeholder="contoh: IoT, kecerdasan buatan, pertanian presisi, sensor tanah" />
+            </div>
+
+            <div className="student-field">
+              <label className="student-label">Bidang Proposal (untuk reviewer) *</label>
+              <select className="student-input" value={form.fieldId || ''} onChange={e => update({ fieldId: e.target.value })}>
+                <option value="">Pilih bidang</option>
+                {fields.map(fd => <option key={fd.id} value={fd.id}>{fd.name}</option>)}
+              </select>
+              <p className="student-hint">Proposal akan dinilai oleh reviewer yang memegang bidang ini.</p>
             </div>
 
             <div className="student-field">
