@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { BrandLockup } from './brand/BrandLockup'
 import {
   Lightbulb,
   LayoutDashboard,
@@ -165,16 +166,7 @@ export function DesktopSidebarLayout({ user, active, routePrefix, onLogout, onSw
 
         {/* Brand */}
         <div className="bo-brand">
-          <a href="#beranda" className="bo-brand-inner" title="PKM Center Universitas Lampung">
-            <div className="bo-brand-logos">
-              <img src="/Logo-2016-Unila.png" alt="Unila" />
-              <img src="/logo-pkm-center.png" alt="PKM" />
-            </div>
-            <div className="bo-brand-text">
-              <span className="bo-brand-name">PKM CENTER</span>
-              <span className="bo-brand-sub">UNIVERSITAS LAMPUNG</span>
-            </div>
-          </a>
+          <BrandLockup variant="sidebar" />
         </div>
 
         {/* Section label */}

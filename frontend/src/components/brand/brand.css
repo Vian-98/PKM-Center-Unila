@@ -1,0 +1,615 @@
+/* ============================================================
+   PKM Center Unila — Brand Components
+   Lockup logo, brand mark, dan animasi "brand seal" beranda.
+   ============================================================ */
+
+/* ---------- Brand mark (satu lambang) ---------- */
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0.18rem;
+  border-radius: var(--brand-radius-sm);
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: var(--brand-shadow-sm);
+  flex: none;
+}
+
+.brand-mark picture,
+.brand-mark img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.brand-mark img {
+  object-fit: contain;
+}
+
+.brand-mark--unila {
+  width: 2.35rem;
+  height: 2.35rem;
+  padding: 0;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* ---------- Lockup (gabungan lambang + teks) ---------- */
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+  color: var(--brand-ink);
+  text-decoration: none;
+  line-height: 1;
+}
+
+.brand-lockup__logos {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: none;
+}
+
+.brand-lockup__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.05;
+}
+
+.brand-lockup__name {
+  font-family: var(--brand-font-sans);
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.055em;
+  color: var(--brand-navy);
+  white-space: nowrap;
+}
+
+.brand-lockup__sub {
+  margin-top: 3px;
+  font-family: var(--brand-font-sans);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 1.75px;
+  color: #5b7a99;
+  white-space: nowrap;
+}
+
+/* ---------- Varian navbar ---------- */
+.brand-lockup--navbar {
+  flex: 0 0 auto;
+}
+
+.brand-lockup--navbar .brand-mark--pkm {
+  animation: brand-mark-settle 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.brand-lockup--navbar .brand-mark--unila {
+  animation: brand-mark-settle 0.65s 0.07s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.brand-lockup--navbar:hover .brand-mark--pkm {
+  border-color: rgba(255, 215, 0, 0.75);
+  box-shadow: 0 4px 14px rgba(18, 59, 102, 0.14), 0 0 0 3px rgba(255, 215, 0, 0.16);
+}
+
+.brand-lockup--navbar .brand-mark--pkm,
+.brand-lockup--navbar .brand-mark--unila {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* ---------- Varian auth (modal masuk) ---------- */
+.brand-lockup--auth {
+  gap: 0.5rem;
+}
+
+.brand-lockup--auth .brand-mark {
+  width: 2.2rem;
+  height: 2.2rem;
+  padding: 0.14rem;
+}
+
+.brand-lockup--auth .brand-mark--unila {
+  width: 2.05rem;
+  height: 2.05rem;
+  padding: 0;
+}
+
+.brand-lockup--auth .brand-lockup__name {
+  font-size: 0.85rem;
+}
+
+.brand-lockup--auth .brand-lockup__sub {
+  font-size: 7.5px;
+  letter-spacing: 1.5px;
+}
+
+/* ---------- Varian sidebar portal (latar navy) ---------- */
+.brand-lockup--sidebar {
+  gap: 10px;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.brand-lockup--sidebar .brand-lockup__logos {
+  gap: 4px;
+}
+
+.brand-lockup--sidebar .brand-mark {
+  width: 28px;
+  height: 28px;
+  padding: 2px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: none;
+}
+
+/* Lambang PKM berwarna navy di atas transparan — beri alas putih
+   agar tetap terbaca pada latar gelap. */
+.brand-lockup--sidebar .brand-mark--pkm {
+  background: #ffffff;
+  border-color: rgba(255, 255, 255, 0.85);
+}
+
+.brand-lockup--sidebar .brand-mark--unila {
+  width: 28px;
+  height: 28px;
+  padding: 2px;
+}
+
+.brand-lockup--sidebar .brand-lockup__name {
+  font-size: 0.72rem;
+  letter-spacing: 0.07em;
+  color: var(--brand-white);
+}
+
+.brand-lockup--sidebar .brand-lockup__sub {
+  font-size: 0.58rem;
+  letter-spacing: 0.055em;
+  color: rgba(255, 255, 255, 0.48);
+}
+
+/* ---------- Varian footer (latar navy) ---------- */
+.brand-lockup--footer .brand-mark {
+  width: 2.5rem;
+  height: 2.5rem;
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow: none;
+}
+
+.brand-lockup--footer .brand-mark--pkm {
+  background: #ffffff;
+  border-color: rgba(255, 255, 255, 0.85);
+}
+
+.brand-lockup--footer .brand-mark--unila {
+  width: 2.35rem;
+  height: 2.35rem;
+  background: transparent;
+  border-color: transparent;
+}
+
+.brand-lockup--footer .brand-lockup__name {
+  color: var(--brand-white);
+}
+
+.brand-lockup--footer .brand-lockup__sub {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* ---------- Varian hero (lockup besar, bila dipakai) ---------- */
+.brand-lockup--hero {
+  gap: 0.9rem;
+}
+
+.brand-lockup--hero .brand-mark {
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: var(--brand-radius-md);
+}
+
+.brand-lockup--hero .brand-mark--unila {
+  width: 3.1rem;
+  height: 3.1rem;
+}
+
+.brand-lockup--hero .brand-lockup__name {
+  font-size: 1.35rem;
+}
+
+.brand-lockup--hero .brand-lockup__sub {
+  font-size: 10px;
+  letter-spacing: 2.2px;
+}
+
+/* ---------- Kompatibilitas dengan layout sidebar lama ---------- */
+.bo-brand .brand-lockup {
+  width: 100%;
+}
+
+.bo-brand .brand-lockup__text {
+  transition: opacity 0.2s ease, width 0.2s ease;
+}
+
+.bo-collapsed .bo-brand .brand-lockup__text {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+.bo-collapsed .bo-brand .brand-lockup__logos .brand-mark:nth-child(2) {
+  display: none;
+}
+
+.bo-collapsed .bo-brand .brand-lockup {
+  justify-content: center;
+}
+
+/* ============================================================
+   HERO BRAND SEAL — emblem interaktif beranda
+   ============================================================ */
+.hero-brand {
+  position: relative;
+  width: 9.5rem;
+  height: 9.5rem;
+  display: grid;
+  place-items: center;
+  margin: 0 0 1.15rem;
+  perspective: 900px;
+  cursor: pointer;
+  color: var(--brand-gold);
+}
+
+.hero-brand--compact {
+  width: 7rem;
+  height: 7rem;
+}
+
+.hero-brand__stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: hero-brand-float 6.5s 1.2s ease-in-out infinite;
+}
+
+.hero-brand.is-tilting .hero-brand__stage {
+  animation-play-state: paused;
+  transition: transform 0.08s ease-out;
+}
+
+.hero-brand__glow {
+  position: absolute;
+  inset: -16%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 38% 34%, rgba(255, 215, 0, 0.36), transparent 56%),
+    radial-gradient(circle at 66% 68%, rgba(47, 143, 208, 0.3), transparent 62%);
+  filter: blur(18px);
+  opacity: 0.85;
+  z-index: -2;
+  animation: hero-brand-glow 4.8s ease-in-out infinite;
+}
+
+/* Cincin conic-gradient berputar di tepi luar */
+.hero-brand__conic {
+  position: absolute;
+  inset: 0.2rem;
+  border-radius: 50%;
+  padding: 2px;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(47, 143, 208, 0.72) 85deg,
+    rgba(255, 215, 0, 0.92) 150deg,
+    rgba(255, 255, 255, 0.95) 175deg,
+    transparent 230deg,
+    transparent 360deg
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: 0.85;
+  z-index: 0;
+  animation: hero-brand-spin 8s linear infinite;
+}
+
+.hero-brand__orbit {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(18, 59, 102, 0.14);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hero-brand__orbit--outer {
+  inset: 0;
+  animation:
+    hero-brand-ring-in 0.8s 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards,
+    hero-brand-spin 24s linear infinite;
+}
+
+.hero-brand__orbit--inner {
+  inset: 0.8rem;
+  border-style: dashed;
+  border-color: rgba(23, 91, 145, 0.22);
+  animation:
+    hero-brand-ring-in 0.8s 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards,
+    hero-brand-spin-rev 18s linear infinite;
+}
+
+/* Satelit cahaya yang mengorbit */
+.hero-brand__satellite {
+  position: absolute;
+  top: -0.28rem;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+}
+
+.hero-brand__satellite--gold {
+  width: 0.62rem;
+  height: 0.62rem;
+  background: var(--brand-gold);
+  box-shadow:
+    0 0 0 4px rgba(255, 215, 0, 0.2),
+    0 0 14px rgba(255, 215, 0, 0.85);
+}
+
+.hero-brand__satellite--sky {
+  width: 0.46rem;
+  height: 0.46rem;
+  top: auto;
+  bottom: -0.23rem;
+  background: var(--brand-sky-bright);
+  box-shadow:
+    0 0 0 4px rgba(47, 143, 208, 0.18),
+    0 0 12px rgba(47, 143, 208, 0.8);
+}
+
+.hero-brand__arc {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  color: var(--brand-gold);
+  transform: rotate(-90deg);
+  overflow: visible;
+  opacity: 0.55;
+  filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.3));
+  pointer-events: none;
+}
+
+.hero-brand__arc circle {
+  stroke-dasharray: 440;
+  stroke-dashoffset: 440;
+  animation: hero-brand-arc-draw 1.4s 0.2s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+.hero-brand__mark {
+  position: relative;
+  z-index: 2;
+  width: 5.6rem;
+  height: 5.6rem;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(155deg, #ffffff 0%, #f4f9ff 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.96);
+  box-shadow:
+    0 22px 44px rgba(18, 59, 102, 0.18),
+    0 0 0 6px rgba(255, 255, 255, 0.62),
+    inset 0 2px 4px rgba(255, 255, 255, 0.95);
+  display: grid;
+  place-items: center;
+  padding: 0.55rem;
+  opacity: 0;
+  transform: scale(0.86) translateZ(20px);
+  transition: box-shadow 0.35s ease;
+  animation: hero-brand-mark-in 0.75s 0.12s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.hero-brand:hover .hero-brand__mark {
+  box-shadow:
+    0 28px 56px rgba(18, 59, 102, 0.24),
+    0 0 0 7px rgba(255, 255, 255, 0.78),
+    0 0 28px rgba(47, 143, 208, 0.22),
+    inset 0 2px 4px rgba(255, 255, 255, 0.95);
+}
+
+/* Kilau kaca diagonal (sheen sweep) */
+.hero-brand__sheen {
+  position: absolute;
+  inset: -40%;
+  background: linear-gradient(
+    120deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 62%
+  );
+  transform: translateX(-120%) rotate(15deg);
+  pointer-events: none;
+  z-index: 4;
+  animation: hero-brand-sheen 5.5s 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.hero-brand--compact .hero-brand__mark {
+  width: 4.2rem;
+  height: 4.2rem;
+  padding: 0.4rem;
+}
+
+.hero-brand__mark .brand-mark {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: none;
+}
+
+.hero-brand__mark .brand-mark img {
+  border-radius: 50%;
+}
+
+/* ---------- Keyframes ---------- */
+@keyframes brand-mark-settle {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes hero-brand-mark-in {
+  to {
+    opacity: 1;
+    transform: scale(1) translateZ(20px);
+  }
+}
+
+@keyframes hero-brand-ring-in {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes hero-brand-arc-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes hero-brand-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes hero-brand-spin-rev {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes hero-brand-sheen {
+  0% {
+    transform: translateX(-120%) rotate(15deg);
+  }
+  24%,
+  100% {
+    transform: translateX(120%) rotate(15deg);
+  }
+}
+
+@keyframes hero-brand-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@keyframes hero-brand-glow {
+  0%,
+  100% {
+    opacity: 0.68;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 0.96;
+    transform: scale(1.05);
+  }
+}
+
+/* ---------- Responsif ---------- */
+@media (max-width: 600px) {
+  .brand-lockup--navbar .brand-lockup__text {
+    display: none;
+  }
+
+  .hero-brand {
+    width: 8rem;
+    height: 8rem;
+    margin-bottom: 0.9rem;
+  }
+
+  .hero-brand__mark {
+    width: 4.8rem;
+    height: 4.8rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .brand-lockup--navbar .brand-lockup__logos {
+    gap: 0.2rem;
+  }
+
+  .brand-lockup--navbar .brand-mark {
+    width: 2.2rem;
+    height: 2.2rem;
+  }
+
+  .brand-lockup--navbar .brand-mark--unila {
+    width: 2rem;
+    height: 2rem;
+  }
+}
+
+/* ---------- Aksesibilitas: hormati preferensi gerak minimal ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .brand-lockup--navbar .brand-mark--pkm,
+  .brand-lockup--navbar .brand-mark--unila,
+  .hero-brand,
+  .hero-brand__stage,
+  .hero-brand__glow,
+  .hero-brand__conic,
+  .hero-brand__orbit,
+  .hero-brand__arc circle,
+  .hero-brand__mark,
+  .hero-brand__sheen {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .hero-brand__stage {
+    transform: none !important;
+  }
+
+  .hero-brand__sheen {
+    display: none;
+  }
+
+  .hero-brand__orbit,
+  .hero-brand__mark {
+    opacity: 1;
+    transform: none;
+  }
+
+  .hero-brand__arc circle {
+    stroke-dashoffset: 0;
+  }
+}

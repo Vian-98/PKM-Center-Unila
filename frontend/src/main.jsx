@@ -21,6 +21,7 @@ import { CariTim } from './pages/CariTim'
 import { TeamManagement } from './pages/TeamManagement'
 import { AppleMobileDock } from './components/AppleMobileDock'
 import { DesktopSidebarLayout } from './components/DesktopSidebarLayout'
+import { BrandLockup } from './components/brand/BrandLockup'
 import { ProfilePage } from './pages/ProfilePage'
 import { api } from './lib/content'
 import {
@@ -36,6 +37,9 @@ import {
 import './styles.css'
 import './ref.css'
 import './modules.css'
+import './brand-tokens.css'
+import './components/brand/brand.css'
+import './components/brand/illustrations.css'
 
 // Bersihkan seluruh riwayat chat & pesan di semua akun (Mahasiswa, Dosen, Reviewer, Admin)
 try {
@@ -54,16 +58,6 @@ try {
   }
 } catch (e) {
   console.warn('Gagal membersihkan cache chat:', e)
-}
-
-function Brand({ dark = false }) {
-  return (
-    <a className={`brand ${dark ? 'brand-dark' : ''}`} href="#beranda" aria-label="PKM Center Universitas Lampung">
-      <img className="brand-logo brand-logo-unila" src="/Logo-2016-Unila.png" alt="Logo Universitas Lampung" />
-      <img className="brand-logo" src="/logo-pkm-center.png" alt="Logo PKM Center Universitas Lampung" />
-      <span className="brand-text">PKM CENTER<small>UNIVERSITAS LAMPUNG</small></span>
-    </a>
-  )
 }
 
 // Navigasi Publik untuk Pengunjung yang Belum Login
@@ -162,7 +156,7 @@ function TopNavbar({ active, user, isDashboard, onLogin, onLogout, onSwitchRole,
 
   return (
     <header className="site-header topnav apple-topnav">
-      <Brand />
+      <BrandLockup variant="navbar" />
 
       {/* Navigasi Desktop Penuh: Hanya muncul di Halaman Publik Non-Dashboard (Di Dashboard, navigasi terpusat di Sidebar) */}
       {!isDashboard ? (
@@ -584,11 +578,7 @@ function LoginModal({ close, complete }) {
         aria-label="Masuk ke PKM Center"
       >
         <div className="login-head">
-          <div className="login-brand">
-            <img src="/Logo-2016-Unila.png" alt="Logo Universitas Lampung" />
-            <img src="/logo-pkm-center.png" alt="Logo PKM Center" />
-            <span>PKM CENTER<small>UNIVERSITAS LAMPUNG</small></span>
-          </div>
+          <BrandLockup variant="auth" />
           <button className="login-x" onClick={close} aria-label="Tutup">x</button>
         </div>
 
@@ -1149,7 +1139,7 @@ function SiteFooter() {
     <footer className="site-footer">
       <div className="site-footer-inner">
         <div className="footer-brand">
-          <Brand dark />
+          <BrandLockup variant="footer" dark />
           <p>Platform digital manajemen Program Kreativitas Mahasiswa Universitas Lampung.</p>
         </div>
         <p className="footer-copy">(c) 2025 Universitas Lampung</p>

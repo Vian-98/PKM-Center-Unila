@@ -1,0 +1,126 @@
+/* ============================================================
+   PKM Center Unila — Canonical Brand Tokens
+   Satu sumber kebenaran untuk warna, tipografi, bentuk, dan
+   bayangan. Berkas ini diimpor paling akhir agar nilai kanonik
+   menimpa duplikasi lama di styles.css/ref.css.
+   ============================================================ */
+
+:root {
+  color-scheme: light;
+
+  /* ---------- Palet identitas Unila ---------- */
+  --brand-navy: #123b66;
+  --brand-navy-deep: #0c3154;
+  --brand-sky: #175b91;
+  --brand-sky-bright: #2f8fd0;
+  --brand-sky-soft: #eaf7fd;
+  --brand-gold: #ffd700;
+  --brand-gold-deep: #c8930a;
+  --brand-gold-soft: #fff7cc;
+  --brand-ice: #f7fbff;
+  --brand-white: #ffffff;
+
+  /* ---------- Teks ---------- */
+  --brand-ink: #0f172a;
+  --brand-muted: #475569;
+  --brand-faint: #64748b;
+  --brand-on-dark: rgba(255, 255, 255, 0.92);
+  --brand-on-dark-muted: rgba(255, 255, 255, 0.64);
+
+  /* ---------- Permukaan & garis ---------- */
+  --brand-surface: #ffffff;
+  --brand-surface-glass: rgba(255, 255, 255, 0.82);
+  --brand-surface-glass-strong: rgba(255, 255, 255, 0.94);
+  --brand-line: rgba(18, 59, 102, 0.12);
+  --brand-line-soft: rgba(18, 59, 102, 0.07);
+  --brand-glass-border: rgba(255, 255, 255, 0.9);
+
+  /* ---------- Interaksi ---------- */
+  --brand-focus: #2f8fd0;
+  --brand-focus-ring: 0 0 0 3px rgba(47, 143, 208, 0.32);
+  --brand-link: #175b91;
+  --brand-link-hover: #0c3154;
+
+  /* ---------- Semantik (dipakai hanya untuk status) ---------- */
+  --brand-success: #0f766e;
+  --brand-success-soft: #ecfdf5;
+  --brand-warning: #b45309;
+  --brand-warning-soft: #fffbeb;
+  --brand-danger: #b91c1c;
+  --brand-danger-soft: #fef2f2;
+
+  /* ---------- Gradien khas ---------- */
+  --brand-gradient-primary: linear-gradient(135deg, #123b66 0%, #175b91 100%);
+  --brand-gradient-navy: linear-gradient(180deg, rgba(18, 59, 102, 0.96), rgba(12, 49, 84, 0.98));
+  --brand-gradient-gold: linear-gradient(135deg, #ffd700 0%, #f0b400 100%);
+  --brand-gradient-ice: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+
+  /* ---------- Bentuk ---------- */
+  --brand-radius-xs: 8px;
+  --brand-radius-sm: 12px;
+  --brand-radius-md: 16px;
+  --brand-radius-lg: 22px;
+  --brand-radius-pill: 999px;
+
+  /* ---------- Bayangan ---------- */
+  --brand-shadow-sm: 0 2px 8px rgba(18, 59, 102, 0.06);
+  --brand-shadow-md: 0 10px 30px rgba(18, 59, 102, 0.1);
+  --brand-shadow-lg: 0 24px 60px rgba(18, 59, 102, 0.16);
+  --brand-shadow-gold: 0 10px 28px rgba(200, 147, 10, 0.18);
+
+  /* ---------- Tipografi ---------- */
+  --brand-font-sans: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --brand-font-mono: 'DM Mono', ui-monospace, SFMono-Regular, monospace;
+  --brand-font-display: 'Playfair Display', Georgia, serif;
+
+  /* ---------- Layout ---------- */
+  --brand-nav-height: 4.5rem;
+  --brand-container: 80rem;
+
+  /* ==========================================================
+     Alias kompatibilitas — nama lama tetap dipakai halaman lain
+     ========================================================== */
+  --navy: var(--brand-navy);
+  --navy-2: var(--brand-navy-deep);
+  --sky: var(--brand-sky);
+  --mist: var(--brand-sky-soft);
+  --page2: var(--brand-ice);
+  --gold: var(--brand-gold);
+  --gold2: var(--brand-gold-deep);
+  --gold-deep: #7a5c00;
+  --blue: #1e90ff;
+  --blue-deep: #0b5fbf;
+  --red: #ff0000;
+  --red-deep: #c1121f;
+  --green: #008000;
+  --green-deep: #0f6b32;
+
+  --ink: var(--brand-ink);
+  --muted: var(--brand-muted);
+  --faint: var(--brand-faint);
+  --accent: var(--brand-navy);
+  --accent-strong: var(--brand-sky);
+  --accent-soft: rgba(23, 91, 145, 0.1);
+  --page: var(--brand-ice);
+  --surface-solid: var(--brand-surface);
+  --surface: rgba(255, 255, 255, 0.88);
+  --line: var(--brand-line);
+  --glass-border: var(--brand-glass-border);
+  --glass-surface: rgba(255, 255, 255, 0.8);
+  --glass-navy: rgba(18, 59, 102, 0.92);
+  --glass-navy-border: rgba(255, 255, 255, 0.18);
+  --glass-blur: 16px;
+  --glass-shadow: var(--brand-shadow-md);
+  --field: rgba(255, 255, 255, 0.72);
+  --field-ink: var(--brand-ink);
+  --chip-gold-ink: #3b2f00;
+  --backdrop: rgba(24, 22, 17, 0.55);
+  --shadow-sm: var(--brand-shadow-sm);
+  --shadow-md: var(--brand-shadow-md);
+  --shadow-lg: var(--brand-shadow-lg);
+  --blur: 12px;
+  --r-sm: 0.6rem;
+  --r-md: 0.9rem;
+  --r-lg: 1.15rem;
+  --r-pill: 999px;
+}
