@@ -1265,6 +1265,14 @@ function App() {
   }, [])
 
   const logout = () => {
+    try {
+      const token = getAuthToken()
+      fetch(`${api}/auth/logout`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      }).catch(() => {})
+    } catch (_) {}
+
     clearAuthSession()
     setUser(null)
     window.location.hash = '#beranda'

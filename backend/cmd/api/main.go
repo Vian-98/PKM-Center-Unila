@@ -72,6 +72,8 @@ func main() {
 
 	api := r.Group("/api")
 	api.POST("/auth/login", auth.Login)
+	api.POST("/auth/logout", auth.Logout)
+	api.GET("/auth/logout", auth.Logout)
 	api.POST("/auth/register", auth.RegisterStudent)
 	api.POST("/auth/upload-ktm", auth.UploadKTM)
 	api.GET("/auth/me", middleware.RequireAuth(secret), auth.Me)

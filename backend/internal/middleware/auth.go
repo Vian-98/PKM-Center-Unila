@@ -34,6 +34,25 @@ func RequireAuth(secret string, allowedRoles ...string) gin.HandlerFunc {
 			for _, r := range allowedRoles {
 				if role == r {
 					permitted = true
+					break
+				}
+			}
+			if !permitted {
+				// Dukung pengguna dengan multi-peran (misal Dosen yang juga bertindak sebagai Reviewer)
+				if rawRoles, ok := claims["roles"].([]interface{}); ok {
+					for _, rr := range rawRoles {
+						if rStr, ok := rr.(string); ok {
+							for _, r := range allowedRoles {
+								if rStr == r {
+									permitted = true
+									break
+								}
+							}
+						}
+						if permitted {
+							break
+						}
+					}
 				}
 			}
 			if !permitted {

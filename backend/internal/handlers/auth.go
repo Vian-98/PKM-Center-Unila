@@ -68,6 +68,12 @@ func (h AuthHandler) primaryRole(userID string) string {
 	return ""
 }
 
+func (h AuthHandler) Logout(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Berhasil keluar dari sistem PKM Center",
+	})
+}
+
 func (h AuthHandler) Login(c *gin.Context) {
 	var input loginInput
 	if err := c.ShouldBindJSON(&input); err != nil {
