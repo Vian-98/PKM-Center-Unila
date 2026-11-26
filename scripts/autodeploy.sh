@@ -61,12 +61,7 @@ if [ "${FORCE:-0}" != "1" ] && ! printf '%s\n' "$CHANGED" | grep -qE "$BUILD_PAT
   NEED_REBUILD=0
 fi
 
-# Bersihkan modifikasi lokal tidak sengaja agar autodeploy tidak macet
-git checkout -- . || true
-git pull --ff-only origin "$BRANCH" || {
-  log "git pull --ff-only gagal, mereset working copy ke origin/$BRANCH..."
-  git reset --hard "origin/$BRANCH"
-}
+git pull --ff-only origin "$BRANCH"
 
 if [ "$NEED_REBUILD" != "1" ]; then
   log "hanya perubahan non-aplikasi (dokumen/skrip); repo diperbarui tanpa rebuild."
