@@ -25,7 +25,14 @@ import {
   Split,
   Layers,
   AlertTriangle,
+  ClipboardList,
+  Clock,
+  FileEdit,
+  CheckCircle2,
+  GraduationCap,
+  Search,
 } from 'lucide-react'
+import { GlowCard } from '../components/GlowCard'
 import { AIFormatDetector } from '../components/AIFormatDetector'
 import { ReviewerIdeaSelection } from '../components/ReviewerIdeaSelection'
 import { presetReportsMap } from '../lib/aiFormatCheckerData'
@@ -560,85 +567,117 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
 
   return (
     <div className="module-container">
-      {/* Header Dashboard Reviewer */}
-      <section className="module-header">
-        <div className="module-header-top">
-          <div>
-            <div className="module-badge">MODUL REVIEWER PROPOSAL - UNIVERSITAS LAMPUNG</div>
-            <h1 className="module-title">Dashboard Penilaian Reviewer</h1>
-            <p className="module-subtitle">
-              Antrean evaluasi proposal pasca batas waktu pengusulan (deadline). Lakukan scoring naskah berdasarkan rubrik standar Belmawa dan tetapkan rekomendasi kelayakan pendanaan.
-            </p>
+      {/* Header Dashboard Reviewer (Light Glassmorphism selaras dengan laman utama) */}
+      <header className="student-portal-header">
+        <div className="student-header-info">
+          <div className="student-portal-badge">
+            <span className="live-pulse-dot" />
+            <span>PORTAL REVIEWER &bull; UNIVERSITAS LAMPUNG</span>
           </div>
-          <div style={{ textAlign: 'right' }}>
-            <span style={{ fontSize: '0.85rem', color: '#cbd5e1' }}>Reviewer Bertugas:</span>
-            <div style={{ fontWeight: 800, fontSize: '1.2rem', color: '#ffffff' }}>
-              {user?.name || 'Dr. Hendri Reviewer, M.Kom.'}
-            </div>
-            <div style={{ fontSize: '0.8rem', color: '#fbbf24' }}>
-              Klaster Penilai PKM Unila - SIMBELMAWA
-            </div>
-            <a
-              href="#dosen"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                marginTop: '0.45rem',
-                padding: '0.35rem 0.75rem',
-                background: '#1e3a8a',
-                color: '#ffffff',
-                border: '1px solid #60a5fa',
-                borderRadius: '0.35rem',
-                fontSize: '0.78rem',
-                fontWeight: 700,
-                textDecoration: 'none',
-                transition: 'all 0.15s ease',
-              }}
+          <h1 className="student-portal-title">Dashboard Penilaian Reviewer</h1>
+          <p className="student-portal-subtitle">
+            Antrean seleksi ide dan evaluasi proposal PKM Universitas Lampung. Lakukan scoring berbasis rubrik SIMBELMAWA dan tetapkan rekomendasi kelayakan pendanaan.
+          </p>
+        </div>
+
+        <div className="student-portal-header-actions">
+          <div className="rev-header-reviewer-chip">
+            <span className="rev-header-chip-label">Reviewer Bertugas</span>
+            <strong className="rev-header-chip-name">{user?.name || 'Dr. Hendri Reviewer, M.Kom.'}</strong>
+          </div>
+          {(user?.roles?.includes('dosen') || user?.role === 'admin') && (
+            <button
+              type="button"
+              className="btn-action secondary"
+              style={{ borderRadius: '9999px', padding: '0.55rem 1.05rem', fontSize: '0.84rem' }}
+              onClick={() => onSwitchRole ? onSwitchRole('dosen') : (window.location.hash = '#dosen')}
               title="Beralih ke Dashboard Dosen Pembimbing"
             >
-              <span>Buka Dashboard Dosen &rarr;</span>
-            </a>
-          </div>
+              <GraduationCap size={16} />
+              <span>Dashboard Dosen</span>
+            </button>
+          )}
         </div>
+      </header>
 
-        {/* Ringkasan Statistik Antrean */}
-        <div className="stat-cards-grid">
-          <div className="stat-box">
-            <div className="stat-box-label">Total Antrean Penugasan</div>
-            <div className="stat-box-value">
-              {overview.totalAssignments} <span style={{ fontSize: '1rem', color: '#94a3b8' }}>Proposal</span>
-            </div>
-            <div className="stat-box-sub">Ditugaskan oleh Admin PKM Center</div>
-          </div>
-
-          <div className="stat-box">
-            <div className="stat-box-label">Belum Dinilai (Pending)</div>
-            <div className="stat-box-value" style={{ color: overview.pendingCount > 0 ? '#fbbf24' : '#ffffff' }}>
-              {overview.pendingCount} <span style={{ fontSize: '1rem', color: '#94a3b8' }}>Naskah</span>
-            </div>
-            <div className="stat-box-sub">
-              {overview.pendingCount > 0 ? 'Segera dinilai sebelum batas akhir' : 'Tidak ada tunggakan'}
+      {/* Ringkasan Statistik Antrean (4-Column Light Frosted GlowCards) */}
+      <div className="student-metric-grid">
+        <GlowCard glowColor="blue" dark={false} className="student-metric-glow-card">
+          <div className="metric-card-top">
+            <span className="metric-card-label">Total Antrean</span>
+            <div className="metric-icon-badge blue">
+              <ClipboardList size={18} />
             </div>
           </div>
-
-          <div className="stat-box">
-            <div className="stat-box-label">Sedang Dalam Proses (Draft)</div>
-            <div className="stat-box-value" style={{ color: '#60a5fa' }}>
-              {overview.inProgressCount} <span style={{ fontSize: '1rem', color: '#94a3b8' }}>Draf</span>
+          <div className="metric-card-body">
+            <div className="metric-card-val">
+              {overview.totalAssignments}
+              <span className="metric-card-subval">Proposal</span>
             </div>
-            <div className="stat-box-sub">Tersimpan sementara di sistem</div>
-          </div>
-
-          <div className="stat-box">
-            <div className="stat-box-label">Telah Difinalisasi</div>
-            <div className="stat-box-value" style={{ color: '#34d399' }}>
-              {overview.completedCount} <span style={{ fontSize: '1rem', color: '#94a3b8' }}>Selesai</span>
+            <div className="metric-card-hint">
+              <span className="metric-status-dot blue" />
+              <span className="truncate">Ditugaskan oleh PKM Center</span>
             </div>
-            <div className="stat-box-sub">Keputusan rekomendasi terkirim</div>
           </div>
-        </div>
-      </section>
+        </GlowCard>
+
+        <GlowCard glowColor="gold" dark={false} className="student-metric-glow-card">
+          <div className="metric-card-top">
+            <span className="metric-card-label">Belum Dinilai</span>
+            <div className="metric-icon-badge gold">
+              <Clock size={18} />
+            </div>
+          </div>
+          <div className="metric-card-body">
+            <div className="metric-card-val">
+              {overview.pendingCount}
+              <span className="metric-card-subval">Naskah</span>
+            </div>
+            <div className="metric-card-hint">
+              <span className={`metric-status-dot ${overview.pendingCount > 0 ? 'gold' : 'green'}`} />
+              <span className="truncate">{overview.pendingCount > 0 ? 'Segera dinilai sebelum tenggat' : 'Tidak ada tunggakan'}</span>
+            </div>
+          </div>
+        </GlowCard>
+
+        <GlowCard glowColor="purple" dark={false} className="student-metric-glow-card">
+          <div className="metric-card-top">
+            <span className="metric-card-label">Draf Penilaian</span>
+            <div className="metric-icon-badge purple">
+              <FileEdit size={18} />
+            </div>
+          </div>
+          <div className="metric-card-body">
+            <div className="metric-card-val">
+              {overview.inProgressCount}
+              <span className="metric-card-subval">Draf</span>
+            </div>
+            <div className="metric-card-hint">
+              <span className="metric-status-dot purple" />
+              <span className="truncate">Tersimpan sementara di sistem</span>
+            </div>
+          </div>
+        </GlowCard>
+
+        <GlowCard glowColor="green" dark={false} className="student-metric-glow-card">
+          <div className="metric-card-top">
+            <span className="metric-card-label">Telah Difinalisasi</span>
+            <div className="metric-icon-badge green">
+              <CheckCircle2 size={18} />
+            </div>
+          </div>
+          <div className="metric-card-body">
+            <div className="metric-card-val">
+              {overview.completedCount}
+              <span className="metric-card-subval">Selesai</span>
+            </div>
+            <div className="metric-card-hint">
+              <span className="metric-status-dot green" />
+              <span className="truncate">Keputusan rekomendasi terkirim</span>
+            </div>
+          </div>
+        </GlowCard>
+      </div>
 
       {/* Pilihan tahap kerja reviewer */}
       <div className="modern-tabs reviewer-stage-tabs">
@@ -654,7 +693,7 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
 
       {reviewTab === 'proposal' && (<>
       {/* Filter & Search Bar Antrean */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
+      <div className="rev-queue-toolbar">
         <div className="modern-tabs" style={{ marginBottom: 0 }}>
           <button
             className={`tab-btn ${activeFilter === 'all' ? 'active' : ''}`}
@@ -676,73 +715,44 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
           </button>
         </div>
 
-        <input
-          type="text"
-          placeholder="Cari proposal, ketua, skema, fakultas..."
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          style={{ minWidth: '260px', padding: '0.65rem 1rem', border: '1px solid #cbd5e1', borderRadius: '0.65rem', fontSize: '0.9rem' }}
-        />
+        <div className="rev-search-wrap">
+          <Search size={16} className="rev-search-icon" />
+          <input
+            type="text"
+            className="rev-search-input"
+            placeholder="Cari proposal, ketua, skema, fakultas..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+          />
+        </div>
       </div>
 
-      {/* Banner Pintasan AI Format & Compliance Assistant */}
-      <div style={{
-        background: 'linear-gradient(135deg, #0b2149 0%, #1e3a8a 100%)',
-        border: '1px solid #3b82f6',
-        borderRadius: '1rem',
-        padding: '1.2rem 1.5rem',
-        marginBottom: '1.5rem',
-        color: '#ffffff',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '1rem',
-        boxShadow: '0 8px 24px rgba(11, 33, 73, 0.12)',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{
-            width: '44px',
-            height: '44px',
-            borderRadius: '12px',
-            background: 'rgba(255, 255, 255, 0.12)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#38bdf8',
-            flexShrink: 0,
-          }}>
+      {/* Banner Pintasan AI Format & Compliance Assistant (Light Frosted Glass) */}
+      <div className="rev-ai-banner">
+        <div className="rev-ai-banner-left">
+          <div className="rev-ai-banner-icon">
             <Sparkles size={22} />
           </div>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
-              <h3 style={{ margin: 0, fontSize: '1.025rem', fontWeight: 800 }}>
+            <div className="rev-ai-banner-title-row">
+              <h3 className="rev-ai-banner-title">
                 AI Format & Compliance Checker
               </h3>
-              <span style={{ background: '#38bdf8', color: '#0b2149', fontSize: '0.68rem', fontWeight: 800, padding: '0.1rem 0.45rem', borderRadius: '9999px' }}>
+              <span className="rev-ai-banner-pill">
                 Pedoman Belmawa 2026
               </span>
             </div>
-            <p style={{ margin: 0, fontSize: '0.825rem', color: '#cbd5e1', lineHeight: 1.5, maxWidth: '660px' }}>
+            <p className="rev-ai-banner-desc">
               Deteksi otomatis kesalahan format penulisan (spasi 1,15, tabel/gambar), struktur daftar isi/lampiran, dan rangkum istilah asing yang belum dicetak miring sebelum finalisasi penilaian.
             </p>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+        <div className="rev-ai-banner-actions">
           <button
             type="button"
             className="btn-action primary"
-            style={{
-              background: 'linear-gradient(135deg, #38bdf8, #0284c7)',
-              color: '#0b2149',
-              fontWeight: 800,
-              border: 'none',
-              padding: '0.55rem 1.15rem',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-            }}
+            style={{ borderRadius: '9999px', padding: '0.6rem 1.25rem' }}
             onClick={() => {
               const sampleItem = assignments[1] || assignments[0]
               if (sampleItem) {
@@ -965,7 +975,7 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
               <h4 style={{ fontSize: '1rem', fontWeight: 800, color: '#0f172a', marginBottom: '0.75rem', marginTop: '1.5rem' }}>
                 2. Evaluasi Kualitatif Naskah
               </h4>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
+              <div className="scoring-qualitative-grid">
                 <div>
                   <label style={{ display: 'block', fontWeight: 700, fontSize: '0.85rem', color: '#059669', marginBottom: '0.35rem' }}>
                     Kekuatan Proposal (Strengths):
@@ -1513,7 +1523,7 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
                     </button>
                   ))}
 
-                  <div style={{ marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div className="rev-summary-sidebar-footer">
                     <button
                       type="button"
                       className="btn-action secondary"
@@ -1529,13 +1539,13 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
                   <div className="rev-summary-card">
                     {docModal.activeTab === 'abstrak' && (
                       <div>
-                        <span className="rev-scheme-tag" style={{ marginBottom: '0.75rem', display: 'inline-block' }}>
+                        <span className="rev-summary-badge">
                           Intisari Eksekutif
                         </span>
-                        <h4 style={{ margin: '0 0 1rem 0', color: '#f8fafc', fontSize: '1.25rem', fontWeight: 800 }}>
+                        <h4 className="rev-summary-heading">
                           Abstrak Proposal PKM
                         </h4>
-                        <div style={{ background: 'rgba(2, 132, 199, 0.1)', borderLeft: '4px solid #0284c7', padding: '1.25rem', borderRadius: '0.5rem', lineHeight: 1.7, fontStyle: 'italic', color: '#e0f2fe', fontSize: '0.95rem' }}>
+                        <div className="rev-summary-quote">
                           "{docModal.details?.abstract}"
                         </div>
                       </div>
@@ -1543,13 +1553,13 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
 
                     {docModal.activeTab === 'bab1' && (
                       <div>
-                        <span className="rev-scheme-tag" style={{ marginBottom: '0.75rem', display: 'inline-block' }}>
+                        <span className="rev-summary-badge">
                           Bab 1
                         </span>
-                        <h4 style={{ margin: '0 0 1rem 0', color: '#f8fafc', fontSize: '1.25rem', fontWeight: 800 }}>
+                        <h4 className="rev-summary-heading">
                           Pendahuluan & Urgensi Masalah
                         </h4>
-                        <p style={{ lineHeight: 1.8, fontSize: '0.95rem', color: '#cbd5e1' }}>
+                        <p className="rev-summary-text">
                           {docModal.details?.chapters?.bab1}
                         </p>
                       </div>
@@ -1557,13 +1567,13 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
 
                     {docModal.activeTab === 'bab2' && (
                       <div>
-                        <span className="rev-scheme-tag" style={{ marginBottom: '0.75rem', display: 'inline-block' }}>
+                        <span className="rev-summary-badge">
                           Bab 2
                         </span>
-                        <h4 style={{ margin: '0 0 1rem 0', color: '#f8fafc', fontSize: '1.25rem', fontWeight: 800 }}>
+                        <h4 className="rev-summary-heading">
                           Tinjauan Pustaka & Kebaruan Ide
                         </h4>
-                        <p style={{ lineHeight: 1.8, fontSize: '0.95rem', color: '#cbd5e1' }}>
+                        <p className="rev-summary-text">
                           {docModal.details?.chapters?.bab2}
                         </p>
                       </div>
@@ -1571,13 +1581,13 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
 
                     {docModal.activeTab === 'bab3' && (
                       <div>
-                        <span className="rev-scheme-tag" style={{ marginBottom: '0.75rem', display: 'inline-block' }}>
+                        <span className="rev-summary-badge">
                           Bab 3
                         </span>
-                        <h4 style={{ margin: '0 0 1rem 0', color: '#f8fafc', fontSize: '1.25rem', fontWeight: 800 }}>
+                        <h4 className="rev-summary-heading">
                           Tahapan Riset & Metode Pelaksanaan
                         </h4>
-                        <p style={{ lineHeight: 1.8, fontSize: '0.95rem', color: '#cbd5e1' }}>
+                        <p className="rev-summary-text">
                           {docModal.details?.chapters?.bab3}
                         </p>
                       </div>
@@ -1585,13 +1595,13 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
 
                     {docModal.activeTab === 'bab4' && (
                       <div>
-                        <span className="rev-scheme-tag" style={{ marginBottom: '0.75rem', display: 'inline-block' }}>
+                        <span className="rev-summary-badge">
                           Bab 4
                         </span>
-                        <h4 style={{ margin: '0 0 1rem 0', color: '#f8fafc', fontSize: '1.25rem', fontWeight: 800 }}>
+                        <h4 className="rev-summary-heading">
                           Rencana Anggaran Biaya (RAB) & Jadwal Kegiatan
                         </h4>
-                        <p style={{ lineHeight: 1.8, fontSize: '0.95rem', color: '#cbd5e1' }}>
+                        <p className="rev-summary-text">
                           {docModal.details?.chapters?.bab4}
                         </p>
                       </div>
@@ -1599,13 +1609,13 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
 
                     {docModal.activeTab === 'lampiran' && (
                       <div>
-                        <span className="rev-scheme-tag" style={{ marginBottom: '0.75rem', display: 'inline-block' }}>
+                        <span className="rev-summary-badge">
                           Lampiran
                         </span>
-                        <h4 style={{ margin: '0 0 1rem 0', color: '#f8fafc', fontSize: '1.25rem', fontWeight: 800 }}>
+                        <h4 className="rev-summary-heading">
                           Kelengkapan Dokumen & Surat Pernyataan
                         </h4>
-                        <p style={{ lineHeight: 1.8, fontSize: '0.95rem', color: '#cbd5e1' }}>
+                        <p className="rev-summary-text">
                           {docModal.details?.chapters?.lampiran}
                         </p>
                       </div>
