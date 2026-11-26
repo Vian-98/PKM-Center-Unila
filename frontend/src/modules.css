@@ -438,7 +438,7 @@
   background: transparent;
   border: none;
   font-size: 1.25rem;
-  color: #94a3b8;
+  color: #475569;
   cursor: pointer;
 }
 .modal-close-btn:hover {
@@ -4767,11 +4767,15 @@ input[type="range"]::-webkit-slider-thumb {
 
 .rev-toolbar-hint {
   font-size: 0.72rem;
-  color: #64748b;
+  color: #cbd5e1;
   white-space: nowrap;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+.rev-toolbar-hint strong {
+  color: #ffffff;
 }
 
 .rev-iframe-wrapper {

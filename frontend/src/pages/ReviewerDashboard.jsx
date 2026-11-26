@@ -1149,9 +1149,9 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
                   <span>Deteksi Format AI</span>
                   <span style={{
                     fontSize: '0.68rem',
-                    background: docModal.viewMode === 'ai_check' ? '#dc2626' : 'rgba(239, 68, 68, 0.2)',
-                    color: docModal.viewMode === 'ai_check' ? '#ffffff' : '#f87171',
-                    padding: '0.1rem 0.4rem',
+                    background: docModal.viewMode === 'ai_check' ? '#dc2626' : 'rgba(239, 68, 68, 0.28)',
+                    color: docModal.viewMode === 'ai_check' ? '#ffffff' : '#fca5a5',
+                    padding: '0.1rem 0.45rem',
                     borderRadius: '9999px',
                     fontWeight: 800,
                   }}>
@@ -1383,7 +1383,7 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
                         {/* Daftar Kartu Catatan */}
                         <div className="rev-drawer-list">
                           {filteredAnns.length === 0 ? (
-                            <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#94a3b8', fontSize: '0.825rem' }}>
+                            <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#64748b', fontSize: '0.825rem' }}>
                               Belum ada catatan pada kategori ini.<br />Tuliskan evaluasi pertama Anda pada form di atas.
                             </div>
                           ) : (
@@ -1501,7 +1501,7 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
               /* VIEW MODE: RINGKASAN & INTISARI BAB */
               <div className="rev-summary-view">
                 <aside className="rev-summary-sidebar">
-                  <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '0 0.5rem 0.5rem' }}>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '0 0.5rem 0.5rem' }}>
                     Daftar Bab Naskah
                   </span>
                   {[
