@@ -7,6 +7,9 @@ import {
 import { loadStore, saveStore } from '../lib/dosenReviewerData'
 import { authFetch, uploadFile, resolveAssetUrl, statusTone, statusLabel, formatDateTimeID } from '../lib/studentApi'
 
+// Usulan masih boleh dihapus ketua selama belum masuk penilaian reviewer.
+const DELETABLE_STATUSES = ['draft', 'submitted', 'revision', 'rejected']
+
 const FALLBACK_SCHEMES = [
   { code: 'PKM-K', name: 'PKM Kewirausahaan' },
   { code: 'PKM-RE', name: 'PKM Riset Eksakta' },
@@ -394,6 +397,28 @@ export function AjukanProposal({ user }) {
   const currentScheme = schemes.find(s => s.code === form.scheme)
   const filledMembers = form.members.filter(m => m.npm.trim() || m.name.trim())
   const hasRegisteredProposal = Boolean(existingProposal?.id)
+  const isTeamLeader = !existingTeam?.leaderId || existingTeam.leaderId === user?.id
+  const canDeleteProposal = isTeamLeader && DELETABLE_STATUSES.includes(existingProposal?.status)
+
+  const handleDeleteProposal = async () => {
+    if (!existingProposal?.id) return
+    const ok = window.confirm(`Hapus usulan "${existingProposal.title}"?
+
+Semua draf naskah dan permintaan dosen pembimbing untuk usulan ini ikut terhapus dan tidak bisa dikembalikan.`)
+    if (!ok) return
+    setState(s => ({ ...s, loading: true, error: '', success: '' }))
+    try {
+      await authFetch(`/student/proposals/${existingProposal.id}`, { method: 'DELETE' })
+      saveStore(`pkm_mhs_proposal_${userKey}`, null)
+      saveStore(`pkm_mhs_docs_${userKey}`, [])
+      setExistingProposal(null)
+      setDocuments([])
+      setState({ loading: false, uploading: false, error: '', success: 'Usulan berhasil dihapus. Anda dapat mengajukan usulan baru.' })
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } catch (err) {
+      setState(s => ({ ...s, loading: false, error: err.message || 'Gagal menghapus usulan.' }))
+    }
+  }
 
   // -------------------------------------------------------------
   // TAMPILAN A: JIKA MAHASISWA SUDAH MEMILIKI PROPOSAL TERDAFTAR
@@ -500,6 +525,24 @@ export function AjukanProposal({ user }) {
               <p style={{ margin: 0, fontSize: '0.82rem', color: '#475569', lineHeight: 1.5, maxHeight: '80px', overflowY: 'auto' }}>
                 {existingProposal.abstract}
               </p>
+            </div>
+          )}
+
+          {isTeamLeader && (
+            <div className="proposal-delete-row">
+              <p>
+                {canDeleteProposal
+                  ? 'Ingin mengganti topik? Hapus usulan ini lalu ajukan usulan baru.'
+                  : 'Usulan yang sedang dinilai reviewer atau sudah lolos tidak dapat dihapus.'}
+              </p>
+              <button
+                type="button"
+                className="proposal-delete-btn"
+                onClick={handleDeleteProposal}
+                disabled={!canDeleteProposal || state.loading}
+              >
+                <Trash2 size={15} /> Hapus Usulan
+              </button>
             </div>
           )}
         </div>
@@ -802,6 +845,7 @@ export function AjukanProposal({ user }) {
         <Info size={20} color="#0071e3" style={{ flexShrink: 0 }} />
         <p style={{ margin: 0, fontSize: '0.82rem', color: '#1e40af', lineHeight: 1.5 }}>
           <strong>Pedoman Belmawa Dikti:</strong> Usulan yang Anda ajukan ini akan menjadi 1 proposal resmi tim Anda pada periode aktif. Setelah usulan dibuat, Anda tetap dapat mengirimkan draf revisi naskah berkali-kali.
+          {' '}Ingin bergabung ke tim orang lain saja? <a href="#mahasiswa/lowongan" style={{ fontWeight: 700, color: '#0b2149' }}>Cari tim di Bursa Lowongan</a>.
         </p>
       </div>
 

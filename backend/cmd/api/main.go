@@ -149,6 +149,7 @@ func main() {
 	studentGroup.GET("/students", student.GetStudents)
 	studentGroup.POST("/proposals", student.CreateProposal)
 	studentGroup.GET("/proposals/:id", student.GetProposalDetail)
+	studentGroup.DELETE("/proposals/:id", student.DeleteProposal)
 	studentGroup.POST("/proposals/upload", student.UploadProposalDocument)
 	studentGroup.POST("/upload", student.UploadStudentFile)
 	studentGroup.GET("/notifications", student.GetNotifications)

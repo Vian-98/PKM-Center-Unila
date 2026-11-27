@@ -31,6 +31,7 @@ import {
 } from 'lucide-react'
 import { AIFormatDetector } from '../components/AIFormatDetector'
 import { ReviewerIdeaSelection } from '../components/ReviewerIdeaSelection'
+import { IDEA_SELECTION_ENABLED } from '../lib/features'
 import { presetReportsMap } from '../lib/aiFormatCheckerData'
 
 export function ReviewerDashboard({ user, onSwitchRole }) {
@@ -104,7 +105,7 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
   const [overview, setOverview] = useState(() => (hasSession ? { totalAssignments: 0, pendingCount: 0, inProgressCount: 0, completedCount: 0 } : loadStore('pkm_reviewer_overview', initialReviewerOverview)))
   const [assignments, setAssignments] = useState(() => (hasSession ? [] : loadStore('pkm_reviewer_assignments', initialReviewAssignments)))
   // Tahap kerja reviewer: seleksi ide (tahap 2) atau seleksi proposal internal (tahap 3)
-  const [reviewTab, setReviewTab] = useState('ide')
+  const [reviewTab, setReviewTab] = useState(IDEA_SELECTION_ENABLED ? 'ide' : 'proposal')
   const [annotations, setAnnotations] = useState(() => loadStore('pkm_pdf_annotations', initialPdfAnnotations))
   
   const [activeFilter, setActiveFilter] = useState('all') // 'all' | 'pending' | 'completed'
@@ -632,13 +633,15 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
 
       {/* Tab tahap kerja reviewer */}
       <nav className="modern-tabs" aria-label="Navigasi Reviewer">
-        <button
-          type="button"
-          className={`tab-btn ${reviewTab === 'ide' ? 'active' : ''}`}
-          onClick={() => setReviewTab('ide')}
-        >
-          <span>Seleksi Ide (Tahap 2)</span>
-        </button>
+        {IDEA_SELECTION_ENABLED && (
+          <button
+            type="button"
+            className={`tab-btn ${reviewTab === 'ide' ? 'active' : ''}`}
+            onClick={() => setReviewTab('ide')}
+          >
+            <span>Seleksi Ide (Tahap 2)</span>
+          </button>
+        )}
         <button
           type="button"
           className={`tab-btn ${reviewTab === 'proposal' ? 'active' : ''}`}
@@ -649,7 +652,7 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
         </button>
       </nav>
 
-      {reviewTab === 'ide' && <ReviewerIdeaSelection />}
+      {IDEA_SELECTION_ENABLED && reviewTab === 'ide' && <ReviewerIdeaSelection />}
 
       {reviewTab === 'proposal' && (<>
       {/* Pencarian & filter (pola dosen) */}

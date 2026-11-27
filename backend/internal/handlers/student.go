@@ -732,6 +732,69 @@ func (h StudentHandler) CreateProposal(c *gin.Context) {
 	})
 }
 
+// DeleteProposal: ketua tim menghapus usulannya sendiri selama belum masuk tahap
+// penilaian reviewer. Dokumen, permintaan pembimbing, dan penugasan reviewer
+// yang belum dinilai ikut terhapus lewat ON DELETE CASCADE.
+func (h StudentHandler) DeleteProposal(c *gin.Context) {
+	userID := getUserIDFromContext(c)
+	if userID == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Akses tidak diizinkan"})
+		return
+	}
+
+	var proposal models.Proposal
+	if err := h.DB.Where("id = ?", c.Param("id")).First(&proposal).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Usulan tidak ditemukan"})
+		return
+	}
+
+	var team models.Team
+	if err := h.DB.Where("id = ?", proposal.TeamID).First(&team).Error; err != nil || team.LeaderID != userID {
+		c.JSON(http.StatusForbidden, gin.H{"message": "Hanya ketua tim yang dapat menghapus usulan ini"})
+		return
+	}
+
+	switch proposal.Status {
+	case "draft", "submitted", "revision", "rejected":
+	default:
+		c.JSON(http.StatusConflict, gin.H{"message": "Usulan yang sedang dinilai reviewer atau sudah lolos tidak dapat dihapus"})
+		return
+	}
+
+	var reviewed int64
+	h.DB.Table("reviews r").
+		Joins("JOIN review_assignments ra ON ra.id = r.assignment_id").
+		Where("ra.proposal_id = ? AND r.review_status IN ?", proposal.ID, []string{"submitted", "finalized"}).
+		Count(&reviewed)
+	if reviewed > 0 {
+		c.JSON(http.StatusConflict, gin.H{"message": "Usulan sudah dinilai reviewer sehingga tidak dapat dihapus"})
+		return
+	}
+
+	// Tim yang hanya berisi ketua ikut dihapus, supaya mahasiswa bebas bergabung
+	// ke tim orang lain tanpa meninggalkan tim kosong atas namanya.
+	var otherMembers int64
+	h.DB.Model(&models.TeamMember{}).Where("team_id = ? AND student_id <> ?", team.ID, userID).Count(&otherMembers)
+
+	err := h.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Delete(&models.Proposal{}, "id = ?", proposal.ID).Error; err != nil {
+			return err
+		}
+		if otherMembers == 0 {
+			return tx.Delete(&models.Team{}, "id = ?", team.ID).Error
+		}
+		return tx.Model(&models.Team{}).Where("id = ?", team.ID).Update("status", "draft").Error
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Gagal menghapus usulan"})
+		return
+	}
+
+	h.notify(userID, "status_change", "Usulan dihapus",
+		"Usulan \""+proposal.Title+"\" telah dihapus. Anda dapat mengajukan usulan baru.", "#mahasiswa/ajukan-proposal")
+	c.JSON(http.StatusOK, gin.H{"message": "Usulan berhasil dihapus"})
+}
+
 // GetProposalDetail mengembalikan detail satu proposal milik mahasiswa.
 func (h StudentHandler) GetProposalDetail(c *gin.Context) {
 	userID := getUserIDFromContext(c)
@@ -1513,6 +1576,23 @@ func (h StudentHandler) RespondTeamInvitation(c *gin.Context) {
 		if memberCount >= 5 {
 			c.JSON(http.StatusBadRequest, gin.H{"message": "Batas kuota maksimum tim (5 mahasiswa) telah terpenuhi"})
 			return
+		}
+
+		// Mahasiswa yang masih menjadi ketua tim lain pada periode yang sama:
+		// tim kosong tanpa usulan dibersihkan, tim yang sudah punya usulan ditolak.
+		var ownTeams []models.Team
+		h.DB.Where("leader_id = ? AND period_id = ? AND id <> ?", userID, team.PeriodID, inv.TeamID).Find(&ownTeams)
+		for _, own := range ownTeams {
+			var ownProposals, ownMembers int64
+			h.DB.Model(&models.Proposal{}).Where("team_id = ?", own.ID).Count(&ownProposals)
+			h.DB.Model(&models.TeamMember{}).Where("team_id = ? AND student_id <> ?", own.ID, userID).Count(&ownMembers)
+			if ownProposals > 0 || ownMembers > 0 {
+				c.JSON(http.StatusConflict, gin.H{"message": "Anda masih menjadi ketua " + own.Name + ". Hapus usulan dan keluarkan anggota tim Anda terlebih dahulu sebelum bergabung ke tim lain."})
+				return
+			}
+		}
+		for _, own := range ownTeams {
+			h.DB.Delete(&models.Team{}, "id = ?", own.ID)
 		}
 
 		inv.Status = "accepted"

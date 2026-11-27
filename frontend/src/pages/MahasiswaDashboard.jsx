@@ -122,6 +122,8 @@ export function MahasiswaDashboard({ user }) {
   const [showAiAuditModal, setShowAiAuditModal] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  // Rencana mahasiswa di PKM: 'ketua' (mengusulkan proposal) atau 'anggota' (bergabung ke tim lain).
+  const [pkmIntent, setPkmIntent] = useState(() => loadStore(`pkm_mhs_intent_${userKey}`, ''))
 
   useEffect(() => {
     setIncomingInvites(getIncomingInvitationsForUser(user))
@@ -186,6 +188,19 @@ export function MahasiswaDashboard({ user }) {
   const currentStageName = activeStepIdx !== -1
     ? (steps[activeStepIdx]?.label || 'Draft Usulan')
     : (doneCount > 0 ? `${steps[doneCount - 1]?.label || 'Lolos Belmawa'} (Lolos)` : 'Draft Usulan')
+  // Mahasiswa yang belum punya usulan maupun rekan tim ditanya dulu rencananya.
+  const hasTeamMates = (team?.members?.length || 0) > 1
+  const showIntentQuestion = !loading && !error && !proposal && !hasTeamMates && !pkmIntent
+  const chooseIntent = (intent) => {
+    saveStore(`pkm_mhs_intent_${userKey}`, intent)
+    setPkmIntent(intent)
+    window.location.hash = intent === 'anggota' ? '#mahasiswa/lowongan' : '#mahasiswa/ajukan-proposal'
+  }
+  const resetIntent = () => {
+    saveStore(`pkm_mhs_intent_${userKey}`, '')
+    setPkmIntent('')
+  }
+
   const progressPercent = steps.length > 0 ? Math.round(((doneCount + (activeStepIdx !== -1 ? 0.5 : 0)) / steps.length) * 100) : 20
 
   return (
@@ -211,6 +226,53 @@ export function MahasiswaDashboard({ user }) {
           </a>
         </div>
       </header>
+
+      {showIntentQuestion && (
+        <div className="intent-overlay" role="dialog" aria-modal="true" aria-labelledby="intent-title">
+          <div className="intent-dialog">
+            <span className="intent-eyebrow">Langkah pertama</span>
+            <h2 id="intent-title">Apa rencana Anda di PKM tahun ini?</h2>
+            <p className="intent-sub">Pilih salah satu supaya kami arahkan ke langkah yang tepat. Pilihan ini bisa diubah nanti.</p>
+            <button type="button" className="intent-option" onClick={() => chooseIntent('ketua')}>
+              <span className="intent-icon"><FileEdit size={20} /></span>
+              <span className="intent-text">
+                <strong>Mengusulkan proposal</strong>
+                <small>Saya punya ide dan ingin menjadi ketua tim pengusul.</small>
+              </span>
+              <ChevronRight size={18} className="intent-arrow" />
+            </button>
+            <button type="button" className="intent-option" onClick={() => chooseIntent('anggota')}>
+              <span className="intent-icon"><Users size={20} /></span>
+              <span className="intent-text">
+                <strong>Menjadi anggota kelompok</strong>
+                <small>Saya ingin bergabung ke tim yang sedang mencari anggota.</small>
+              </span>
+              <ChevronRight size={18} className="intent-arrow" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {pkmIntent && !proposal && !hasTeamMates && (
+        <div className="intent-banner">
+          <span className="intent-icon">{pkmIntent === 'anggota' ? <Users size={18} /> : <FileEdit size={18} />}</span>
+          <div className="intent-banner-text">
+            {pkmIntent === 'anggota' ? (<>
+              <strong>Anda belum bergabung ke tim</strong>
+              <span>Cari tim yang sedang membuka lowongan anggota di Bursa Lowongan.</span>
+            </>) : (<>
+              <strong>Rencana Anda: mengusulkan proposal</strong>
+              <span>Lanjutkan mengisi usulan, atau ubah pilihan bila ingin bergabung ke tim orang lain.</span>
+            </>)}
+          </div>
+          <div className="intent-banner-actions">
+            {pkmIntent === 'anggota'
+              ? <a className="btn-action primary" href="#mahasiswa/lowongan">Cari Tim</a>
+              : <a className="btn-action primary" href="#mahasiswa/ajukan-proposal">Ajukan Proposal</a>}
+            <button type="button" className="intent-banner-link" onClick={resetIntent}>Ubah pilihan</button>
+          </div>
+        </div>
+      )}
 
       {/* Alert Banner Undangan Tim Masuk */}
       {incomingInvites.length > 0 && (

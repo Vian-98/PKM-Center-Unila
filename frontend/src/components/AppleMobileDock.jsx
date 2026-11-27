@@ -20,6 +20,7 @@ import {
   ArrowLeftRight,
   Lightbulb,
 } from 'lucide-react'
+import { IDEA_SELECTION_ENABLED } from '../lib/features'
 
 export function AppleMobileDock({ active, user, onLogin, onLogout, onSwitchRole, onOpenProfile }) {
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -144,10 +145,12 @@ export function AppleMobileDock({ active, user, onLogin, onLogout, onSwitchRole,
               )}
               {user?.role === 'mahasiswa' && (
                 <>
-                  <a href="#mahasiswa/ajukan-ide" className="apple-sheet-item" onClick={() => { setSheetOpen(false); window.scrollTo({ top: 0, left: 0, behavior: 'instant' }) }}>
-                    <div className="apple-sheet-icon" style={{ background: '#fefce8', color: '#ca8a04' }}><Lightbulb size={20} /></div>
-                    <span>Ajukan Ide</span>
-                  </a>
+                  {IDEA_SELECTION_ENABLED && (
+                    <a href="#mahasiswa/ajukan-ide" className="apple-sheet-item" onClick={() => { setSheetOpen(false); window.scrollTo({ top: 0, left: 0, behavior: 'instant' }) }}>
+                      <div className="apple-sheet-icon" style={{ background: '#fefce8', color: '#ca8a04' }}><Lightbulb size={20} /></div>
+                      <span>Ajukan Ide</span>
+                    </a>
+                  )}
 
                   <a href="#mahasiswa/pkmate" className="apple-sheet-item" onClick={() => { setSheetOpen(false); window.scrollTo({ top: 0, left: 0, behavior: 'instant' }) }}>
                     <div className="apple-sheet-icon" style={{ background: '#eff6ff', color: '#0071e3' }}><Sparkles size={20} /></div>

@@ -21,6 +21,7 @@ import {
   ShieldCheck,
   UserCheck,
 } from 'lucide-react'
+import { IDEA_SELECTION_ENABLED } from '../lib/features'
 
 export function DesktopSidebarLayout({ user, active, routePrefix, onLogout, onSwitchRole, onOpenProfile, children }) {
   const [collapsed, setCollapsed] = useState(false)
@@ -66,7 +67,7 @@ export function DesktopSidebarLayout({ user, active, routePrefix, onLogout, onSw
       default:
         return [
           { label: 'Dashboard', href: '#mahasiswa', icon: <LayoutDashboard size={17} /> },
-          { label: 'Ajukan Ide', href: '#mahasiswa/ajukan-ide', icon: <Lightbulb size={17} /> },
+          ...(IDEA_SELECTION_ENABLED ? [{ label: 'Ajukan Ide', href: '#mahasiswa/ajukan-ide', icon: <Lightbulb size={17} /> }] : []),
           { label: 'Ajukan Proposal', href: '#mahasiswa/ajukan-proposal', icon: <FilePlus size={17} /> },
           { label: 'Logbook Digital', href: '#mahasiswa/logbook', icon: <ClipboardList size={17} /> },
           { label: 'Manajemen & Cari Tim', href: '#mahasiswa/tim', icon: <Users size={17} /> },
@@ -153,7 +154,7 @@ export function DesktopSidebarLayout({ user, active, routePrefix, onLogout, onSw
     // Alias matches
     if (subKey === 'pkmate' && active === 'idealab') return true
     if (subKey === 'idealab' && active === 'pkmate') return true
-    if (subKey === 'tim' && active === 'caritim') return true
+    if (subKey === 'tim' && (active === 'caritim' || active === 'lowongan')) return true
     if (subKey === 'caritim' && active === 'tim') return true
     return false
   }

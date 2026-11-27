@@ -14,6 +14,7 @@ import { PesanFeedback } from './pages/PesanFeedback'
 import { MahasiswaDashboard } from './pages/MahasiswaDashboard'
 import { AjukanProposal } from './pages/AjukanProposal'
 import { AjukanIde } from './pages/AjukanIde'
+import { IDEA_SELECTION_ENABLED } from './lib/features'
 import { LogbookPKM } from './pages/LogbookPKM'
 import { CekStatusUsulan } from './pages/CekStatusUsulan'
 import { IdeaLab } from './pages/IdeaLab'
@@ -1380,13 +1381,14 @@ function App() {
   // ── Portal Mahasiswa ──────────────────────────────────────────────
   else if (raw === 'mahasiswa') {
     if (user && user.role === 'mahasiswa') {
-      if (sub === 'ajukan-ide') view = <AjukanIde />
+      if (sub === 'ajukan-ide') view = IDEA_SELECTION_ENABLED ? <AjukanIde /> : <AjukanProposal user={user} />
       else if (sub === 'ajukan-proposal') view = <AjukanProposal user={user} />
       else if (sub === 'logbook') view = <LogbookPKM user={user} />
       else if (sub === 'cek-status') view = <CekStatusUsulan user={user} />
       else if (sub === 'idealab' || sub === 'pkmate') view = <IdeaLab user={user} onLogin={() => setModal(true)} />
       else if (sub === 'caritim') view = <TeamManagement user={user} initialTab="dosen" />
       else if (sub === 'tim') view = <TeamManagement user={user} initialTab="tim" />
+      else if (sub === 'lowongan') view = <TeamManagement user={user} initialTab="lowongan" />
       else if (sub === 'pesan') view = <PesanFeedback user={user} onLogin={() => setModal(true)} onSwitchUser={setUser} />
       else if (sub === 'profil') view = <ProfilePage user={user} onUpdateUser={setUser} onSwitchRole={switchRole} onLogout={logout} />
       else if (sub === 'pedoman') view = <PedomanIndex />
