@@ -25,14 +25,10 @@ import {
   Split,
   Layers,
   AlertTriangle,
-  ClipboardList,
-  Clock,
-  FileEdit,
+  ClipboardCheck,
   CheckCircle2,
   GraduationCap,
-  Search,
 } from 'lucide-react'
-import { GlowCard } from '../components/GlowCard'
 import { AIFormatDetector } from '../components/AIFormatDetector'
 import { ReviewerIdeaSelection } from '../components/ReviewerIdeaSelection'
 import { presetReportsMap } from '../lib/aiFormatCheckerData'
@@ -565,214 +561,127 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
     })
   }, [assignments, activeFilter, searchQuery])
 
+  const pendingAssignments = assignments.filter(a => a.status !== 'completed').length
+  const completedAssignments = assignments.filter(a => a.status === 'completed').length
+
   return (
     <div className="module-container">
-      {/* Header Dashboard Reviewer (Light Glassmorphism selaras dengan laman utama) */}
-      <header className="student-portal-header">
-        <div className="student-header-info">
-          <div className="student-portal-badge">
-            <span className="live-pulse-dot" />
-            <span>PORTAL REVIEWER &bull; UNIVERSITAS LAMPUNG</span>
+      {/* Header Dashboard Reviewer (pola sama dengan dashboard dosen) */}
+      <section className="module-header">
+        <div className="module-header-top">
+          <div>
+            <div className="module-badge">MODUL REVIEWER - UNIVERSITAS LAMPUNG</div>
+            <h1 className="module-title">Dashboard Reviewer PKM</h1>
+            <p className="module-subtitle">
+              Seleksi ide mahasiswa sesuai bidang Anda, nilai proposal dengan rubrik Belmawa, dan kirim rekomendasi kelayakan pendanaan.
+            </p>
           </div>
-          <h1 className="student-portal-title">Dashboard Penilaian Reviewer</h1>
-          <p className="student-portal-subtitle">
-            Antrean seleksi ide dan evaluasi proposal PKM Universitas Lampung. Lakukan scoring berbasis rubrik SIMBELMAWA dan tetapkan rekomendasi kelayakan pendanaan.
-          </p>
+          <div className="rev-header-identity">
+            <span className="rev-header-identity-label">Reviewer Bertugas:</span>
+            <div className="rev-header-identity-name">{user?.name || 'Reviewer PKM'}</div>
+            {(user?.roles?.includes('dosen') || user?.role === 'admin') && (
+              <button
+                type="button"
+                className="rev-header-switch-btn"
+                onClick={() => onSwitchRole ? onSwitchRole('dosen') : (window.location.hash = '#dosen')}
+                title="Beralih ke Dashboard Dosen Pembimbing"
+              >
+                <GraduationCap size={14} />
+                <span>Buka Dashboard Dosen &rarr;</span>
+              </button>
+            )}
+          </div>
         </div>
 
-        <div className="student-portal-header-actions">
-          <div className="rev-header-reviewer-chip">
-            <span className="rev-header-chip-label">Reviewer Bertugas</span>
-            <strong className="rev-header-chip-name">{user?.name || 'Dr. Hendri Reviewer, M.Kom.'}</strong>
+        <div className="stat-cards-grid">
+          <div className="stat-box">
+            <div className="stat-box-label">Total Antrean Proposal</div>
+            <div className="stat-box-value">
+              {overview.totalAssignments} <span className="rev-stat-unit">Proposal</span>
+            </div>
+            <div className="stat-box-sub">Masuk otomatis sesuai bidang Anda</div>
           </div>
-          {(user?.roles?.includes('dosen') || user?.role === 'admin') && (
-            <button
-              type="button"
-              className="btn-action secondary"
-              style={{ borderRadius: '9999px', padding: '0.55rem 1.05rem', fontSize: '0.84rem' }}
-              onClick={() => onSwitchRole ? onSwitchRole('dosen') : (window.location.hash = '#dosen')}
-              title="Beralih ke Dashboard Dosen Pembimbing"
-            >
-              <GraduationCap size={16} />
-              <span>Dashboard Dosen</span>
-            </button>
-          )}
+
+          <div className="stat-box">
+            <div className="stat-box-label">Belum Dinilai</div>
+            <div className="stat-box-value" style={{ color: overview.pendingCount > 0 ? '#fbbf24' : '#ffffff' }}>
+              {overview.pendingCount} <span className="rev-stat-unit">Naskah</span>
+            </div>
+            <div className="stat-box-sub">
+              {overview.pendingCount > 0 ? 'Segera dinilai sebelum tenggat' : 'Tidak ada tunggakan'}
+            </div>
+          </div>
+
+          <div className="stat-box">
+            <div className="stat-box-label">Draf Penilaian</div>
+            <div className="stat-box-value" style={{ color: '#60a5fa' }}>
+              {overview.inProgressCount} <span className="rev-stat-unit">Draf</span>
+            </div>
+            <div className="stat-box-sub">Tersimpan, belum dikirim</div>
+          </div>
+
+          <div className="stat-box">
+            <div className="stat-box-label">Selesai Dinilai</div>
+            <div className="stat-box-value" style={{ color: '#34d399' }}>
+              {overview.completedCount} <span className="rev-stat-unit">Proposal</span>
+            </div>
+            <div className="stat-box-sub">Rekomendasi sudah terkirim</div>
+          </div>
         </div>
-      </header>
+      </section>
 
-      {/* Ringkasan Statistik Antrean (4-Column Light Frosted GlowCards) */}
-      <div className="student-metric-grid">
-        <GlowCard glowColor="blue" dark={false} className="student-metric-glow-card">
-          <div className="metric-card-top">
-            <span className="metric-card-label">Total Antrean</span>
-            <div className="metric-icon-badge blue">
-              <ClipboardList size={18} />
-            </div>
-          </div>
-          <div className="metric-card-body">
-            <div className="metric-card-val">
-              {overview.totalAssignments}
-              <span className="metric-card-subval">Proposal</span>
-            </div>
-            <div className="metric-card-hint">
-              <span className="metric-status-dot blue" />
-              <span className="truncate">Ditugaskan oleh PKM Center</span>
-            </div>
-          </div>
-        </GlowCard>
-
-        <GlowCard glowColor="gold" dark={false} className="student-metric-glow-card">
-          <div className="metric-card-top">
-            <span className="metric-card-label">Belum Dinilai</span>
-            <div className="metric-icon-badge gold">
-              <Clock size={18} />
-            </div>
-          </div>
-          <div className="metric-card-body">
-            <div className="metric-card-val">
-              {overview.pendingCount}
-              <span className="metric-card-subval">Naskah</span>
-            </div>
-            <div className="metric-card-hint">
-              <span className={`metric-status-dot ${overview.pendingCount > 0 ? 'gold' : 'green'}`} />
-              <span className="truncate">{overview.pendingCount > 0 ? 'Segera dinilai sebelum tenggat' : 'Tidak ada tunggakan'}</span>
-            </div>
-          </div>
-        </GlowCard>
-
-        <GlowCard glowColor="purple" dark={false} className="student-metric-glow-card">
-          <div className="metric-card-top">
-            <span className="metric-card-label">Draf Penilaian</span>
-            <div className="metric-icon-badge purple">
-              <FileEdit size={18} />
-            </div>
-          </div>
-          <div className="metric-card-body">
-            <div className="metric-card-val">
-              {overview.inProgressCount}
-              <span className="metric-card-subval">Draf</span>
-            </div>
-            <div className="metric-card-hint">
-              <span className="metric-status-dot purple" />
-              <span className="truncate">Tersimpan sementara di sistem</span>
-            </div>
-          </div>
-        </GlowCard>
-
-        <GlowCard glowColor="green" dark={false} className="student-metric-glow-card">
-          <div className="metric-card-top">
-            <span className="metric-card-label">Telah Difinalisasi</span>
-            <div className="metric-icon-badge green">
-              <CheckCircle2 size={18} />
-            </div>
-          </div>
-          <div className="metric-card-body">
-            <div className="metric-card-val">
-              {overview.completedCount}
-              <span className="metric-card-subval">Selesai</span>
-            </div>
-            <div className="metric-card-hint">
-              <span className="metric-status-dot green" />
-              <span className="truncate">Keputusan rekomendasi terkirim</span>
-            </div>
-          </div>
-        </GlowCard>
-      </div>
-
-      {/* Pilihan tahap kerja reviewer */}
-      <div className="modern-tabs reviewer-stage-tabs">
-        <button type="button" className={`tab-btn ${reviewTab === 'ide' ? 'active' : ''}`} onClick={() => setReviewTab('ide')}>
-          Tahap 2 · Seleksi Ide
+      {/* Tab tahap kerja reviewer */}
+      <nav className="modern-tabs" aria-label="Navigasi Reviewer">
+        <button
+          type="button"
+          className={`tab-btn ${reviewTab === 'ide' ? 'active' : ''}`}
+          onClick={() => setReviewTab('ide')}
+        >
+          <span>Seleksi Ide (Tahap 2)</span>
         </button>
-        <button type="button" className={`tab-btn ${reviewTab === 'proposal' ? 'active' : ''}`} onClick={() => setReviewTab('proposal')}>
-          Tahap 3 · Seleksi Proposal ({assignments.length})
+        <button
+          type="button"
+          className={`tab-btn ${reviewTab === 'proposal' ? 'active' : ''}`}
+          onClick={() => { setReviewTab('proposal'); setSearchQuery('') }}
+        >
+          <span>Penilaian Proposal (Tahap 3)</span>
+          <span className="tab-badge">{pendingAssignments} Perlu Dinilai</span>
         </button>
-      </div>
+      </nav>
 
       {reviewTab === 'ide' && <ReviewerIdeaSelection />}
 
       {reviewTab === 'proposal' && (<>
-      {/* Filter & Search Bar Antrean */}
-      <div className="rev-queue-toolbar">
-        <div className="modern-tabs" style={{ marginBottom: 0 }}>
-          <button
-            className={`tab-btn ${activeFilter === 'all' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('all')}
-          >
-            Semua Antrean ({assignments.length})
-          </button>
-          <button
-            className={`tab-btn ${activeFilter === 'pending' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('pending')}
-          >
-            Perlu Dinilai ({assignments.filter(a => a.status !== 'completed').length})
-          </button>
-          <button
-            className={`tab-btn ${activeFilter === 'completed' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('completed')}
-          >
-            Sudah Selesai ({assignments.filter(a => a.status === 'completed').length})
-          </button>
-        </div>
-
-        <div className="rev-search-wrap">
-          <Search size={16} className="rev-search-icon" />
-          <input
-            type="text"
-            className="rev-search-input"
-            placeholder="Cari proposal, ketua, skema, fakultas..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-          />
-        </div>
-      </div>
-
-      {/* Banner Pintasan AI Format & Compliance Assistant (Light Frosted Glass) */}
-      <div className="rev-ai-banner">
-        <div className="rev-ai-banner-left">
-          <div className="rev-ai-banner-icon">
-            <Sparkles size={22} />
-          </div>
-          <div>
-            <div className="rev-ai-banner-title-row">
-              <h3 className="rev-ai-banner-title">
-                AI Format & Compliance Checker
-              </h3>
-              <span className="rev-ai-banner-pill">
-                Pedoman Belmawa 2026
-              </span>
-            </div>
-            <p className="rev-ai-banner-desc">
-              Deteksi otomatis kesalahan format penulisan (spasi 1,15, tabel/gambar), struktur daftar isi/lampiran, dan rangkum istilah asing yang belum dicetak miring sebelum finalisasi penilaian.
-            </p>
-          </div>
-        </div>
-
-        <div className="rev-ai-banner-actions">
-          <button
-            type="button"
-            className="btn-action primary"
-            style={{ borderRadius: '9999px', padding: '0.6rem 1.25rem' }}
-            onClick={() => {
-              const sampleItem = assignments[1] || assignments[0]
-              if (sampleItem) {
-                openReviewWorkspace(sampleItem, 'ai_check')
-              }
-            }}
-            title="Buka pratinjau deteksi format AI pada contoh naskah Puja PKM-RE"
-          >
-            <Sparkles size={15} />
-            <span>Lihat Contoh AI Audit (Puja RE) &rarr;</span>
-          </button>
-        </div>
+      {/* Pencarian & filter (pola dosen) */}
+      <div className="rev-filter-row">
+        <input
+          type="text"
+          className="rev-filter-search"
+          placeholder="Cari judul proposal, ketua, skema, atau fakultas..."
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+        />
+        <select
+          className="rev-filter-select"
+          value={activeFilter}
+          onChange={e => setActiveFilter(e.target.value)}
+        >
+          <option value="all">Semua Antrean ({assignments.length})</option>
+          <option value="pending">Perlu Dinilai ({pendingAssignments})</option>
+          <option value="completed">Sudah Selesai ({completedAssignments})</option>
+        </select>
       </div>
 
       {/* Daftar Antrean Penilaian */}
       <section>
         <div style={{ display: 'grid', gap: '1.25rem' }}>
           {filteredAssignments.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '3rem', background: '#ffffff', borderRadius: '1rem', border: '1px dashed #cbd5e1' }}>
-              <p style={{ color: '#64748b' }}>Tidak ada antrean penilaian yang sesuai dengan kriteria pencarian.</p>
+            <div className="rev-empty-state">
+              <p>
+                {assignments.length === 0
+                  ? 'Belum ada proposal di antrean Anda. Proposal yang dikirim mahasiswa di bidang Anda akan muncul di sini.'
+                  : 'Tidak ada proposal yang sesuai pencarian.'}
+              </p>
             </div>
           ) : (
             filteredAssignments.map(item => (
@@ -780,30 +689,13 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
                 <div className="proposal-card-item-header">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
                     <span className="tag-scheme">{item.schemeCode}</span>
-                    <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 700 }}>
-                      Tim: <strong>{item.teamName}</strong>
-                    </span>
-                    <span style={{
-                      background: '#fef2f2',
-                      border: '1px solid #fee2e2',
-                      color: '#b91c1c',
-                      fontSize: '0.72rem',
-                      fontWeight: 700,
-                      padding: '0.15rem 0.5rem',
-                      borderRadius: '0.35rem',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.3rem',
-                    }}>
-                      <Sparkles size={12} color="#dc2626" />
-                      <span>AI Format: {item.id === 'rev-01' ? '5 Temuan (82%)' : '11 Temuan (74%)'}</span>
+                    <span style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 700 }}>
+                      {/^tim\b/i.test(item.teamName || '') ? item.teamName : `Tim: ${item.teamName || '-'}`}
                     </span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    {item.totalScore !== null && (
-                      <span style={{ background: '#0b2149', color: '#fbbf24', padding: '0.2rem 0.65rem', borderRadius: '0.35rem', fontWeight: 800, fontSize: '0.85rem' }}>
-                        Skor: {item.totalScore}
-                      </span>
+                    {item.totalScore != null && (
+                      <span className="rev-score-chip">Skor {item.totalScore}</span>
                     )}
                     <span className={`status-pill ${item.status}`}>
                       {item.status === 'completed' ? 'Selesai Dinilai' : item.status === 'in_progress' ? 'Draf Tersimpan' : 'Belum Dinilai'}
@@ -815,49 +707,45 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
                   className="proposal-card-title"
                   onClick={() => openReviewWorkspace(item)}
                   style={{ cursor: 'pointer' }}
-                  title="Klik untuk membuka naskah proposal pada dedicated review workspace"
+                  title="Buka naskah proposal"
                 >
                   {item.proposalTitle}
                 </h3>
+                {item.abstract && (
+                  <p className="rev-card-abstract">{item.abstract}</p>
+                )}
 
                 <div className="proposal-card-meta">
-                  <span>Ketua Pengusul: <strong>{item.leaderName}</strong></span>
+                  <span>Ketua: <strong>{item.leaderName}</strong></span>
                   <span>Fakultas: {item.faculty || '-'}</span>
                   {item.fieldName && <span>Bidang: <strong>{item.fieldName}</strong></span>}
-                  {item.reviewDeadline && <span>Batas Waktu Review: <strong>{new Date(item.reviewDeadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</strong></span>}
-                  {item.recommendation && (
-                    <span>
-                      Rekomendasi: <strong style={{ textTransform: 'capitalize', color: item.recommendation === 'funded' ? '#059669' : item.recommendation === 'rejected' ? '#dc2626' : '#d97706' }}>{item.recommendation}</strong>
-                    </span>
-                  )}
-                </div>
-
-                <div style={{ background: '#f8fafc', padding: '0.85rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', color: '#475569', marginBottom: '1.25rem', lineHeight: 1.5 }}>
-                  <strong>Ringkasan Abstrak:</strong> {item.abstract}
+                  {item.reviewDeadline && <span>Tenggat: <strong>{new Date(item.reviewDeadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</strong></span>}
                 </div>
 
                 <div className="card-actions-row">
                   <button
+                    type="button"
                     className="btn-action secondary"
                     onClick={() => openReviewWorkspace(item, 'pdf')}
                   >
-                    Buka Naskah Proposal (PDF)
+                    <FileText size={14} />
+                    <span>Buka Naskah</span>
                   </button>
                   <button
                     type="button"
                     className="btn-action secondary"
-                    style={{ background: '#f0f9ff', borderColor: '#38bdf8', color: '#0369a1', fontWeight: 700 }}
                     onClick={() => openReviewWorkspace(item, 'ai_check')}
-                    title="Audit format dokumen & rangkum temuan secara otomatis dengan AI"
+                    title="Cek format naskah terhadap pedoman Belmawa"
                   >
-                    <Sparkles size={14} color="#0284c7" />
-                    <span>Deteksi Format AI ({item.id === 'rev-01' ? 5 : 11})</span>
+                    <Sparkles size={14} />
+                    <span>Cek Format</span>
                   </button>
                   <button
+                    type="button"
                     className={`btn-action ${item.status === 'completed' ? 'secondary' : 'primary'}`}
                     onClick={() => openScoringForm(item)}
                   >
-                    {item.status === 'completed' ? 'Lihat & Edit Penilaian' : 'Isi Form Scoring & Keputusan'}
+                    {item.status === 'completed' ? 'Lihat Penilaian' : 'Beri Penilaian'}
                   </button>
                 </div>
               </article>
@@ -1092,7 +980,7 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
                 title="Kembali ke Daftar Antrean Reviewer (Tekan Esc)"
               >
                 <ArrowLeft size={17} />
-                <span>Kembali ke Antrean</span>
+                <span className="hide-on-mobile">Antrean</span>
               </button>
 
               <div className="rev-topbar-divider" />
@@ -1107,7 +995,11 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
                   </h3>
                 </div>
                 <div className="rev-topbar-submeta">
-                  Ketua: <strong>{docModal.details?.leader}</strong> &bull; {docModal.details?.faculty} &bull; Tim <strong>{docModal.details?.team}</strong> &bull; Berkas: {docModal.details?.fileName || 'proposal-pkm.pdf'} ({docModal.details?.fileSize || 'Standar Belmawa'})
+                  {[
+                    docModal.details?.leader && `Ketua: ${docModal.details.leader}`,
+                    docModal.details?.faculty,
+                    docModal.details?.team && (/^tim\b/i.test(docModal.details.team) ? docModal.details.team : `Tim ${docModal.details.team}`),
+                  ].filter(Boolean).join(' · ')}
                 </div>
               </div>
             </div>
@@ -1123,7 +1015,7 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
                   title="Tampilan Viewer Dokumen PDF Resmi"
                 >
                   <FileText size={15} />
-                  <span>Naskah PDF</span>
+                  <span>Naskah</span>
                 </button>
                 <button
                   type="button"
@@ -1132,31 +1024,16 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
                   title="Lihat Intisari Bab Proposal"
                 >
                   <BookOpen size={15} />
-                  <span>Ringkasan Bab</span>
+                  <span>Ringkasan</span>
                 </button>
                 <button
                   type="button"
                   className={`rev-pill-btn ${docModal.viewMode === 'ai_check' ? 'active' : ''}`}
                   onClick={() => setDocModal(prev => ({ ...prev, viewMode: 'ai_check' }))}
-                  title="Audit Format, Spasi, Tipografi & Istilah Asing Otomatis dengan AI Belmawa"
-                  style={{
-                    background: docModal.viewMode === 'ai_check' ? 'linear-gradient(135deg, #0284c7, #0369a1)' : undefined,
-                    color: docModal.viewMode === 'ai_check' ? '#ffffff' : undefined,
-                    border: docModal.viewMode === 'ai_check' ? '1px solid #38bdf8' : undefined,
-                  }}
+                  title="Cek format naskah terhadap pedoman Belmawa"
                 >
-                  <Sparkles size={15} color={docModal.viewMode === 'ai_check' ? '#fbbf24' : '#38bdf8'} />
-                  <span>Deteksi Format AI</span>
-                  <span style={{
-                    fontSize: '0.68rem',
-                    background: docModal.viewMode === 'ai_check' ? '#dc2626' : 'rgba(239, 68, 68, 0.28)',
-                    color: docModal.viewMode === 'ai_check' ? '#ffffff' : '#fca5a5',
-                    padding: '0.1rem 0.45rem',
-                    borderRadius: '9999px',
-                    fontWeight: 800,
-                  }}>
-                    {docModal.assignment?.id === 'rev-01' ? 5 : 11}
-                  </span>
+                  <Sparkles size={15} />
+                  <span>Cek Format</span>
                 </button>
               </div>
 
@@ -1165,10 +1042,10 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
                 href={docModal.details?.pdfUrl || '/docs/proposal-padivision-pkm-kc.pdf'}
                 download={docModal.details?.fileName || 'naskah-proposal.pdf'}
                 className="rev-topbar-action-link"
-                title="Unduh Berkas PDF Proposal Lengkap"
+                title="Unduh naskah PDF"
+                aria-label="Unduh naskah PDF"
               >
-                <Download size={15} />
-                <span className="hide-on-mobile">Unduh PDF</span>
+                <Download size={16} />
               </a>
 
               <a
@@ -1176,10 +1053,10 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rev-topbar-action-link"
-                title="Buka Dokumen di Tab Browser Terpisah"
+                title="Buka naskah di tab baru"
+                aria-label="Buka naskah di tab baru"
               >
-                <ExternalLink size={15} />
-                <span className="hide-on-mobile">Tab Baru</span>
+                <ExternalLink size={16} />
               </a>
 
               {/* Tombol Toggle Panel Catatan */}
@@ -1207,11 +1084,11 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
                 onClick={() => openScoringForm(docModal.assignment)}
                 title="Buka Form Rubrik Penilaian & Skor Proposal"
               >
-                <Sparkles size={15} />
+                <ClipboardCheck size={15} />
                 <span>
-                  {docModal.assignment?.status === 'completed'
-                    ? `Skor: ${docModal.assignment.totalScore || 88}`
-                    : 'Form Penilaian'}
+                  {docModal.assignment?.status === 'completed' && docModal.assignment?.totalScore != null
+                    ? `Skor ${docModal.assignment.totalScore}`
+                    : 'Beri Penilaian'}
                 </span>
               </button>
             </div>
@@ -1475,6 +1352,7 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
                   <div className="ai-workspace-split-report">
                     <AIFormatDetector
                       assignment={docModal.assignment}
+                      documentInfo={docModal.details}
                       onJumpToPage={handleJumpToPage}
                       onApplyToScoring={handleApplyAIToScoring}
                       isSplitView={true}
@@ -1487,6 +1365,7 @@ export function ReviewerDashboard({ user, onSwitchRole }) {
                 <div style={{ flex: 1, height: '100%', overflowY: 'auto', background: '#fbfbfc' }}>
                   <AIFormatDetector
                     assignment={docModal.assignment}
+                    documentInfo={docModal.details}
                     onJumpToPage={(pageNum) => {
                       handleJumpToPage(pageNum)
                       setDocModal(prev => ({ ...prev, isSplitView: true }))

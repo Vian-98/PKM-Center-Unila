@@ -32,6 +32,7 @@ import {
 export function AIFormatDetector({
   initialReport,
   assignment,
+  documentInfo,
   onJumpToPage,
   onApplyToScoring,
   isSplitView = false,
@@ -245,11 +246,12 @@ export function AIFormatDetector({
       {showTopControls && (
         <header className="ai-report-control-bar">
           <div className="ai-control-left">
-            <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#0b2149', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-              <Sparkles size={15} color="#0284c7" />
-              <span>Modul AI Format Detector</span>
+            <span className="ai-control-title">
+              <Sparkles size={15} />
+              <span>Cek Format Naskah</span>
             </span>
 
+            {!documentInfo && (<>
             <select
               className="ai-select-doc-dropdown"
               value={
@@ -285,6 +287,7 @@ export function AIFormatDetector({
               accept=".docx,.doc,.pdf"
               style={{ display: 'none' }}
             />
+            </>)}
           </div>
 
           <div className="ai-control-right">
@@ -296,7 +299,7 @@ export function AIFormatDetector({
                 title="Buka tampilan berdampingan dengan Naskah PDF"
               >
                 <Split size={14} />
-                <span>{isSplitView ? 'Tampilan Penuh' : 'Berdampingan PDF'}</span>
+                <span>{isSplitView ? 'Tampilan Penuh' : 'Lihat dengan Naskah'}</span>
               </button>
             )}
 
@@ -308,7 +311,7 @@ export function AIFormatDetector({
               title="Jalankan ulang pemindaian AI terhadap naskah"
             >
               <RefreshCw size={14} className={isScanning ? 'animate-spin' : ''} />
-              <span>{isScanning ? 'Memindai...' : 'Pindai Ulang AI'}</span>
+              <span className="hide-on-mobile">{isScanning ? 'Memindai...' : 'Pindai Ulang'}</span>
             </button>
 
             {onApplyToScoring && (
@@ -319,28 +322,28 @@ export function AIFormatDetector({
                 title="Salin temuan format AI ini otomatis ke Form Penilaian & Kelemahan Proposal"
               >
                 <CheckCircle2 size={14} />
-                <span>Terapkan ke Form Scoring</span>
+                <span>Masukkan ke Penilaian</span>
               </button>
             )}
 
             <button
               type="button"
-              className="ai-action-btn"
+              className="ai-action-btn icon-only"
               onClick={handleCopySummary}
-              title="Salin seluruh ringkasan temuan format ke clipboard"
+              title="Salin ringkasan temuan"
+              aria-label="Salin ringkasan temuan"
             >
-              <Copy size={14} />
-              <span className="hide-on-mobile">Salin Teks</span>
+              <Copy size={15} />
             </button>
 
             <button
               type="button"
-              className="ai-action-btn"
+              className="ai-action-btn icon-only"
               onClick={() => window.print()}
-              title="Cetak atau simpan laporan hasil audit format ke PDF"
+              title="Cetak laporan"
+              aria-label="Cetak laporan"
             >
-              <Printer size={14} />
-              <span className="hide-on-mobile">Cetak</span>
+              <Printer size={15} />
             </button>
           </div>
         </header>
@@ -351,17 +354,18 @@ export function AIFormatDetector({
         {/* Header Dokumen yang Diaudit */}
         <div className="ai-report-header">
           <div className="ai-report-eyebrow">
-            <span>H A S I L &nbsp; P E N G E C E K A N</span>
+            <span>Hasil pengecekan format</span>
+            {documentInfo && <span className="ai-report-sim-badge" title="Mesin AI belum membaca isi naskah ini; temuan di bawah adalah contoh.">Simulasi</span>}
           </div>
           <h2 className="ai-report-title">
-            {activeReport.documentName}
+            {documentInfo?.title || activeReport.documentName}
           </h2>
           <div className="ai-report-subtitle">
-            <span>{activeReport.schemeCode} &middot; {activeReport.documentType}</span>
-            <span>&bull;</span>
-            <span>{activeReport.teamName || 'Tim PKM Unila'}</span>
-            <span>&bull;</span>
-            <span style={{ color: '#0284c7', fontWeight: 700 }}>AI Audit Belmawa 2026</span>
+            {[
+              documentInfo?.scheme || activeReport.schemeCode,
+              documentInfo ? 'Proposal' : activeReport.documentType,
+              documentInfo?.team || activeReport.teamName,
+            ].filter(Boolean).join(' · ')}
           </div>
         </div>
 
@@ -395,14 +399,10 @@ export function AIFormatDetector({
             </span>
           </div>
 
-          <div className="ai-metric-item" style={{ borderLeft: '1px solid #e2e8f0', paddingLeft: '1rem' }}>
-            <span className="ai-metric-label">Kriteria Rubrik Terdampak</span>
-            <span style={{ fontSize: '0.825rem', fontWeight: 700, color: '#0b2149' }}>
-              Kriteria 1: Format & Administrasi
-            </span>
-            <span style={{ fontSize: '0.75rem', color: '#dc2626', fontWeight: 600 }}>
-              Saran potongan: -{activeReport.suggestedScoreDeduction || 15} poin
-            </span>
+          <div className="ai-metric-item ai-metric-rubric">
+            <span className="ai-metric-label">Kriteria terdampak</span>
+            <span className="ai-metric-rubric-name">Format &amp; Administrasi</span>
+            <span className="ai-metric-rubric-cut">Saran potongan -{activeReport.suggestedScoreDeduction || 15} poin</span>
           </div>
         </div>
 
@@ -411,7 +411,7 @@ export function AIFormatDetector({
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
             <h3 className="ai-section-heading" style={{ margin: 0 }}>
               <Layers size={17} className="ai-section-heading-icon" />
-              <span>RINGKASAN UTAMA</span>
+              <span>Ringkasan Utama</span>
             </h3>
 
             <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -505,7 +505,7 @@ export function AIFormatDetector({
         <section>
           <h3 className="ai-section-heading">
             <FileText size={17} className="ai-section-heading-icon" />
-            <span>DETAIL KESALAHAN</span>
+            <span>Detail Kesalahan per Halaman</span>
           </h3>
 
           <div className="ai-detail-group-list">
@@ -577,7 +577,7 @@ export function AIFormatDetector({
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
             <h3 className="ai-section-heading" style={{ margin: 0 }}>
               <AlertTriangle size={17} style={{ color: '#d97706' }} />
-              <span>SARAN PERBAIKAN</span>
+              <span>Saran Perbaikan</span>
             </h3>
 
             <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>

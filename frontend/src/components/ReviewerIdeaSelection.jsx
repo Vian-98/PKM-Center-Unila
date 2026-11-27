@@ -102,53 +102,50 @@ export function ReviewerIdeaSelection() {
         )}
       </div>
 
-      <div className="idea-toolbar">
-        <div className="modern-tabs idea-status-tabs">
-          {[['submitted', 'Menunggu'], ['accepted', 'Lolos'], ['revision', 'Revisi'], ['rejected', 'Tidak Lolos'], ['all', 'Semua']].map(([key, label]) => (
-            <button key={key} type="button" className={`tab-btn ${statusFilter === key ? 'active' : ''}`} onClick={() => setStatusFilter(key)}>
-              {label} ({counts[key] || 0})
-            </button>
+      <div className="rev-filter-row">
+        <input className="rev-filter-search" type="text" placeholder="Cari judul ide, nama, NPM, atau fakultas..." value={search} onChange={e => setSearch(e.target.value)} />
+        <select className="rev-filter-select" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+          {[['submitted', 'Menunggu Seleksi'], ['accepted', 'Lolos'], ['revision', 'Perlu Revisi'], ['rejected', 'Tidak Lolos'], ['all', 'Semua Status']].map(([key, label]) => (
+            <option key={key} value={key}>{label} ({counts[key] || 0})</option>
           ))}
-        </div>
-        <div className="idea-toolbar-row">
-          {(allFields || fields.length > 1) && (
-            <select className="idea-select" value={fieldFilter} onChange={e => setFieldFilter(e.target.value)}>
-              <option value="all">Semua bidang</option>
-              {fields.map(f => <option key={f.id} value={String(f.id)}>{f.name}</option>)}
-            </select>
-          )}
-          <input className="idea-search" type="text" placeholder="Cari judul, nama, NPM, fakultas..." value={search} onChange={e => setSearch(e.target.value)} />
-        </div>
+        </select>
+        {(allFields || fields.length > 1) && (
+          <select className="rev-filter-select" value={fieldFilter} onChange={e => setFieldFilter(e.target.value)}>
+            <option value="all">Semua Bidang</option>
+            {fields.map(f => <option key={f.id} value={String(f.id)}>{f.name}</option>)}
+          </select>
+        )}
       </div>
 
-      {error && <div className="idea-error">Gagal memuat data seleksi ide: {error}</div>}
-
-      {loading ? (
-        <div className="idea-empty">Memuat ide yang masuk...</div>
+      {error ? (
+        <div className="idea-error">Data seleksi ide belum bisa dimuat dari server ({error}). Coba muat ulang halaman.</div>
+      ) : loading ? (
+        <div className="rev-empty-state"><p>Memuat ide yang masuk...</p></div>
       ) : visible.length === 0 ? (
-        <div className="idea-empty">
-          {ideas.length === 0
+        <div className="rev-empty-state">
+          <p>{ideas.length === 0
             ? 'Belum ada ide yang masuk dari bidang Anda.'
-            : 'Tidak ada ide yang sesuai dengan filter.'}
+            : 'Tidak ada ide yang sesuai dengan filter.'}</p>
         </div>
       ) : (
-        <div className="idea-list">
+        <div style={{ display: 'grid', gap: '1.25rem' }}>
           {visible.map(idea => {
             const st = IDEA_STATUS[idea.status] || IDEA_STATUS.submitted
             return (
-              <article key={idea.id} className="idea-card">
-                <div className="idea-card-head">
-                  <div className="idea-card-tags">
-                    <span className="idea-tag">{idea.fieldName}</span>
-                    {idea.schemeCode && <span className="idea-tag scheme">{idea.schemeCode}</span>}
+              <article key={idea.id} className="proposal-card-item">
+                <div className="proposal-card-item-header">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+                    {idea.schemeCode && <span className="tag-scheme">{idea.schemeCode}</span>}
+                    <span style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 700 }}>Bidang: {idea.fieldName}</span>
                   </div>
                   <span className={`status-pill ${st.pill}`}>{st.label}</span>
                 </div>
-                <h3 className="idea-title">{idea.title}</h3>
-                <p className="idea-meta">
-                  {idea.studentName}{idea.studentNpm ? ` · ${idea.studentNpm}` : ''}{idea.faculty ? ` · ${idea.faculty}` : ''}
-                  {' · '}{new Date(idea.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
-                </p>
+                <h3 className="proposal-card-title">{idea.title}</h3>
+                <div className="proposal-card-meta">
+                  <span>Pengusul: <strong>{idea.studentName}</strong>{idea.studentNpm ? ` (${idea.studentNpm})` : ''}</span>
+                  {idea.faculty && <span>{idea.faculty}</span>}
+                  <span>Diajukan: {new Date(idea.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                </div>
                 <dl className="idea-body">
                   <div><dt>Permasalahan</dt><dd>{idea.problem}</dd></div>
                   <div><dt>Solusi yang ditawarkan</dt><dd>{idea.solution}</dd></div>
@@ -162,8 +159,8 @@ export function ReviewerIdeaSelection() {
                     {idea.reviewerNote && <p>{idea.reviewerNote}</p>}
                   </div>
                 )}
-                <div className="idea-card-actions">
-                  <button type="button" className="btn-action primary" onClick={() => openDecision(idea)}>
+                <div className="card-actions-row">
+                  <button type="button" className={`btn-action ${idea.status === 'submitted' ? 'primary' : 'secondary'}`} onClick={() => openDecision(idea)}>
                     {idea.status === 'submitted' ? 'Seleksi Ide' : 'Ubah Keputusan'}
                   </button>
                 </div>
