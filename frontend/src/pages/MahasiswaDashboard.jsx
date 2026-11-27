@@ -122,8 +122,8 @@ export function MahasiswaDashboard({ user }) {
   const [showAiAuditModal, setShowAiAuditModal] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  // Rencana mahasiswa di PKM: 'ketua' (mengusulkan proposal) atau 'anggota' (bergabung ke tim lain).
-  const [pkmIntent, setPkmIntent] = useState(() => loadStore(`pkm_mhs_intent_${userKey}`, ''))
+  // Memicu render ulang setelah pilihan rencana PKM disimpan.
+  const [, setIntentVersion] = useState(0)
 
   useEffect(() => {
     setIncomingInvites(getIncomingInvitationsForUser(user))
@@ -189,16 +189,21 @@ export function MahasiswaDashboard({ user }) {
     ? (steps[activeStepIdx]?.label || 'Draft Usulan')
     : (doneCount > 0 ? `${steps[doneCount - 1]?.label || 'Lolos Belmawa'} (Lolos)` : 'Draft Usulan')
   // Mahasiswa yang belum punya usulan maupun rekan tim ditanya dulu rencananya.
+  // Rencana mahasiswa di PKM: 'ketua' (mengusulkan proposal) atau 'anggota' (bergabung ke tim lain).
+  // Disimpan per periode, jadi anggota tahun ini akan ditanya lagi pada periode berikutnya.
+  const periodKey = data.period?.id || data.period?.year || 'aktif'
+  const intentKey = `pkm_mhs_intent_${userKey}_${periodKey}`
+  const pkmIntent = loadStore(intentKey, '')
   const hasTeamMates = (team?.members?.length || 0) > 1
   const showIntentQuestion = !loading && !error && !proposal && !hasTeamMates && !pkmIntent
   const chooseIntent = (intent) => {
-    saveStore(`pkm_mhs_intent_${userKey}`, intent)
-    setPkmIntent(intent)
+    saveStore(intentKey, intent)
+    setIntentVersion(v => v + 1)
     window.location.hash = intent === 'anggota' ? '#mahasiswa/lowongan' : '#mahasiswa/ajukan-proposal'
   }
   const resetIntent = () => {
-    saveStore(`pkm_mhs_intent_${userKey}`, '')
-    setPkmIntent('')
+    saveStore(intentKey, '')
+    setIntentVersion(v => v + 1)
   }
 
   const progressPercent = steps.length > 0 ? Math.round(((doneCount + (activeStepIdx !== -1 ? 0.5 : 0)) / steps.length) * 100) : 20

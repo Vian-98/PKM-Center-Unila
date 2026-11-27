@@ -57,9 +57,17 @@ func (h StudentHandler) findTeam(userID, periodID string) (models.Team, bool) {
 		Order("created_at DESC").First(&team).Error; err == nil {
 		return team, true
 	}
-	var member models.TeamMember
-	if err := h.DB.Where("student_id = ?", userID).First(&member).Error; err == nil {
-		if err := h.DB.Where("id = ?", member.TeamID).First(&team).Error; err == nil {
+	// Keanggotaan dibatasi pada periode yang sama: anggota tim tahun lalu
+	// bebas menjadi ketua atau bergabung ke tim lain pada periode berikutnya.
+	var teamIDs []string
+	h.DB.Table("team_members tm").
+		Joins("JOIN teams t ON t.id = tm.team_id").
+		Where("tm.student_id = ? AND t.period_id = ?", userID, periodID).
+		Order("t.created_at DESC").
+		Limit(1).
+		Pluck("tm.team_id", &teamIDs)
+	if len(teamIDs) > 0 {
+		if err := h.DB.Where("id = ?", teamIDs[0]).First(&team).Error; err == nil {
 			return team, true
 		}
 	}
