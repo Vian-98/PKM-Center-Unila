@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { PageIntro } from '../components/PageIntro'
 import { api, schemeNames } from '../lib/content'
 import { getAuthToken } from '../lib/authSession'
@@ -34,6 +34,62 @@ async function adminRequest(token, path, method, body) {
   return result.data
 }
 
+/* ---------------- Pagination & pencarian daftar ---------------- */
+
+const PAGE_SIZE = 6
+
+// usePaged memotong daftar per halaman dan menyaring dengan kata kunci.
+// fieldsOf(item) mengembalikan teks yang ikut dicari.
+function usePaged(items, fieldsOf, size = PAGE_SIZE) {
+  const [query, setQuery] = useState('')
+  const [page, setPage] = useState(1)
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    if (!q) return items
+    return items.filter(item => fieldsOf(item).filter(Boolean).join(' ').toLowerCase().includes(q))
+  }, [items, query]) // eslint-disable-line react-hooks/exhaustive-deps
+  const pageCount = Math.max(1, Math.ceil(filtered.length / size))
+  const current = Math.min(page, pageCount)
+  const pageItems = filtered.slice((current - 1) * size, current * size)
+  const search = (value) => { setQuery(value); setPage(1) }
+  return { query, search, page: current, setPage, pageCount, pageItems, total: filtered.length, size }
+}
+
+function ListSearch({ paged, placeholder = 'Cari...' }) {
+  return (
+    <div className="admin-list-search">
+      <input type="search" value={paged.query} onChange={e => paged.search(e.target.value)} placeholder={placeholder} aria-label={placeholder} />
+    </div>
+  )
+}
+
+function Pager({ paged }) {
+  const { page, pageCount, setPage, total, size } = paged
+  if (total === 0) return null
+  const from = (page - 1) * size + 1
+  const to = Math.min(page * size, total)
+  const pages = []
+  for (let i = 1; i <= pageCount; i++) {
+    if (i === 1 || i === pageCount || Math.abs(i - page) <= 1) pages.push(i)
+    else if (pages[pages.length - 1] !== '...') pages.push('...')
+  }
+  const go = (n) => { setPage(n) }
+  return (
+    <nav className="admin-pager" aria-label="Halaman daftar">
+      <span className="admin-pager-info">{from}-{to} dari {total}</span>
+      {pageCount > 1 && (
+        <div className="admin-pager-buttons">
+          <button type="button" onClick={() => go(page - 1)} disabled={page === 1} aria-label="Halaman sebelumnya">‹</button>
+          {pages.map((n, i) => n === '...'
+            ? <span key={`gap-${i}`} className="admin-pager-gap">...</span>
+            : <button type="button" key={n} className={n === page ? 'active' : ''} aria-current={n === page ? 'page' : undefined} onClick={() => go(n)}>{n}</button>)}
+          <button type="button" onClick={() => go(page + 1)} disabled={page === pageCount} aria-label="Halaman berikutnya">›</button>
+        </div>
+      )}
+    </nav>
+  )
+}
+
 /* ---------------- Konten (Berita / Video / Galeri) ---------------- */
 
 function ContentView() {
@@ -41,6 +97,9 @@ function ContentView() {
   const [form, setForm] = useState(blankContent)
   const [editing, setEditing] = useState(null)
   const [busy, setBusy] = useState('')
+  const [typeFilter, setTypeFilter] = useState('all')
+  const typed = useMemo(() => typeFilter === 'all' ? items : items.filter(i => i.type === typeFilter), [items, typeFilter])
+  const paged = usePaged(typed, i => [i.title, i.category, i.description])
 
   const submit = async (event) => {
     event.preventDefault()
@@ -53,7 +112,7 @@ function ContentView() {
   const edit = (item) => {
     setEditing(item.id)
     setForm({ type: item.type, title: item.title, category: item.category || '', description: item.description || '', body: item.body || '', mediaUrl: item.mediaUrl || '', thumbnailUrl: item.thumbnailUrl || '', color: item.color || 'gold' })
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    document.querySelector('.admin-layout .content-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
   const remove = async (id) => {
     if (!window.confirm('Hapus konten ini?')) return
@@ -80,13 +139,23 @@ function ContentView() {
       </form>
       <section className="content-list">
         <div className="form-heading"><h2>Konten terbit</h2><span>{items.length} item</span></div>
-        {items.map(item => (
+        <div className="admin-list-tools">
+          <ListSearch paged={paged} placeholder="Cari judul atau kategori..." />
+          <div className="admin-chip-group" role="group" aria-label="Saring jenis konten">
+            {[['all', 'Semua'], ['news', 'Berita'], ['video', 'Video'], ['gallery', 'Galeri']].map(([key, label]) => (
+              <button type="button" key={key} className={typeFilter === key ? 'active' : ''} onClick={() => { setTypeFilter(key); paged.setPage(1) }}>{label}</button>
+            ))}
+          </div>
+        </div>
+        {paged.total === 0 && <p className="empty-state">Tidak ada konten yang cocok.</p>}
+        {paged.pageItems.map(item => (
           <article className="admin-item" key={item.id}>
             <div className={`admin-swatch ${item.color}`} />
             <div><p className="card-meta">{item.type} · {item.category || 'Tanpa kategori'}</p><h3>{item.title}</h3><p>{item.description}</p></div>
             <div className="admin-actions"><button onClick={() => edit(item)}>Ubah</button><button onClick={() => remove(item.id)}>Hapus</button></div>
           </article>
         ))}
+        <Pager paged={paged} />
       </section>
     </section>
   )
@@ -99,6 +168,8 @@ function TimelineView() {
   const [form, setForm] = useState({ year: new Date().getFullYear(), stage: '', label: '', note: '', order: 0 })
   const [editing, setEditing] = useState(null)
   const [busy, setBusy] = useState(false)
+  const sorted = useMemo(() => [...items].sort((a, b) => b.year - a.year || a.order - b.order), [items])
+  const paged = usePaged(sorted, i => [String(i.year), i.stage, i.label, i.note])
 
   const submit = async (event) => {
     event.preventDefault()
@@ -129,13 +200,16 @@ function TimelineView() {
       </form>
       <section className="content-list">
         <div className="form-heading"><h2>Timeline PKM</h2><span>{items.length} tahapan</span></div>
-        {[...items].sort((a, b) => b.year - a.year || a.order - b.order).map(item => (
+        <ListSearch paged={paged} placeholder="Cari tahun atau tahapan..." />
+        {paged.total === 0 && <p className="empty-state">Tidak ada tahapan yang cocok.</p>}
+        {paged.pageItems.map(item => (
           <article className="admin-item" key={item.id}>
             <div className="admin-swatch gold" />
             <div><p className="card-meta">{item.year} · urutan {item.order || 0}</p><h3>{item.stage}</h3><p>{item.label}{item.note ? ` · ${item.note}` : ''}</p></div>
             <div className="admin-actions"><button onClick={() => edit(item)}>Ubah</button><button onClick={() => remove(item.id)}>Hapus</button></div>
           </article>
         ))}
+        <Pager paged={paged} />
       </section>
     </section>
   )
@@ -148,6 +222,8 @@ function PedomanView() {
   const [form, setForm] = useState({ year: new Date().getFullYear(), title: '', fileUrl: '', source: '', note: '' })
   const [editing, setEditing] = useState(null)
   const [busy, setBusy] = useState(false)
+  const sorted = useMemo(() => [...items].sort((a, b) => b.year - a.year), [items])
+  const paged = usePaged(sorted, i => [String(i.year), i.title, i.source, i.note])
 
   const submit = async (event) => {
     event.preventDefault()
@@ -178,13 +254,16 @@ function PedomanView() {
       </form>
       <section className="content-list">
         <div className="form-heading"><h2>Daftar pedoman</h2><span>{items.length} dokumen</span></div>
-        {[...items].sort((a, b) => b.year - a.year).map(item => (
+        <ListSearch paged={paged} placeholder="Cari judul atau tahun..." />
+        {paged.total === 0 && <p className="empty-state">Tidak ada pedoman yang cocok.</p>}
+        {paged.pageItems.map(item => (
           <article className="admin-item" key={item.id}>
             <div className="admin-swatch blue" />
             <div><p className="card-meta">{item.year} · {item.source || 'Dokumen resmi'}</p><h3>{item.title}</h3><p>{item.note}{item.fileUrl ? ` · ${item.fileUrl}` : ' (belum ada tautan)'}</p></div>
             <div className="admin-actions"><button onClick={() => edit(item)}>Ubah</button><button onClick={() => remove(item.id)}>Hapus</button></div>
           </article>
         ))}
+        <Pager paged={paged} />
       </section>
     </section>
   )
@@ -197,6 +276,8 @@ function PortfolioView() {
   const [form, setForm] = useState({ year: new Date().getFullYear(), title: '', team: '', scheme: 'PKM-K', faculty: '', prodi: '', description: '', link: '' })
   const [editing, setEditing] = useState(null)
   const [busy, setBusy] = useState(false)
+  const sorted = useMemo(() => [...items].sort((a, b) => b.year - a.year), [items])
+  const paged = usePaged(sorted, i => [String(i.year), i.title, i.team, i.scheme, i.faculty, i.prodi])
 
   const submit = async (event) => {
     event.preventDefault()
@@ -230,13 +311,16 @@ function PortfolioView() {
       </form>
       <section className="content-list">
         <div className="form-heading"><h2>Arsip proposal</h2><span>{items.length} proposal</span></div>
-        {[...items].sort((a, b) => b.year - a.year).map(item => (
+        <ListSearch paged={paged} placeholder="Cari judul, tim, skema, fakultas..." />
+        {paged.total === 0 && <p className="empty-state">Tidak ada proposal yang cocok.</p>}
+        {paged.pageItems.map(item => (
           <article className="admin-item" key={item.id}>
             <div className="admin-swatch green" />
             <div><p className="card-meta">{item.year} · {item.scheme || 'PKM'} · {item.faculty || '-'}</p><h3>{item.title}</h3><p>{item.team}</p></div>
             <div className="admin-actions"><button onClick={() => edit(item)}>Ubah</button><button onClick={() => remove(item.id)}>Hapus</button></div>
           </article>
         ))}
+        <Pager paged={paged} />
       </section>
     </section>
   )
@@ -257,12 +341,26 @@ function FeedbackView() {
     load()
   }
   const unread = items.filter((item) => !item.read).length
+  const [readFilter, setReadFilter] = useState('all')
+  const shown = useMemo(() => readFilter === 'unread' ? items.filter(i => !i.read) : items, [items, readFilter])
+  const paged = usePaged(shown, i => [i.name, i.email, i.message])
 
   return (
     <section className="admin-feedback">
       <div className="form-heading"><h2>Masukan dari pengunjung</h2><span>{unread} belum dibaca</span></div>
       {items.length === 0 && <p className="empty-state">Belum ada masukan masuk.</p>}
-      {items.map((item) => (
+      {items.length > 0 && (
+        <div className="admin-list-tools">
+          <ListSearch paged={paged} placeholder="Cari nama, email, atau isi pesan..." />
+          <div className="admin-chip-group" role="group" aria-label="Saring masukan">
+            {[['all', 'Semua'], ['unread', 'Belum dibaca']].map(([key, label]) => (
+              <button type="button" key={key} className={readFilter === key ? 'active' : ''} onClick={() => { setReadFilter(key); paged.setPage(1) }}>{label}</button>
+            ))}
+          </div>
+        </div>
+      )}
+      {items.length > 0 && paged.total === 0 && <p className="empty-state">Tidak ada masukan yang cocok.</p>}
+      {paged.pageItems.map((item) => (
         <article className={`admin-item feedback-item ${item.read ? 'read' : 'unread'}`} key={item.id}>
           <div className={`admin-swatch ${item.kind === 'saran' ? 'gold' : 'blue'}`} />
           <div>
@@ -277,6 +375,7 @@ function FeedbackView() {
           </div>
         </article>
       ))}
+      <Pager paged={paged} />
     </section>
   )
 }
@@ -550,6 +649,7 @@ function ReviewerFieldsView() {
   const [draft, setDraft] = useState({})
   const [saving, setSaving] = useState('')
   const [notice, setNotice] = useState('')
+  const paged = usePaged(items, r => [r.name, r.email])
 
   useEffect(() => {
     fetch(`${api}/fields`).then(r => r.json()).then(r => setFields(r.data || [])).catch(() => {})
@@ -580,7 +680,9 @@ function ReviewerFieldsView() {
       <div className="form-heading"><h2>Bidang reviewer</h2><span>Reviewer hanya melihat ide dan proposal dari bidang yang dicentang</span></div>
       {(notice || message) && <p className="form-message">{notice || message}</p>}
       {items.length === 0 && <p className="empty-state">Belum ada akun dengan peran reviewer.</p>}
-      {items.map((reviewer) => (
+      {items.length > 0 && <ListSearch paged={paged} placeholder="Cari nama atau email reviewer..." />}
+      {items.length > 0 && paged.total === 0 && <p className="empty-state">Tidak ada reviewer yang cocok.</p>}
+      {paged.pageItems.map((reviewer) => (
         <article className="admin-item reviewer-field-item" key={reviewer.id}>
           <div>
             <h3>{reviewer.name}</h3>
@@ -601,11 +703,121 @@ function ReviewerFieldsView() {
           </div>
         </article>
       ))}
+      <Pager paged={paged} />
+    </section>
+  )
+}
+
+/* ---------------- Periode PKM ---------------- */
+
+const PERIOD_STATUS = {
+  draft: ['Draf', 'Belum terlihat oleh mahasiswa'],
+  open: ['Dibuka', 'Periode aktif: tim dan usulan baru masuk ke sini'],
+  closed: ['Ditutup', 'Pendaftaran selesai, data tetap tersimpan'],
+  archived: ['Diarsipkan', 'Periode lama'],
+}
+const blankPeriod = () => {
+  const year = new Date().getFullYear() + 1
+  return { name: `PKM ${year}`, year, registrationStart: '', registrationEnd: '', status: 'draft' }
+}
+const dateInput = (value) => (value ? String(value).slice(0, 10) : '')
+const dateLabel = (value) => (value ? new Date(value).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : null)
+
+function PeriodView() {
+  const { items, message, setMessage, load, token } = useAdminList('/periods')
+  const [form, setForm] = useState(blankPeriod)
+  const [editing, setEditing] = useState(null)
+  const [busy, setBusy] = useState('')
+  const paged = usePaged(items, i => [i.name, String(i.year), PERIOD_STATUS[i.status]?.[0]])
+  const openPeriod = items.find(i => i.status === 'open')
+
+  const reset = () => { setEditing(null); setForm(blankPeriod()) }
+  const submit = async (event) => {
+    event.preventDefault()
+    if (form.status === 'open' && openPeriod && openPeriod.id !== editing &&
+      !window.confirm(`${openPeriod.name} sedang dibuka dan akan otomatis ditutup. Lanjutkan?`)) return
+    setBusy('form')
+    try {
+      await adminRequest(token, `/periods${editing ? `/${editing}` : ''}`, editing ? 'PUT' : 'POST', form)
+      setMessage(editing ? 'Periode tersimpan.' : 'Periode baru dibuat beserta tahapannya.')
+      reset(); load()
+    } catch (error) { setMessage(error.message) } finally { setBusy('') }
+  }
+  const edit = (item) => {
+    setEditing(item.id)
+    setForm({ name: item.name, year: item.year, registrationStart: dateInput(item.registrationStart), registrationEnd: dateInput(item.registrationEnd), status: item.status })
+    document.querySelector('.admin-layout .content-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+  const setStatus = async (item, status) => {
+    if (status === 'open' && openPeriod && openPeriod.id !== item.id &&
+      !window.confirm(`Buka ${item.name}? ${openPeriod.name} akan otomatis ditutup.`)) return
+    setBusy(item.id)
+    try {
+      await adminRequest(token, `/periods/${item.id}`, 'PUT', { name: item.name, year: item.year, registrationStart: dateInput(item.registrationStart), registrationEnd: dateInput(item.registrationEnd), status })
+      setMessage(`${item.name} sekarang ${PERIOD_STATUS[status][0].toLowerCase()}.`)
+      load()
+    } catch (error) { setMessage(error.message) } finally { setBusy('') }
+  }
+  const remove = async (item) => {
+    if (!window.confirm(`Hapus ${item.name}? Tindakan ini tidak bisa dibatalkan.`)) return
+    setBusy(item.id)
+    try {
+      await adminRequest(token, `/periods/${item.id}`, 'DELETE')
+      setMessage('Periode dihapus.'); if (editing === item.id) reset(); load()
+    } catch (error) { setMessage(error.message) } finally { setBusy('') }
+  }
+
+  return (
+    <section className="admin-layout">
+      <form className="content-form" onSubmit={submit}>
+        <div className="form-heading"><h2>{editing ? 'Ubah periode' : 'Periode baru'}</h2>{editing && <button type="button" onClick={reset}>Batal</button>}</div>
+        <p className="section-copy admin-form-note">Tim, usulan, dan pilihan rencana mahasiswa dihitung per periode. Buka periode baru tiap tahun supaya mahasiswa bisa mulai lagi, termasuk yang tahun lalu jadi anggota dan kini ingin jadi ketua.</p>
+        <label>Nama periode<input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Contoh: PKM 2027" required /></label>
+        <label>Tahun<input type="number" min="2000" max="2100" value={form.year} onChange={e => setForm({ ...form, year: Number(e.target.value) })} required /></label>
+        <div className="admin-form-row">
+          <label>Mulai pendaftaran<input type="date" value={form.registrationStart} onChange={e => setForm({ ...form, registrationStart: e.target.value })} /></label>
+          <label>Akhir pendaftaran<input type="date" value={form.registrationEnd} min={form.registrationStart || undefined} onChange={e => setForm({ ...form, registrationEnd: e.target.value })} /></label>
+        </div>
+        <label>Status<select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}>
+          {Object.entries(PERIOD_STATUS).map(([key, [label]]) => <option key={key} value={key}>{label}</option>)}
+        </select></label>
+        <p className="admin-form-hint">{PERIOD_STATUS[form.status]?.[1]}. Hanya satu periode yang bisa dibuka sekaligus.</p>
+        <button className="button dark" type="submit" disabled={busy === 'form'}>{busy === 'form' ? 'Menyimpan...' : (editing ? 'Simpan perubahan' : 'Buat periode')} <b>→</b></button>
+        {message && <p className="form-message">{message}</p>}
+      </form>
+      <section className="content-list">
+        <div className="form-heading"><h2>Periode PKM</h2><span>{openPeriod ? `Aktif: ${openPeriod.name}` : 'Belum ada yang dibuka'}</span></div>
+        {items.length > 4 && <ListSearch paged={paged} placeholder="Cari nama atau tahun..." />}
+        {items.length === 0 && <p className="empty-state">Belum ada periode.</p>}
+        {paged.pageItems.map(item => {
+          const range = [dateLabel(item.registrationStart), dateLabel(item.registrationEnd)].filter(Boolean).join(' s.d. ')
+          const used = item.teamCount > 0 || item.proposalCount > 0
+          return (
+            <article className={`admin-item period-item status-${item.status}`} key={item.id}>
+              <div className={`admin-swatch ${item.status === 'open' ? 'green' : item.status === 'draft' ? 'gold' : 'blue'}`} />
+              <div>
+                <p className="card-meta">{item.year} · <span className={`period-badge ${item.status}`}>{PERIOD_STATUS[item.status]?.[0] || item.status}</span></p>
+                <h3>{item.name}</h3>
+                <p>{range ? `Pendaftaran ${range}` : 'Jadwal pendaftaran belum diisi'}</p>
+                <p className="period-counts">{item.teamCount} tim · {item.proposalCount} usulan · {item.stageCount} tahapan</p>
+              </div>
+              <div className="admin-actions">
+                {item.status !== 'open' && <button type="button" className="primary" disabled={busy === item.id} onClick={() => setStatus(item, 'open')}>Buka periode</button>}
+                {item.status === 'open' && <button type="button" disabled={busy === item.id} onClick={() => setStatus(item, 'closed')}>Tutup</button>}
+                <button type="button" onClick={() => edit(item)}>Ubah</button>
+                {!used && <button type="button" className="danger" disabled={busy === item.id} onClick={() => remove(item)}>Hapus</button>}
+              </div>
+            </article>
+          )
+        })}
+        <Pager paged={paged} />
+      </section>
     </section>
   )
 }
 
 const TABS = [
+  ['periode', 'Periode PKM'],
   ['konten', 'Konten'],
   ['timeline', 'Timeline'],
   ['pedoman', 'Pedoman'],
@@ -614,12 +826,71 @@ const TABS = [
   ['reviewer', 'Bidang Reviewer'],
   ['statistik', 'Statistik'],
   ['kontak', 'Kontak'],
-  ['ai-gateway', 'AI Gateway (9Router)'],
+  ['ai-gateway', 'AI Gateway'],
 ]
 
-export function AdminPanel({ user }) {
-  const [view, setView] = useState('konten')
+// Bar tab satu baris yang bisa digeser: roda mouse menggeser ke samping, tombol panah
+// muncul di tepi bila masih ada tab tersembunyi, dan tab aktif selalu digulir agar terlihat.
+function AdminTabs({ active, onChange }) {
+  const scrollerRef = useRef(null)
+  const [edges, setEdges] = useState({ left: false, right: false })
 
+  useEffect(() => {
+    const el = scrollerRef.current
+    if (!el) return undefined
+    const update = () => setEdges({ left: el.scrollLeft > 2, right: el.scrollLeft + el.clientWidth < el.scrollWidth - 2 })
+    const onWheel = (e) => {
+      if (el.scrollWidth <= el.clientWidth || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return
+      e.preventDefault()
+      el.scrollLeft += e.deltaY
+    }
+    update()
+    el.addEventListener('scroll', update, { passive: true })
+    el.addEventListener('wheel', onWheel, { passive: false })
+    window.addEventListener('resize', update)
+    return () => {
+      el.removeEventListener('scroll', update)
+      el.removeEventListener('wheel', onWheel)
+      window.removeEventListener('resize', update)
+    }
+  }, [])
+
+  useEffect(() => {
+    const el = scrollerRef.current
+    const btn = el?.querySelector('button.active')
+    if (!el || !btn) return
+    const left = btn.offsetLeft - el.offsetLeft
+    if (left < el.scrollLeft || left + btn.offsetWidth > el.scrollLeft + el.clientWidth) {
+      el.scrollTo({ left: left - el.clientWidth / 2 + btn.offsetWidth / 2, behavior: 'smooth' })
+    }
+  }, [active])
+
+  const nudge = (dir) => {
+    const el = scrollerRef.current
+    if (el) el.scrollBy({ left: dir * el.clientWidth * 0.6, behavior: 'smooth' })
+  }
+
+  return (
+    <div className={['admin-tabs-bar', edges.left && 'can-left', edges.right && 'can-right'].filter(Boolean).join(' ')}>
+      {edges.left && <button type="button" className="admin-tabs-arrow left" onClick={() => nudge(-1)} aria-label="Geser tab ke kiri">‹</button>}
+      <div className="admin-tabs" ref={scrollerRef} role="tablist" aria-label="Bagian panel admin">
+        {TABS.map(([key, label]) => (
+          <button key={key} role="tab" aria-selected={active === key} className={active === key ? 'active' : ''} onClick={() => onChange(key)}>{label}</button>
+        ))}
+      </div>
+      {edges.right && <button type="button" className="admin-tabs-arrow right" onClick={() => nudge(1)} aria-label="Geser tab ke kanan">›</button>}
+    </div>
+  )
+}
+
+export function AdminPanel({ user }) {
+  const [view, setView] = useState(() => {
+    try { return sessionStorage.getItem('pkm_admin_tab') || 'periode' } catch { return 'periode' }
+  })
+  const changeView = (key) => {
+    setView(key)
+    try { sessionStorage.setItem('pkm_admin_tab', key) } catch { /* abaikan */ }
+  }
   if (user?.role !== 'admin') {
     return (
       <main>
@@ -634,16 +905,13 @@ export function AdminPanel({ user }) {
 
   return (
     <main className="admin-page">
-      <PageIntro
-        eyebrow="DASHBOARD ADMIN"
-        title={<>Kelola ruang<br /><em>dan cerita.</em></>}
-        copy="Tambah, ubah, atau hapus konten, timeline, pedoman, portofolio, dan pantau masukan pengunjung serta AI Gateway."
-      />
-      <div className="admin-tabs" role="tablist" aria-label="Bagian panel admin">
-        {TABS.map(([key, label]) => (
-          <button key={key} role="tab" aria-selected={view === key} className={view === key ? 'active' : ''} onClick={() => setView(key)}>{label}</button>
-        ))}
-      </div>
+      <header className="admin-head">
+        <p className="eyebrow">DASHBOARD ADMIN</p>
+        <h1>Panel <em>PKM Center</em></h1>
+        <p>Kelola periode PKM, konten publik, timeline, pedoman, portofolio, masukan pengunjung, dan AI Gateway.</p>
+      </header>
+      <AdminTabs active={view} onChange={changeView} />
+      {view === 'periode' && <PeriodView />}
       {view === 'konten' && <ContentView />}
       {view === 'timeline' && <TimelineView />}
       {view === 'pedoman' && <PedomanView />}

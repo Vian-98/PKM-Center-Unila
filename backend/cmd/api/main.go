@@ -65,6 +65,7 @@ func main() {
 	contact := handlers.ContactHandler{DB: db}
 	dosen := handlers.DosenHandler{DB: db}
 	reviewer := handlers.ReviewerHandler{DB: db}
+	periods := handlers.PeriodHandler{DB: db}
 	msgFeedback := handlers.MessageFeedbackHandler{DB: db}
 	student := handlers.StudentHandler{DB: db}
 	ai := handlers.AIHandler{DB: db}
@@ -188,6 +189,10 @@ func main() {
 	admin.GET("/ai/overview", ai.AdminOverview)
 	admin.GET("/reviewers", idea.AdminListReviewers)
 	admin.PUT("/reviewers/:id/fields", idea.AdminSetReviewerFields)
+	admin.GET("/periods", periods.List)
+	admin.POST("/periods", periods.Create)
+	admin.PUT("/periods/:id", periods.Update)
+	admin.DELETE("/periods/:id", periods.Delete)
 	r.Run(":" + config.Env("PORT", "8080"))
 }
 

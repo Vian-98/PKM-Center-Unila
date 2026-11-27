@@ -1516,3 +1516,134 @@ footer {
 @media (min-width: 768px) {
   .home-stats, .services-section, .preview-section, .timeline-section, .feedback-section { padding: 4.5rem 5.5vw; }
 }
+/* ---------- Panel admin: header ringkas, tab lengket, pagination ---------- */
+.admin-head { padding: 2rem 1.25rem 0.4rem; }
+.admin-head .eyebrow { margin-bottom: 0.6rem; }
+.admin-head h1 { font: 700 clamp(1.9rem, 6vw, 2.6rem) / 1.05 'Playfair Display'; letter-spacing: -0.06rem; color: var(--ink); }
+.admin-head h1 em { color: var(--red); font-style: italic; }
+.admin-head > p:last-child { max-width: 44rem; margin: 0.6rem 0 0; color: var(--muted); font-size: 0.92rem; line-height: 1.55; }
+@media (min-width: 768px) { .admin-head { padding: 2.6rem 5.5vw 0.4rem; } }
+
+.admin-tabs-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: 0.75rem 1.25rem;
+  background: color-mix(in srgb, var(--page) 90%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+@media (min-width: 768px) { .admin-tabs-bar { padding: 0.75rem 5.5vw; } }
+.admin-page .admin-tabs { padding: 0.15rem 0; scroll-behavior: smooth; }
+/* Pudar di tepi menandakan masih ada tab yang tersembunyi. */
+.admin-tabs-bar.can-left .admin-tabs { -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 3rem); mask-image: linear-gradient(90deg, transparent 0, #000 3rem); }
+.admin-tabs-bar.can-right .admin-tabs { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 3rem), transparent 100%); mask-image: linear-gradient(90deg, #000 calc(100% - 3rem), transparent 100%); }
+.admin-tabs-bar.can-left.can-right .admin-tabs { -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 3rem, #000 calc(100% - 3rem), transparent 100%); mask-image: linear-gradient(90deg, transparent 0, #000 3rem, #000 calc(100% - 3rem), transparent 100%); }
+.admin-tabs-arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  width: 2.2rem;
+  height: 2.2rem;
+  transform: translateY(-50%);
+  border: 1px solid var(--glass-border);
+  border-radius: 50%;
+  background: var(--surface-solid);
+  color: var(--ink);
+  font-size: 1.2rem;
+  line-height: 1;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+.admin-tabs-arrow:hover { border-color: var(--gold); color: var(--accent); }
+.admin-tabs-arrow.left { left: 0.5rem; }
+.admin-tabs-arrow.right { right: 0.5rem; }
+@media (min-width: 768px) { .admin-tabs-arrow.left { left: calc(5.5vw - 1.1rem); } .admin-tabs-arrow.right { right: calc(5.5vw - 1.1rem); } }
+@media (hover: none) { .admin-tabs-arrow { display: none; } }
+
+.admin-reviewer-fields { padding: 2rem 1.25rem 4rem; display: grid; gap: 0.8rem; }
+@media (min-width: 768px) {
+  .admin-reviewer-fields { padding: 2.5rem 5.5vw 5rem; max-width: 72rem; margin-inline: auto; }
+}
+.admin-layout { padding-top: 2rem; }
+@media (min-width: 1024px) {
+  .admin-layout { padding-top: 2.2rem; }
+  /* Form tetap terlihat saat daftar di sebelahnya digulir. */
+  .admin-layout > .content-form {
+    position: sticky;
+    top: calc(4.2rem + 1rem);
+    max-height: calc(100vh - 4rem - 4.2rem - 2rem);
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+}
+
+.admin-list-tools { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+.admin-list-tools .admin-list-search { flex: 1 1 14rem; }
+.admin-list-search input {
+  width: 100%;
+  min-height: 2.6rem;
+  padding: 0 1rem;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.86rem;
+}
+.admin-list-search input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 22%, transparent); }
+.admin-chip-group { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+.admin-chip-group button {
+  min-height: 2.3rem;
+  padding: 0 0.85rem;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+.admin-chip-group button.active { background: var(--ink); color: var(--page); border-color: var(--ink); }
+
+.admin-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--line);
+}
+.admin-pager-info { font: 700 0.7rem 'DM Mono'; letter-spacing: 0.04em; color: var(--faint); text-transform: uppercase; }
+.admin-pager-buttons { display: flex; align-items: center; gap: 0.3rem; }
+.admin-pager-buttons button {
+  min-width: 2.3rem;
+  height: 2.3rem;
+  padding: 0 0.6rem;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.admin-pager-buttons button:hover:not(:disabled) { border-color: var(--gold); color: var(--accent); }
+.admin-pager-buttons button.active { background: var(--ink); color: var(--page); border-color: var(--ink); }
+.admin-pager-buttons button:disabled { opacity: 0.4; cursor: not-allowed; }
+.admin-pager-gap { padding: 0 0.2rem; color: var(--faint); font-size: 0.8rem; }
+
+/* ---------- Panel admin: periode PKM ---------- */
+.admin-form-note { margin: -0.3rem 0 0; font-size: 0.84rem; line-height: 1.55; }
+.admin-form-hint { margin: -0.4rem 0 0; color: var(--muted); font-size: 0.78rem; line-height: 1.45; }
+.admin-form-row { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); }
+.period-badge { display: inline-block; padding: 0.1rem 0.5rem; border-radius: var(--r-pill); background: var(--accent-soft); color: var(--accent); }
+.period-badge.open { background: color-mix(in srgb, #16a34a 16%, transparent); color: #15803d; }
+.period-badge.closed, .period-badge.archived { background: color-mix(in srgb, var(--muted) 14%, transparent); color: var(--muted); }
+.period-item.status-open { border-color: color-mix(in srgb, #16a34a 45%, var(--line)); }
+.period-counts { margin-top: 0.2rem; font: 700 0.7rem 'DM Mono'; letter-spacing: 0.03em; color: var(--faint) !important; }
+.period-item .admin-actions button:last-child:not(.danger) { color: var(--ink); border-color: var(--glass-border); }
+.period-item .admin-actions button:last-child:not(.danger):hover { background: var(--accent-soft); color: var(--accent); }
+.period-item .admin-actions button.primary { background: var(--ink); color: var(--page); border-color: var(--ink); }
+.period-item .admin-actions button:disabled { opacity: 0.5; cursor: not-allowed; }
