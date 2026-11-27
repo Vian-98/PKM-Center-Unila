@@ -5,8 +5,25 @@ import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
+// Situs live memakai dev server Vite di balik Cloudflare. Tanpa header ini,
+// berkas .css/.js di-cache browser 4 jam sehingga perubahan gaya tidak langsung
+// terlihat (berkas .jsx sudah no-cache). no-store memaksa browser selalu ambil ulang.
+const noStoreHeaders = {
+  name: 'no-store-headers',
+  configureServer(server) {
+    server.middlewares.use((req, res, next) => {
+      // Vite memasang no-cache belakangan; kunci nilainya agar tetap no-store.
+      const setHeader = res.setHeader.bind(res)
+      res.setHeader = (name, value) =>
+        setHeader(name, String(name).toLowerCase() === 'cache-control' ? 'no-store' : value)
+      res.setHeader('Cache-Control', 'no-store')
+      next()
+    })
+  },
+}
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), noStoreHeaders],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
