@@ -2,6 +2,13 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { ArrowLeft, Info, Plus, Trash2 } from 'lucide-react'
 import { loadStore, saveStore } from '../lib/dosenReviewerData'
 import { authFetch } from '../lib/studentApi'
+import { ContactPicker } from '../components/ContactPicker'
+
+const CONTACT_GROUPS = [
+  { label: 'Dosen Pembimbing', match: u => u.role === 'dosen' },
+  { label: 'Rekan Mahasiswa PKM', match: u => u.role === 'mahasiswa' },
+  { label: 'Reviewer & Admin', match: u => u.role !== 'dosen' && u.role !== 'mahasiswa' },
+]
 
 const ROLE_LABELS = {
   dosen: 'Dosen Pembimbing',
@@ -254,7 +261,10 @@ export function PesanFeedback({ user, onLogin }) {
   const handleCreateContact = async (e) => {
     e.preventDefault()
     const targetId = newContactModal.selectedSystemUser
-    if (!targetId) return
+    if (!targetId) {
+      alert('Pilih akun tujuan terlebih dahulu.')
+      return
+    }
 
     const opening = newContactModal.initialMessage.trim()
     if (opening) {
@@ -863,38 +873,12 @@ export function PesanFeedback({ user, onLogin }) {
                   <label style={{ display: 'block', fontWeight: 700, fontSize: '0.85rem', marginBottom: '0.35rem' }}>
                     Pilih Pengguna dari Direktori Resmi PKM Center:
                   </label>
-                  <select
-                    style={{ width: '100%', padding: '0.65rem', border: '1px solid #cbd5e1', borderRadius: '0.5rem', background: '#f8fafc', fontSize: '0.9rem' }}
+                  <ContactPicker
+                    options={directoryOptions}
+                    groups={CONTACT_GROUPS}
                     value={newContactModal.selectedSystemUser}
-                    onChange={e => setNewContactModal(prev => ({ ...prev, selectedSystemUser: e.target.value }))}
-                    required
-                  >
-                    <option value="">-- Pilih akun terdaftar --</option>
-                    <optgroup label="Dosen Pembimbing">
-                      {directoryOptions.filter(u => u.role === 'dosen').map(u => (
-                        <option key={u.id} value={u.id}>
-                          {u.name}{u.faculty ? ` · ${u.faculty}` : ''}
-                        </option>
-                      ))}
-                    </optgroup>
-                    <optgroup label="Rekan Mahasiswa PKM">
-                      {directoryOptions.filter(u => u.role === 'mahasiswa').map(u => (
-                        <option key={u.id} value={u.id}>
-                          {u.name}{u.faculty ? ` · ${u.faculty}` : ''}
-                        </option>
-                      ))}
-                    </optgroup>
-                    <optgroup label="Reviewer & Admin">
-                      {directoryOptions.filter(u => u.role !== 'dosen' && u.role !== 'mahasiswa').map(u => (
-                        <option key={u.id} value={u.id}>
-                          {u.name}{u.faculty ? ` · ${u.faculty}` : ''}
-                        </option>
-                      ))}
-                    </optgroup>
-                  </select>
-                  {directoryOptions.length === 0 && (
-                    <p style={{ margin: '0.35rem 0 0 0', fontSize: '0.75rem', color: '#94a3b8' }}>Memuat direktori akun...</p>
-                  )}
+                    onChange={id => setNewContactModal(prev => ({ ...prev, selectedSystemUser: id }))}
+                  />
                 </div>
 
                 <div>

@@ -6605,3 +6605,189 @@ input[type="range"]::-webkit-slider-thumb {
     width: 100%;
   }
 }
+
+/* ==========================================================
+   ContactPicker: pemilih akun chat baru (ganti select bawaan)
+   ========================================================== */
+.contact-picker {
+  position: relative;
+  width: 100%;
+}
+.contact-picker-trigger {
+  width: 100%;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.85rem;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.contact-picker-trigger:hover {
+  border-color: #94a3b8;
+}
+.contact-picker.open .contact-picker-trigger,
+.contact-picker-trigger:focus-visible {
+  outline: none;
+  border-color: var(--brand-sky, #175b91);
+  box-shadow: 0 0 0 3px rgba(23, 91, 145, 0.15);
+}
+.contact-picker-placeholder {
+  color: #94a3b8;
+  font-size: 0.92rem;
+}
+.contact-picker-chevron {
+  color: #64748b;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+.contact-picker.open .contact-picker-chevron {
+  transform: rotate(180deg);
+}
+.contact-picker-value {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+.contact-picker-avatar {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #e0ecf8;
+  color: #123b66;
+  font-size: 0.72rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.contact-picker-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+.contact-picker-text strong {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.contact-picker-text small {
+  font-size: 0.76rem;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.contact-picker-panel {
+  margin-top: 0.5rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.85rem;
+  box-shadow: 0 12px 28px -8px rgba(15, 23, 42, 0.18);
+  overflow: hidden;
+  animation: contactPickerIn 0.14s ease-out;
+}
+@keyframes contactPickerIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.contact-picker-search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.85rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #94a3b8;
+}
+.contact-picker-search input {
+  flex: 1;
+  width: auto;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 0.2rem 0;
+  font: inherit;
+  font-size: 0.9rem;
+  color: #0f172a;
+  box-shadow: none;
+}
+.contact-picker-list {
+  max-height: 264px;
+  overflow-y: auto;
+  padding: 0.35rem;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+.contact-picker-list::-webkit-scrollbar {
+  width: 8px;
+}
+.contact-picker-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.contact-picker-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+  border: 2px solid #ffffff;
+}
+.contact-picker-list::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+.contact-picker-group + .contact-picker-group {
+  margin-top: 0.25rem;
+}
+.contact-picker-group-label {
+  position: sticky;
+  top: -0.35rem;
+  z-index: 1;
+  background: #ffffff;
+  padding: 0.5rem 0.6rem 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #64748b;
+}
+.contact-picker-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.5rem 0.6rem;
+  border: none;
+  border-radius: 0.6rem;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.contact-picker-option:hover,
+.contact-picker-option:focus-visible {
+  outline: none;
+  background: #f1f5f9;
+}
+.contact-picker-option.selected {
+  background: #eaf2fb;
+}
+.contact-picker-check {
+  margin-left: auto;
+  color: var(--brand-sky, #175b91);
+  flex-shrink: 0;
+}
+.contact-picker-empty {
+  padding: 1.25rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
