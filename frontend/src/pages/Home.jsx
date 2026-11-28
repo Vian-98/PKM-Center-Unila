@@ -11,7 +11,7 @@ function HeroSection({ onMulaiAjukan }) {
           <span className="hero-title-main">PUSAT KREATIVITAS MAHASISWA</span>
           <span className="hl-blue underline-gold hero-title-uni">UNIVERSITAS LAMPUNG</span>
         </h1>
-        <p className="ref-sub">Wujudkan gagasan, temukan kolaborator, dan raih prestasi melalui ekosistem PKM terintegrasi berbasis AI.</p>
+        <p className="ref-sub">Portal resmi <strong>PKM Center Unila</strong> (PKM Center Lampung) untuk mewujudkan gagasan kreatif mahasiswa Universitas Lampung, membangun tim multidisiplin, dan meraih prestasi PIMNAS lewat ekosistem PKM terintegrasi berbasis AI.</p>
         <div className="ref-cta">
           <button className="btn-primary" type="button" onClick={onMulaiAjukan}>Mulai ajukan proposal <b>&rarr;</b></button>
           <a className="link-more" href="#tentang">Pelajari PKM <b>&rsaquo;</b></a>
@@ -165,6 +165,47 @@ function NewsPreview() {
   )
 }
 
+const FAQ_ITEMS = [
+  {
+    q: 'Apa itu PKM Center Unila (PKM Center Lampung)?',
+    a: 'PKM Center Unila adalah Pusat Kreativitas Mahasiswa Universitas Lampung yang menjadi ekosistem terintegrasi bagi mahasiswa di Lampung untuk menguji gagasan, membentuk tim multidisiplin, mencari dosen pembimbing, dan menyiapkan proposal Program Kreativitas Mahasiswa (PKM) menuju pendanaan dan PIMNAS.',
+  },
+  {
+    q: 'Bagaimana cara mengajukan proposal PKM Unila di portal ini?',
+    a: 'Mahasiswa Universitas Lampung dapat mendaftar atau masuk menggunakan akun terverifikasi, menguji kekuatan gagasan melalui fitur PKMATE berbasis AI, melengkapi tim beranggotakan 3–5 mahasiswa lintas program studi, memilih dosen pembimbing, lalu mengunggah proposal PKM sesuai jadwal seleksi internal.',
+  },
+  {
+    q: 'Apa saja skema PKM yang didampingi oleh PKM Center Universitas Lampung?',
+    a: 'PKM Center Unila mendampingi seluruh 10 skema PKM resmi Belmawa/SIMBELMAWA: PKM-RE (Riset Eksakta), PKM-RSH (Riset Sosial Humaniora), PKM-K (Kewirausahaan), PKM-PM (Pengabdian kepada Masyarakat), PKM-PI (Penerapan Iptek), PKM-KC (Karsa Cipta), PKM-KI (Karya Inovatif), PKM-VGK (Video Gagasan Konstruktif), PKM-GFT (Gagasan Futuristik Tertulis), dan PKM-AI (Artikel Ilmiah).',
+  },
+  {
+    q: 'Apa fungsi fitur PKMATE AI di PKM Center Unila?',
+    a: 'PKMATE adalah asisten berbasis kecerdasan buatan (AI) di PKM Center Unila untuk menganalisis kebaruan ide, tingkat dampak, ketepatan pemilihan skema PKM, serta mengecek kesesuaian format proposal sebelum dinilai oleh reviewer internal.',
+  },
+  {
+    q: 'Di mana lokasi dan kontak resmi PKM Center Lampung?',
+    a: 'Sekretariat PKM Center Universitas Lampung berlokasi di Gedung Rektorat Unila, Jl. Prof. Dr. Soemantri Brojonegoro No. 1, Gedong Meneng, Bandar Lampung 35145, email pkmcenter@unila.ac.id, atau Instagram @pkmcenter.unila.',
+  },
+]
+
+function FaqSection() {
+  return (
+    <section className="ref-faq" id="faq" aria-labelledby="faq-heading">
+      <p className="ref-eyebrow gold">INFORMASI &amp; TANYA JAWAB</p>
+      <h2 id="faq-heading">Seputar <span className="hl-blue">PKM Center</span> <span className="hl-blue underline-gold">Unila.</span></h2>
+      <p className="ref-desc">Jawaban ringkas seputar Program Kreativitas Mahasiswa (PKM) Universitas Lampung, layanan pendampingan, dan alur seleksi internal.</p>
+      <div className="faq-list">
+        {FAQ_ITEMS.map((item) => (
+          <details className="faq-item" key={item.q}>
+            <summary>{item.q}</summary>
+            <p>{item.a}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 function PanduanBanner() {
   const pedoman = usePedoman()
   const latest = [...pedoman].sort((a, b) => b.year - a.year)[0]
@@ -214,6 +255,7 @@ export function Home({ anchor = 'beranda', user, onLogin }) {
       <Ecosystem />
       <Timeline />
       <NewsPreview />
+      <FaqSection />
       <PanduanBanner />
     </main>
   )

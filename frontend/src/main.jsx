@@ -25,6 +25,7 @@ import { DesktopSidebarLayout } from './components/DesktopSidebarLayout'
 import { BrandLockup } from './components/brand/BrandLockup'
 import { ProfilePage } from './pages/ProfilePage'
 import { api } from './lib/content'
+import { applyRouteSeo, getInitialRouteHash } from './lib/seo'
 import {
   getAuthToken,
   getAuthUser,
@@ -1141,16 +1142,34 @@ function SiteFooter() {
       <div className="site-footer-inner">
         <div className="footer-brand">
           <BrandLockup variant="footer" dark />
-          <p>Platform digital manajemen Program Kreativitas Mahasiswa Universitas Lampung.</p>
+          <p>
+            Portal resmi PKM Center Unila (PKM Center Lampung) — Pusat Kreativitas Mahasiswa Universitas Lampung untuk pendampingan, riset, dan pengelolaan Program Kreativitas Mahasiswa (PKM) menuju PIMNAS.
+          </p>
+          <p className="footer-address">
+            Gedung Rektorat Unila, Jl. Prof. Dr. Soemantri Brojonegoro No. 1, Gedong Meneng, Bandar Lampung 35145
+          </p>
         </div>
-        <p className="footer-copy">(c) 2025 Universitas Lampung</p>
+        <div className="footer-meta">
+          <nav className="footer-nav" aria-label="Tautan Cepat PKM Center Unila">
+            <a href="#beranda">Beranda</a>
+            <a href="#tentang">Tentang PKM</a>
+            <a href="#timeline">Timeline</a>
+            <a href="#pedoman">Pedoman</a>
+            <a href="#berita">Berita</a>
+            <a href="#portofolio">Portofolio</a>
+            <a href="#galeri">Galeri</a>
+            <a href="#pkmate">PKMATE AI</a>
+            <a href="#kontak">Kontak</a>
+          </nav>
+          <p className="footer-copy">© 2026 PKM Center Universitas Lampung · PKM Unila</p>
+        </div>
       </div>
     </footer>
   )
 }
 
 function App() {
-  const [hash, setHash] = useState(window.location.hash || '#beranda')
+  const [hash, setHash] = useState(() => getInitialRouteHash())
   const [modal, setModal] = useState(false)
   const [user, setUser] = useState(() => {
     try {
@@ -1443,6 +1462,10 @@ function App() {
 
   // Render collapsible desktop sidebar for authenticated dashboard routes
   const isDashboardRoute = ['mahasiswa', 'dosen', 'reviewer', 'admin', 'admin-akun', 'admin_akun'].includes(raw)
+
+  useEffect(() => {
+    applyRouteSeo(raw, isDashboardRoute)
+  }, [raw, isDashboardRoute])
 
   // Akses Panduan dari portal sidebar (hash #role/pedoman) tetap pakai sidebar layout
   const isPedomanSidebar = sub === 'pedoman'

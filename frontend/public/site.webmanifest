@@ -1,0 +1,23 @@
+{
+  "name": "PKM Center Universitas Lampung",
+  "short_name": "PKM Center Unila",
+  "description": "Portal resmi Pusat Kreativitas Mahasiswa Universitas Lampung (PKM Center Unila / PKM Center Lampung) untuk pendampingan, uji ide PKMATE AI, kolaborasi tim, dan pengajuan proposal Program Kreativitas Mahasiswa.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7fbff",
+  "theme_color": "#123b66",
+  "lang": "id-ID",
+  "icons": [
+    {
+      "src": "/brand/favicon-180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/brand/favicon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

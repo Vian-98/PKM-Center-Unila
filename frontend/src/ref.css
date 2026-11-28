@@ -530,6 +530,18 @@ li.active .tl-num { background: #ffd700; border-color: #ffd700; color: #102a43; 
 .panduan-ico { width: 3.5rem; height: 3.5rem; border-radius: 14px; background: rgba(255,255,255,.9); backdrop-filter: blur(8px); display: grid; place-items: center; color: var(--gold2); font-size: 1.6rem; box-shadow: 0 8px 20px rgba(18,59,102,.1); }
 @media (min-width: 900px) { .ref-panduan { grid-template-columns: auto 1fr auto; margin-inline: auto; width: calc(100% - 11vw); } }
 
+/* FAQ Section */
+.ref-faq { padding: 4rem 5.5vw; max-width: 64rem; margin-inline: auto; text-align: center; }
+.ref-faq h2 { color: #0f172a; font-size: clamp(1.75rem, 3.6vw, 2.4rem); letter-spacing: -.02em; font-weight: 800; line-height: 1.25; margin: .25rem 0 .75rem; }
+.faq-list { margin-top: 2rem; display: grid; gap: .85rem; text-align: left; }
+.faq-item { background: rgba(255, 255, 255, 0.86); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(18, 59, 102, 0.12); border-radius: 16px; padding: 1.1rem 1.35rem; box-shadow: 0 6px 20px rgba(18, 59, 102, 0.05); transition: border-color .2s ease, box-shadow .2s ease; }
+.faq-item[open] { border-color: rgba(47, 143, 208, 0.45); box-shadow: 0 12px 28px rgba(18, 59, 102, 0.09); }
+.faq-item summary { cursor: pointer; font-weight: 700; font-size: 1rem; color: var(--brand-ink, #0f172a); list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary::after { content: '+'; font-size: 1.25rem; font-weight: 600; color: var(--brand-sky-bright, #2f8fd0); flex: none; transition: transform .2s ease; }
+.faq-item[open] summary::after { content: '−'; }
+.faq-item p { margin: .75rem 0 0; color: #475569; font-size: .93rem; line-height: 1.65; }
+
 /* Footer (Navy Frosted Glass) */
 .site-footer {
   background: linear-gradient(180deg, rgba(18, 59, 102, 0.96), rgba(12, 49, 84, 0.98));
@@ -539,10 +551,15 @@ li.active .tl-num { background: #ffd700; border-color: #ffd700; color: #102a43; 
   margin: 0;
   padding: 0;
 }
-.site-footer-inner { display: flex; justify-content: space-between; gap: 1rem; align-items: center; padding: 2.5rem 5.5vw; max-width: 80rem; margin-inline: auto; flex-wrap: wrap; }
-.footer-brand { display: flex; gap: 1rem; align-items: center; }
-.footer-brand p { color: rgba(255,255,255,.65); font-size: .8rem; max-width: 26rem; line-height: 1.5; }
-.footer-copy { color: rgba(255,255,255,.5); font-size: .78rem; }
+.site-footer-inner { display: flex; justify-content: space-between; gap: 1.5rem 2.5rem; align-items: flex-start; padding: 2.5rem 5.5vw; max-width: 80rem; margin-inline: auto; flex-wrap: wrap; }
+.footer-brand { display: flex; flex-direction: column; gap: .75rem; align-items: flex-start; max-width: 28rem; }
+.footer-brand p { color: rgba(255,255,255,.72); font-size: .82rem; line-height: 1.55; margin: 0; }
+.footer-address { color: rgba(255,255,255,.55); font-size: .76rem; }
+.footer-nav { display: flex; flex-wrap: wrap; gap: .6rem 1.25rem; align-items: center; }
+.footer-nav a { color: rgba(255,255,255,.8); text-decoration: none; font-size: .82rem; font-weight: 600; transition: color .15s ease; }
+.footer-nav a:hover { color: #ffd700; }
+.footer-meta { display: flex; flex-direction: column; gap: .75rem; align-items: flex-start; }
+.footer-copy { color: rgba(255,255,255,.5); font-size: .78rem; margin: 0; }
 
 /* Selaraskan halaman lama ke sans */
 .page-intro h1, .news-card h2, .article-detail h1 { font-family: 'DM Sans', sans-serif !important; letter-spacing: -.02em !important; }
